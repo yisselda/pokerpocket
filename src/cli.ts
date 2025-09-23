@@ -12,7 +12,7 @@ function formatShowdownResult(engine: PokerEngine) {
 
   let output = '\n'
 
-  result.results.forEach(({ player, eval: evalResult, hole }, index) => {
+  result.results.forEach(({ player, eval: evalResult, hole }) => {
     const holeStr = hole.map(cardToAscii).join(' ')
     const best5Str = evalResult.best5.map(cardToAscii).join(',')
     const rankStr = formatHandRank(evalResult.rank)
