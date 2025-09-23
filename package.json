@@ -1,8 +1,19 @@
 {
   "name": "poker-pocket",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "type": "module",
-  "description": "Lightweight offline Texas Hold'em CLI + embeddable engine",
+  "description": "Fast, deterministic Texas Hold'em poker engine for JavaScript/TypeScript",
+  "keywords": ["poker", "texas-holdem", "card-games", "game-engine", "typescript", "deterministic"],
+  "author": "yisselda",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yisselda/pokerpocket.git"
+  },
+  "homepage": "https://yisselda.github.io/pokerpocket/",
+  "bugs": {
+    "url": "https://github.com/yisselda/pokerpocket/issues"
+  },
   "bin": {
     "pocket": "dist/cli.js"
   },
@@ -32,8 +43,17 @@
     "test": "vitest run",
     "e2e": "vitest run test/cli.e2e.test.ts",
     "watch:test": "vitest",
-    "typecheck:pub": "tsd --files test/types.test-d.ts"
+    "typecheck:pub": "tsd --files test/types.test-d.ts",
+    "prepublishOnly": "npm run build && npm test && npm run typecheck:pub",
+    "publish:beta": "npm publish --tag beta",
+    "publish:latest": "npm publish"
   },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@types/node": "^20.11.0",
     "esbuild": "^0.25.10",
