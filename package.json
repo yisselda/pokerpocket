@@ -1,5 +1,5 @@
 {
-  "name": "poker-pocket",
+  "name": "pokerpocket",
   "version": "0.1.0-beta.1",
   "type": "module",
   "description": "Fast, deterministic Texas Hold'em poker engine for JavaScript/TypeScript",
@@ -15,7 +15,7 @@
     "url": "https://github.com/yisselda/pokerpocket/issues"
   },
   "bin": {
-    "pocket": "dist/cli.js"
+    "pokerpocket": "dist/cli.js"
   },
   "main": "dist/cli.js",
   "types": "dist/engine.d.ts",
