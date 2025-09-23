@@ -100,11 +100,21 @@ function clearCards() {
 
 function updateCardDisplay() {
     const container = document.getElementById('cards')
-    container.innerHTML = selectedCards.map((card, i) =>
+
+    // Show selected cards
+    const cardElements = selectedCards.map((card, i) =>
         `<div class="card ${getSuitColor(card.suit)}" onclick="removeCard(${i})" title="Click to remove">
             ${cardToString(card)}
         </div>`
-    ).join('')
+    )
+
+    // Add face-down placeholders for empty slots (up to 7 total)
+    const placeholderCount = Math.max(0, 7 - selectedCards.length)
+    for (let i = 0; i < placeholderCount; i++) {
+        cardElements.push(`<div class="card placeholder" title="Add cards using the controls above">🂠</div>`)
+    }
+
+    container.innerHTML = cardElements.join('')
 }
 
 function removeCard(index) {
@@ -285,3 +295,8 @@ async function copyQuickStart() {
         }, 2000)
     }
 }
+
+// Initialize the card display with placeholders when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateCardDisplay()
+})
