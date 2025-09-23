@@ -25,7 +25,10 @@ npm install github:yisselda/pokerpocket
 
 ## 🌐 [Try the Live Demo](https://yisselda.github.io/pokerpocket/)
 
-Interactive web demo with live poker games and hand evaluation.
+Interactive web demo featuring:
+- **Quick Game** - Play complete poker hands with multiple players
+- **Hand Evaluator** - Test poker hands with manual card selection or random generation
+- **Performance Benchmark** - Measure engine speed on your device
 
 ## CLI Usage
 
@@ -94,35 +97,33 @@ Winner(s): P1
 Use the engine in your own projects:
 
 ```typescript
-import { PokerEngine } from 'poker-pocket/engine'
-import { evaluateSeven } from 'poker-pocket/evaluator'
+import { newGame, evaluate7, drawRandom } from 'poker-pocket'
 
-// Create engine
-const engine = new PokerEngine()
-
-// Set up game
-engine.setPlayers(6)
-engine.setSeed(12345)
-
-// Play hand
-engine.deal()
-engine.flop()
-engine.turn()
-engine.river()
+// Quick game with helper function
+const game = newGame({ players: 6, seed: 12345 })
+game.deal()
+game.flop()
+game.turn()
+game.river()
 
 // Get results
-const { results, winners } = engine.showdown()
+const { results, winners } = game.showdown()
 console.log('Winners:', winners.map(w => `P${w + 1}`))
 
-// Direct evaluation
+// Direct hand evaluation
 const cards = [
   { rank: 'A', suit: 's' }, { rank: 'K', suit: 's' },
   { rank: 'Q', suit: 's' }, { rank: 'J', suit: 's' },
   { rank: 'T', suit: 's' }, { rank: '2', suit: 'h' },
   { rank: '3', suit: 'h' }
 ]
-const result = evaluateSeven(cards)
+const result = evaluate7(cards)
 console.log(result.rank) // 'STRAIGHT_FLUSH'
+
+// Random card generation
+const randomHand = drawRandom(7) // Get 7 random cards
+const handResult = evaluate7(randomHand)
+console.log(`Random hand: ${handResult.rank}`)
 ```
 
 ## Commands
@@ -178,7 +179,7 @@ npm run dev
 
 - **types.ts** - Type definitions for cards, hands, and results
 - **rng.ts** - Seedable Linear Congruential Generator
-- **deck.ts** - 52-card deck with Fisher-Yates shuffle
+- **deck.ts** - 52-card deck with Fisher-Yates shuffle and random card utilities
 - **evaluator.ts** - 7→best-5 hand evaluation with tie-breaking
 - **engine.ts** - Game state management and flow control
 - **cli.ts** - Interactive command-line interface
