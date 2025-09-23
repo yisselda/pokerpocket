@@ -16,8 +16,16 @@ A lightweight, dependency-free Texas Hold'em CLI with a clean, embeddable engine
 ## Installation
 
 ```bash
-npm install poker-pocket
+# Install latest beta
+npm install poker-pocket@beta
+
+# Or install from GitHub
+npm install github:yisselda/pokerpocket
 ```
+
+## 🌐 [Try the Live Demo](https://yisselda.github.io/pokerpocket/)
+
+Interactive web demo with live poker games and hand evaluation.
 
 ## CLI Usage
 
