@@ -1,9 +1,16 @@
 {
   "name": "pokerpocket",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "type": "module",
   "description": "Fast, deterministic Texas Hold'em poker engine for JavaScript/TypeScript",
-  "keywords": ["poker", "texas-holdem", "card-games", "game-engine", "typescript", "deterministic"],
+  "keywords": [
+    "poker",
+    "texas-holdem",
+    "card-games",
+    "game-engine",
+    "typescript",
+    "deterministic"
+  ],
   "author": "yisselda",
   "license": "MIT",
   "repository": {
