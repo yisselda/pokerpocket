@@ -41,6 +41,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
+    "bench": "vitest run test/bench.test.ts",
     "e2e": "vitest run test/cli.e2e.test.ts",
     "watch:test": "vitest",
     "typecheck:pub": "tsd --files test/types.test-d.ts",
