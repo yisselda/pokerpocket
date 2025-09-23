@@ -245,3 +245,22 @@ export function cardToAscii(card: Card): string {
 
   return `${card.rank}${suitDisplay}`
 }
+
+export interface GameOptions {
+  players?: number
+  seed?: number
+}
+
+export function newGame(options: GameOptions = {}): PokerEngine {
+  const engine = new PokerEngine()
+  if (options.players !== undefined) {
+    engine.setPlayers(options.players)
+  }
+  if (options.seed !== undefined) {
+    engine.setSeed(options.seed)
+  }
+  return engine
+}
+
+// Re-export evaluator for convenience
+export { evaluateSeven as evaluate7 } from './evaluator.js'
