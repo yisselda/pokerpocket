@@ -60,8 +60,8 @@ function testEvaluator() {
 console.log('=== Testing poker-pocket library ===')
 
 try {
-  const gameResult = testEngine()
-  const evalResult = testEvaluator()
+  testEngine()
+  testEvaluator()
 
   console.log('✅ All tests passed!')
   console.log('✅ Library imports work correctly')

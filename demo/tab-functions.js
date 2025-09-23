@@ -48,7 +48,7 @@ async function copyExample(exampleName) {
       copyBtn.textContent = originalText
       copyBtn.style.background = ''
     }, 2000)
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea')
     textArea.value = codeElement.textContent
@@ -86,7 +86,7 @@ async function copyCliCommand() {
     setTimeout(() => {
       copyBtn.textContent = 'Copy'
     }, 2000)
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea')
     textArea.value = command
@@ -124,7 +124,7 @@ async function copyCliQuickStart() {
     setTimeout(() => {
       copyBtn.textContent = 'Copy'
     }, 2000)
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea')
     textArea.value = command
@@ -174,7 +174,7 @@ async function copyInstallation() {
     setTimeout(() => {
       copyBtn.textContent = 'Copy'
     }, 2000)
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea')
     textArea.value = command
@@ -214,7 +214,7 @@ console.log('Winner:', result.winners.map(w => \`P\${w + 1}\`));`
     setTimeout(() => {
       copyBtn.textContent = 'Copy'
     }, 2000)
-  } catch (err) {
+  } catch {
     // Fallback for older browsers
     const textArea = document.createElement('textarea')
     textArea.value = code
