@@ -7,7 +7,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const CLI_PATH = join(__dirname, '../dist/cli.js')
 
-function runCliCommand(commands: string[], options: { ascii?: boolean, timeout?: number } = {}): Promise<{
+function runCliCommand(
+  commands: string[],
+  options: { ascii?: boolean; timeout?: number } = {}
+): Promise<{
   stdout: string
   stderr: string
   exitCode: number | null
@@ -22,7 +25,7 @@ function runCliCommand(commands: string[], options: { ascii?: boolean, timeout?:
 
     const child = spawn('node', [CLI_PATH], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      env
+      env,
     })
 
     let stdout = ''
@@ -36,21 +39,21 @@ function runCliCommand(commands: string[], options: { ascii?: boolean, timeout?:
       }
     }, timeout)
 
-    child.stdout?.on('data', (data) => {
+    child.stdout?.on('data', data => {
       stdout += data.toString()
     })
 
-    child.stderr?.on('data', (data) => {
+    child.stderr?.on('data', data => {
       stderr += data.toString()
     })
 
-    child.on('exit', (code) => {
+    child.on('exit', code => {
       hasExited = true
       clearTimeout(timeoutId)
       resolve({ stdout, stderr, exitCode: code })
     })
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       hasExited = true
       clearTimeout(timeoutId)
       reject(error)
@@ -69,15 +72,17 @@ function runCliCommand(commands: string[], options: { ascii?: boolean, timeout?:
 
 function normalizeOutput(output: string): string {
   // Remove ANSI color codes if any
-  return output
-    .replace(/\x1b\[[0-9;]*m/g, '')
-    // Normalize line endings
-    .replace(/\r\n/g, '\n')
-    // Remove trailing whitespace from lines
-    .split('\n')
-    .map(line => line.trimEnd())
-    .join('\n')
-    .trim()
+  return (
+    output
+      .replace(/\x1b\[[0-9;]*m/g, '')
+      // Normalize line endings
+      .replace(/\r\n/g, '\n')
+      // Remove trailing whitespace from lines
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+      .trim()
+  )
 }
 
 describe('CLI Snapshot Tests', () => {
@@ -107,7 +112,12 @@ describe('CLI Snapshot Tests', () => {
   })
 
   it('deal command output', async () => {
-    const result = await runCliCommand(['players 3', 'seed 42', 'deal', 'status'])
+    const result = await runCliCommand([
+      'players 3',
+      'seed 42',
+      'deal',
+      'status',
+    ])
     expect(result.exitCode).toBe(0)
 
     const normalizedOutput = normalizeOutput(result.stdout)
@@ -122,7 +132,7 @@ describe('CLI Snapshot Tests', () => {
       'flop',
       'turn',
       'river',
-      'showdown'
+      'showdown',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -137,7 +147,7 @@ describe('CLI Snapshot Tests', () => {
       'deal',
       'hole 1',
       'hole 2',
-      'hole 3'
+      'hole 3',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -154,7 +164,7 @@ describe('CLI Snapshot Tests', () => {
       'fold 2',
       'status',
       'fold 3',
-      'status'
+      'status',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -169,7 +179,7 @@ describe('CLI Snapshot Tests', () => {
       'players abc',
       'seed',
       'hole',
-      'fold xyz'
+      'fold xyz',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -184,7 +194,7 @@ describe('CLI Snapshot Tests', () => {
       'hole 0',
       'hole 999',
       'fold 0',
-      'fold 100'
+      'fold 100',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -194,15 +204,15 @@ describe('CLI Snapshot Tests', () => {
 
   it('game state errors', async () => {
     const result = await runCliCommand([
-      'flop',     // Before deal
+      'flop', // Before deal
       'showdown', // Before deal
       'players 3',
       'seed 12345', // Use fixed seed for deterministic output
       'deal',
       'players 4', // During hand
       'flop',
-      'flop',     // Already flopped
-      'showdown'
+      'flop', // Already flopped
+      'showdown',
     ])
     expect(result.exitCode).toBe(0)
 
@@ -213,7 +223,10 @@ describe('CLI Snapshot Tests', () => {
 
 describe('CLI Unicode vs ASCII Tests', () => {
   it('unicode mode output', async () => {
-    const result = await runCliCommand(['players 2', 'seed 42', 'deal', 'flop'], { ascii: false })
+    const result = await runCliCommand(
+      ['players 2', 'seed 42', 'deal', 'flop'],
+      { ascii: false }
+    )
     expect(result.exitCode).toBe(0)
 
     const normalizedOutput = normalizeOutput(result.stdout)
@@ -223,7 +236,10 @@ describe('CLI Unicode vs ASCII Tests', () => {
   })
 
   it('ascii mode output', async () => {
-    const result = await runCliCommand(['players 2', 'seed 42', 'deal', 'flop'], { ascii: true })
+    const result = await runCliCommand(
+      ['players 2', 'seed 42', 'deal', 'flop'],
+      { ascii: true }
+    )
     expect(result.exitCode).toBe(0)
 
     const normalizedOutput = normalizeOutput(result.stdout)
@@ -235,7 +251,9 @@ describe('CLI Unicode vs ASCII Tests', () => {
 
   it('non-TTY defaults to ASCII', async () => {
     // This simulates piping output or redirecting, which should force ASCII
-    const result = await runCliCommand(['players 2', 'seed 42', 'deal'], { ascii: true })
+    const result = await runCliCommand(['players 2', 'seed 42', 'deal'], {
+      ascii: true,
+    })
     expect(result.exitCode).toBe(0)
 
     const normalizedOutput = normalizeOutput(result.stdout)

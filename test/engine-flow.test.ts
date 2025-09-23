@@ -149,14 +149,20 @@ describe('Engine Flow', () => {
     const engine = new PokerEngine()
     engine.deal()
 
-    expect(() => engine.showdown()).toThrow('Can only showdown from flop, turn, or river phase')
+    expect(() => engine.showdown()).toThrow(
+      'Can only showdown from flop, turn, or river phase'
+    )
   })
 
   it('player validation', () => {
     const engine = new PokerEngine()
 
-    expect(() => engine.setPlayers(1)).toThrow('Players must be between 2 and 9')
-    expect(() => engine.setPlayers(10)).toThrow('Players must be between 2 and 9')
+    expect(() => engine.setPlayers(1)).toThrow(
+      'Players must be between 2 and 9'
+    )
+    expect(() => engine.setPlayers(10)).toThrow(
+      'Players must be between 2 and 9'
+    )
   })
 
   it('getHoleCards returns correct cards for valid players', () => {
@@ -184,9 +190,15 @@ describe('Engine Flow', () => {
     engine.setPlayers(3)
     engine.deal()
 
-    expect(() => engine.getHoleCards(-1)).toThrow('Invalid player -1. Must be 0-2')
-    expect(() => engine.getHoleCards(3)).toThrow('Invalid player 3. Must be 0-2')
-    expect(() => engine.getHoleCards(5)).toThrow('Invalid player 5. Must be 0-2')
+    expect(() => engine.getHoleCards(-1)).toThrow(
+      'Invalid player -1. Must be 0-2'
+    )
+    expect(() => engine.getHoleCards(3)).toThrow(
+      'Invalid player 3. Must be 0-2'
+    )
+    expect(() => engine.getHoleCards(5)).toThrow(
+      'Invalid player 5. Must be 0-2'
+    )
   })
 
   it('getHoleCards returns empty array before deal', () => {
@@ -204,7 +216,9 @@ describe('Engine Flow', () => {
     engine2.deal()
     expect(engine2.getHoleCards(0)).toHaveLength(2)
     expect(engine2.getHoleCards(1)).toHaveLength(2)
-    expect(() => engine2.getHoleCards(2)).toThrow('Invalid player 2. Must be 0-1')
+    expect(() => engine2.getHoleCards(2)).toThrow(
+      'Invalid player 2. Must be 0-1'
+    )
 
     // Test with 9 players
     const engine9 = new PokerEngine()
@@ -213,6 +227,8 @@ describe('Engine Flow', () => {
     for (let i = 0; i < 9; i++) {
       expect(engine9.getHoleCards(i)).toHaveLength(2)
     }
-    expect(() => engine9.getHoleCards(9)).toThrow('Invalid player 9. Must be 0-8')
+    expect(() => engine9.getHoleCards(9)).toThrow(
+      'Invalid player 9. Must be 0-8'
+    )
   })
 })

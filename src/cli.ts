@@ -52,13 +52,15 @@ function formatStatus(engine: PokerEngine): string {
       output += `Board: ${status.boardAscii}\n`
     }
 
-    const holeDisplay = status.holeCounts.map((count, i) => {
-      const folded = status.foldedPlayers.includes(i + 1)
-      if (folded) {
-        return `P${i + 1}: FOLDED`
-      }
-      return count > 0 ? `P${i + 1}: ${count} cards` : `P${i + 1}: 0 cards`
-    }).join(', ')
+    const holeDisplay = status.holeCounts
+      .map((count, i) => {
+        const folded = status.foldedPlayers.includes(i + 1)
+        if (folded) {
+          return `P${i + 1}: FOLDED`
+        }
+        return count > 0 ? `P${i + 1}: ${count} cards` : `P${i + 1}: 0 cards`
+      })
+      .join(', ')
     output += `Hole: ${holeDisplay}\n`
 
     if (status.foldedPlayers.length > 0) {
@@ -98,7 +100,7 @@ async function main() {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: '> '
+    prompt: '> ',
   })
 
   console.log('🃏 Poker Pocket CLI')
@@ -207,7 +209,9 @@ async function main() {
             // Check if someone wins by fold
             const winnerByFold = engine.getWinnerByFold()
             if (winnerByFold !== null) {
-              console.log(`\nP${winnerByFold + 1} wins! (All other players folded)\n`)
+              console.log(
+                `\nP${winnerByFold + 1} wins! (All other players folded)\n`
+              )
             } else {
               console.log(formatStatus(engine))
             }
@@ -243,7 +247,9 @@ async function main() {
         default:
           console.log(`Unknown command: ${cmd}`)
           console.log('Type "help" for available commands')
-          console.log('\nQuick commands: deal, flop, turn, river, showdown, status, players <n>')
+          console.log(
+            '\nQuick commands: deal, flop, turn, river, showdown, status, players <n>'
+          )
       }
     } catch (error) {
       console.log(`Error: ${(error as Error).message}`)

@@ -21,11 +21,20 @@ function getAllDealtCards(engine: PokerEngine): Card[] {
       let suit: Card['suit']
       const lastChar = cardStr.slice(-1)
       switch (lastChar) {
-        case '♠': suit = 's'; break
-        case '❤': suit = 'h'; break
-        case '♦': suit = 'd'; break
-        case '♣': suit = 'c'; break
-        default: throw new Error(`Unknown suit symbol: ${lastChar}`)
+        case '♠':
+          suit = 's'
+          break
+        case '❤':
+          suit = 'h'
+          break
+        case '♦':
+          suit = 'd'
+          break
+        case '♣':
+          suit = 'c'
+          break
+        default:
+          throw new Error(`Unknown suit symbol: ${lastChar}`)
       }
       return { rank, suit }
     })
@@ -56,68 +65,86 @@ function cardInArray(card: Card, cards: Card[]): boolean {
 
 describe('Property-based tests', () => {
   it('no duplicate cards anywhere in the game', () => {
-    fc.assert(fc.property(
-      fc.integer({ min: 2, max: 9 }),  // number of players
-      fc.integer({ min: 0, max: 2147483647 }),  // seed
-      fc.constantFrom('FLOP', 'TURN', 'RIVER'),  // phase to advance to
-      (players, seed, targetPhase) => {
-        const engine = new PokerEngine()
-        engine.setPlayers(players)
-        engine.setSeed(seed)
-        engine.deal()
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 9 }), // number of players
+        fc.integer({ min: 0, max: 2147483647 }), // seed
+        fc.constantFrom('FLOP', 'TURN', 'RIVER'), // phase to advance to
+        (players, seed, targetPhase) => {
+          const engine = new PokerEngine()
+          engine.setPlayers(players)
+          engine.setSeed(seed)
+          engine.deal()
 
-        // Advance to target phase
-        if (targetPhase === 'FLOP' || targetPhase === 'TURN' || targetPhase === 'RIVER') {
-          engine.flop()
-        }
-        if (targetPhase === 'TURN' || targetPhase === 'RIVER') {
-          engine.turn()
-        }
-        if (targetPhase === 'RIVER') {
-          engine.river()
-        }
+          // Advance to target phase
+          if (
+            targetPhase === 'FLOP' ||
+            targetPhase === 'TURN' ||
+            targetPhase === 'RIVER'
+          ) {
+            engine.flop()
+          }
+          if (targetPhase === 'TURN' || targetPhase === 'RIVER') {
+            engine.turn()
+          }
+          if (targetPhase === 'RIVER') {
+            engine.river()
+          }
 
-        const allCards = getAllDealtCards(engine)
-        return !hasDuplicates(allCards)
-      }
-    ), { numRuns: 100 })
+          const allCards = getAllDealtCards(engine)
+          return !hasDuplicates(allCards)
+        }
+      ),
+      { numRuns: 100 }
+    )
   })
 
   it('best5 cards come from available cards for each player', () => {
-    fc.assert(fc.property(
-      fc.integer({ min: 2, max: 9 }),  // number of players
-      fc.integer({ min: 0, max: 2147483647 }),  // seed
-      fc.constantFrom('FLOP', 'TURN', 'RIVER'),  // phase for showdown
-      (players, seed, targetPhase) => {
-        const engine = new PokerEngine()
-        engine.setPlayers(players)
-        engine.setSeed(seed)
-        engine.deal()
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 9 }), // number of players
+        fc.integer({ min: 0, max: 2147483647 }), // seed
+        fc.constantFrom('FLOP', 'TURN', 'RIVER'), // phase for showdown
+        (players, seed, targetPhase) => {
+          const engine = new PokerEngine()
+          engine.setPlayers(players)
+          engine.setSeed(seed)
+          engine.deal()
 
-        // Advance to target phase
-        if (targetPhase === 'FLOP' || targetPhase === 'TURN' || targetPhase === 'RIVER') {
-          engine.flop()
+          // Advance to target phase
+          if (
+            targetPhase === 'FLOP' ||
+            targetPhase === 'TURN' ||
+            targetPhase === 'RIVER'
+          ) {
+            engine.flop()
+          }
+          if (targetPhase === 'TURN' || targetPhase === 'RIVER') {
+            engine.turn()
+          }
+          if (targetPhase === 'RIVER') {
+            engine.river()
+          }
+
+          const showdownResult = engine.showdown()
+          const status = engine.status()
+
+          // For each player, verify their best5 cards come from their available cards
+          return showdownResult.results.every(
+            ({ player, eval: evalResult }) => {
+              const holeCards = engine.getHoleCards(player)
+              const boardCards = getAllDealtCards(engine).slice(players * 2) // Board cards come after hole cards
+              const availableCards = [...holeCards, ...boardCards]
+
+              // Every card in best5 must be in the player's available cards
+              return evalResult.best5.every(card =>
+                cardInArray(card, availableCards)
+              )
+            }
+          )
         }
-        if (targetPhase === 'TURN' || targetPhase === 'RIVER') {
-          engine.turn()
-        }
-        if (targetPhase === 'RIVER') {
-          engine.river()
-        }
-
-        const showdownResult = engine.showdown()
-        const status = engine.status()
-
-        // For each player, verify their best5 cards come from their available cards
-        return showdownResult.results.every(({ player, eval: evalResult }) => {
-          const holeCards = engine.getHoleCards(player)
-          const boardCards = getAllDealtCards(engine).slice(players * 2) // Board cards come after hole cards
-          const availableCards = [...holeCards, ...boardCards]
-
-          // Every card in best5 must be in the player's available cards
-          return evalResult.best5.every(card => cardInArray(card, availableCards))
-        })
-      }
-    ), { numRuns: 100 })
+      ),
+      { numRuns: 100 }
+    )
   })
 })

@@ -62,13 +62,13 @@ describe('Determinism tests', () => {
       [200, 201],
       [300, 301],
       [400, 401],
-      [500, 501]
+      [500, 501],
     ]
 
     for (const [seed1, seed2] of pairs) {
       const result1a = play(seed1)
       const result1b = play(seed1) // Same seed again
-      const result2 = play(seed2)   // Different seed
+      const result2 = play(seed2) // Different seed
 
       // Same seed should always match
       expect(result1a).toEqual(result1b)
@@ -106,7 +106,10 @@ describe('Determinism tests', () => {
     }
 
     // Sanity check: total should equal number of trials
-    const totalCounts = Array.from(cardCounts.values()).reduce((sum, count) => sum + count, 0)
+    const totalCounts = Array.from(cardCounts.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    )
     expect(totalCounts).toBe(numTrials)
   })
 
@@ -163,8 +166,9 @@ describe('Determinism tests', () => {
     const showdown1 = engine1.showdown()
     const showdown2 = engine2.showdown()
 
-    expect(showdown1.results.map(r => r.eval.score.toString()))
-      .toEqual(showdown2.results.map(r => r.eval.score.toString()))
+    expect(showdown1.results.map(r => r.eval.score.toString())).toEqual(
+      showdown2.results.map(r => r.eval.score.toString())
+    )
     expect(showdown1.winners).toEqual(showdown2.winners)
   })
 
@@ -174,11 +178,23 @@ describe('Determinism tests', () => {
     rng.seed(12345)
 
     // Generate a few numbers and verify they're deterministic
-    const sequence1 = [rng.next(), rng.next(), rng.next(), rng.next(), rng.next()]
+    const sequence1 = [
+      rng.next(),
+      rng.next(),
+      rng.next(),
+      rng.next(),
+      rng.next(),
+    ]
 
     // Reset and generate again
     rng.seed(12345)
-    const sequence2 = [rng.next(), rng.next(), rng.next(), rng.next(), rng.next()]
+    const sequence2 = [
+      rng.next(),
+      rng.next(),
+      rng.next(),
+      rng.next(),
+      rng.next(),
+    ]
 
     expect(sequence1).toEqual(sequence2)
 

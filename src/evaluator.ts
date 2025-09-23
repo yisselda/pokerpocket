@@ -1,20 +1,31 @@
 import { Card, EvalResult, HandRank, Rank } from './types.js'
 
 const RANK_VALUES: Record<Rank, number> = {
-  '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
-  'T': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
+  '6': 6,
+  '7': 7,
+  '8': 8,
+  '9': 9,
+  T: 10,
+  J: 11,
+  Q: 12,
+  K: 13,
+  A: 14,
 }
 
 const HAND_RANK_CODES: Record<HandRank, number> = {
-  'STRAIGHT_FLUSH': 8,
-  'FOUR_OF_A_KIND': 7,
-  'FULL_HOUSE': 6,
-  'FLUSH': 5,
-  'STRAIGHT': 4,
-  'THREE_OF_A_KIND': 3,
-  'TWO_PAIR': 2,
-  'ONE_PAIR': 1,
-  'HIGH_CARD': 0
+  STRAIGHT_FLUSH: 8,
+  FOUR_OF_A_KIND: 7,
+  FULL_HOUSE: 6,
+  FLUSH: 5,
+  STRAIGHT: 4,
+  THREE_OF_A_KIND: 3,
+  TWO_PAIR: 2,
+  ONE_PAIR: 1,
+  HIGH_CARD: 0,
 }
 
 function getRankValue(rank: Rank): number {
@@ -43,9 +54,13 @@ function getStraightHigh(cards: Card[]): number | null {
   }
 
   // Check for wheel straight (A-2-3-4-5)
-  if (uniqueValues.includes(14) && uniqueValues.includes(5) &&
-      uniqueValues.includes(4) && uniqueValues.includes(3) &&
-      uniqueValues.includes(2)) {
+  if (
+    uniqueValues.includes(14) &&
+    uniqueValues.includes(5) &&
+    uniqueValues.includes(4) &&
+    uniqueValues.includes(3) &&
+    uniqueValues.includes(2)
+  ) {
     return 5
   }
 
@@ -97,17 +112,23 @@ function evaluateFive(cards: Card[]): EvalResult {
   } else if (counts[0] === 3) {
     rank = 'THREE_OF_A_KIND'
     const tripRank = ranks.find(r => rankCounts.get(r) === 3)!
-    const kickers = ranks.filter(r => rankCounts.get(r) === 1).sort((a, b) => b - a)
+    const kickers = ranks
+      .filter(r => rankCounts.get(r) === 1)
+      .sort((a, b) => b - a)
     tiebreak = [tripRank, ...kickers]
   } else if (counts[0] === 2 && counts[1] === 2) {
     rank = 'TWO_PAIR'
-    const pairs = ranks.filter(r => rankCounts.get(r) === 2).sort((a, b) => b - a)
+    const pairs = ranks
+      .filter(r => rankCounts.get(r) === 2)
+      .sort((a, b) => b - a)
     const kicker = ranks.find(r => rankCounts.get(r) === 1)!
     tiebreak = [pairs[0], pairs[1], kicker]
   } else if (counts[0] === 2) {
     rank = 'ONE_PAIR'
     const pairRank = ranks.find(r => rankCounts.get(r) === 2)!
-    const kickers = ranks.filter(r => rankCounts.get(r) === 1).sort((a, b) => b - a)
+    const kickers = ranks
+      .filter(r => rankCounts.get(r) === 1)
+      .sort((a, b) => b - a)
     tiebreak = [pairRank, ...kickers]
   } else {
     rank = 'HIGH_CARD'
@@ -115,7 +136,8 @@ function evaluateFive(cards: Card[]): EvalResult {
   }
 
   const rankCode = HAND_RANK_CODES[rank]
-  const score = (BigInt(rankCode) << 40n) |
+  const score =
+    (BigInt(rankCode) << 40n) |
     (BigInt(tiebreak[0] || 0) << 32n) |
     (BigInt(tiebreak[1] || 0) << 24n) |
     (BigInt(tiebreak[2] || 0) << 16n) |

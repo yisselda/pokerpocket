@@ -11,12 +11,12 @@ describe('CLI E2E', () => {
       'turn',
       'river',
       'showdown',
-      'q'
+      'q',
     ].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
-      timeout: 5000
+      timeout: 5000,
     })
 
     expect(result.stdout).toMatchInlineSnapshot(`
@@ -76,17 +76,11 @@ describe('CLI E2E', () => {
   })
 
   it('should handle early showdown at flop', async () => {
-    const input = [
-      'seed 54321',
-      'deal',
-      'flop',
-      'showdown',
-      'q'
-    ].join('\n')
+    const input = ['seed 54321', 'deal', 'flop', 'showdown', 'q'].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
-      timeout: 5000
+      timeout: 5000,
     })
 
     // Verify it contains expected elements without full snapshot for this shorter test
@@ -108,16 +102,18 @@ describe('CLI E2E', () => {
       'turn',
       'river',
       'showdown',
-      'q'
+      'q',
     ].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
-      timeout: 5000
+      timeout: 5000,
     })
 
     // Verify specific deterministic outcomes that should never change with seed 12345
-    expect(result.stdout).toContain('P2: Q❤ 8♣  ⇒  STRAIGHT (8♣,5♦,7❤,4♦,6♠)')
+    expect(result.stdout).toContain(
+      'P2: Q❤ 8♣  ⇒  STRAIGHT (8♣,5♦,7❤,4♦,6♠)'
+    )
     expect(result.stdout).toContain('Winner(s): P2')
     expect(result.stdout).toContain('Board: 5♦ 7❤ A❤ 4♦ 6♠')
   })
@@ -131,12 +127,12 @@ describe('CLI E2E', () => {
       'turn',
       'river',
       'showdown',
-      'q'
+      'q',
     ].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
-      timeout: 5000
+      timeout: 5000,
     })
 
     // Verify structure without specific content (since it's random)
@@ -146,24 +142,19 @@ describe('CLI E2E', () => {
     expect(result.stdout).toContain('Flop dealt!')
     expect(result.stdout).toContain('Turn dealt!')
     expect(result.stdout).toContain('River dealt!')
-    expect(result.stdout).toMatch(/P[12]: .+ ⇒ .+/)  // Player results
-    expect(result.stdout).toMatch(/(Winner\(s\): P[12]|Split: P[12],P[12])/)  // Winner or tie announcement
+    expect(result.stdout).toMatch(/P[12]: .+ ⇒ .+/) // Player results
+    expect(result.stdout).toMatch(/(Winner\(s\): P[12]|Split: P[12],P[12])/) // Winner or tie announcement
     expect(result.stdout).toContain('Hand complete!')
     expect(result.stdout).toContain('Available: deal (new hand), players <n>')
     expect(result.stdout).toContain('Goodbye!')
   })
 
   it('should handle fold win scenario', async () => {
-    const input = [
-      'seed 99999',
-      'deal',
-      'fold 1',
-      'q'
-    ].join('\n')
+    const input = ['seed 99999', 'deal', 'fold 1', 'q'].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
-      timeout: 5000
+      timeout: 5000,
     })
 
     expect(result.stdout).toContain('P1 folds')

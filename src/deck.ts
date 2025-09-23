@@ -2,7 +2,21 @@ import { Card, Rank, Suit } from './types.js'
 import { RNG, LCG } from './rng.js'
 
 const SUITS: Suit[] = ['s', 'h', 'd', 'c']
-const RANKS: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+const RANKS: Rank[] = [
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  'T',
+  'J',
+  'Q',
+  'K',
+  'A',
+]
 
 export function createDeck(): Card[] {
   const deck: Card[] = []

@@ -5,28 +5,37 @@ This project uses a comprehensive testing strategy to ensure poker hand evaluati
 ## Test Types
 
 ### 1. Unit Tests
+
 Core functionality tests for individual components:
+
 - `test/deck.test.ts` - Deck creation and shuffling
 - `test/evaluator-rankings.test.ts` - Hand ranking correctness
 - `test/evaluator-ties.test.ts` - Tie-breaking accuracy
 - `test/engine-flow.test.ts` - Game engine state management
 
 ### 2. Property-Based Tests
+
 Random testing using fast-check:
+
 - `test/properties.test.ts` - No duplicate cards, valid best5 selection
 
 ### 3. End-to-End Tests
+
 Full CLI testing with golden snapshots:
+
 - `test/cli.e2e.test.ts` - Complete game sessions with deterministic output
 
 ### 4. Differential Tests
+
 Comparison against known-good implementations:
+
 - `test/diff.test.ts` - Curated oracle test vectors (118 cases)
 - `test/random-diff.test.ts` - Random comparison against poker-evaluator
 
 ## Running Tests
 
 ### Standard Test Suite
+
 ```bash
 # Run all canonical tests (fast, deterministic)
 npm test
@@ -39,6 +48,7 @@ npm run e2e
 ```
 
 ### Differential Oracle Testing
+
 ```bash
 # Run random differential tests (2000 deals)
 DIFF_ORACLE=1 npm test
@@ -55,6 +65,7 @@ DIFF_ORACLE=1 npm test test/random-diff.test.ts
 ### Category & Rank Normalization
 
 Our implementation uses categories 0-8:
+
 - 0: HIGH_CARD
 - 1: ONE_PAIR
 - 2: TWO_PAIR
@@ -70,6 +81,7 @@ poker-evaluator uses categories 1-9 with the same order.
 ### Wheel Straight Handling
 
 The wheel straight (A-2-3-4-5) is normalized consistently:
+
 - High card is 5 (not Ace)
 - Ace is treated as rank 1 in comparison
 - Both STRAIGHT and STRAIGHT_FLUSH handle this correctly
@@ -77,6 +89,7 @@ The wheel straight (A-2-3-4-5) is normalized consistently:
 ### Primary Rank Comparison
 
 For each hand type, we compare the "primary ranks":
+
 - **Pairs/Trips/Quads**: The rank of the matched cards
 - **Two Pair**: Both pair ranks (higher first)
 - **Straights**: High card of the straight
@@ -92,6 +105,7 @@ When the random differential test finds disagreements:
 4. **Metadata**: Includes seed, git SHA, poker-evaluator version
 
 ### Pending Cases Schema
+
 ```json
 {
   "schema": "pending-v1",
@@ -122,7 +136,9 @@ When the random differential test finds disagreements:
 5. **Clear pending**: Remove cases from `pending_cases.json` after review
 
 ### Adding to Oracle
+
 When migrating a pending case, include a comment explaining the edge case:
+
 ```json
 {
   "cards": ["5s", "4d", "3h", "2c", "As", "Kh", "Qc"],
@@ -135,16 +151,19 @@ When migrating a pending case, include a comment explaining the edge case:
 ## CI Configuration
 
 ### Standard Pipeline
+
 ```bash
 npm test  # Fast, deterministic canonical tests only
 ```
 
 ### Extended Pipeline (Separate Job)
+
 ```bash
 DIFF_ORACLE=1 STRICT_DIFF=1 npm test test/random-diff.test.ts
 ```
 
 This separation ensures:
+
 - Fast feedback on normal changes
 - Comprehensive validation without noise
 - Clear failure attribution
@@ -160,19 +179,24 @@ This separation ensures:
 ## Troubleshooting
 
 ### Repro Commands
+
 When a mismatch occurs, use the printed repro command:
+
 ```bash
 node -e "const {evaluateSeven}=require('./dist/evaluator.js');console.log(evaluateSeven([{rank:'A',suit:'s'},{rank:'K',suit:'d'},...]))"
 ```
 
 ### Common Edge Cases
+
 - **Wheel straights**: A-2-3-4-5 (high card = 5)
 - **Board plays**: When community cards are best hand for all players
 - **Kicker ordering**: Secondary/tertiary ranks in ties
 - **Flush vs straight**: When both are possible from 7 cards
 
 ### Debug Mode
+
 For detailed evaluation logging, modify the evaluator temporarily or use the CLI:
+
 ```bash
 npm run dev
 > seed 12345

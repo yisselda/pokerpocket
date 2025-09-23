@@ -1,271 +1,393 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PokerPocket - Developer-friendly poker engine</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="hero-enhancements.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="hero-enhancements.css" />
+  </head>
+  <body>
     <main>
-        <!-- Hero Section -->
-        <header id="hero" class="hero">
+      <!-- Hero Section -->
+      <header id="hero" class="hero">
         <div class="hero-content">
-            <!-- Trust Badges -->
-            <div class="hero-badges">
-                <div class="badge-group">
-                    <a href="https://github.com/yisselda/pokerpocket" class="github-badge" target="_blank" rel="noopener">
-                        <span class="badge-icon">⭐</span>
-                        <span class="badge-text">Star on GitHub</span>
-                    </a>
-                    <div class="badge npm-badge">
-                        <span class="badge-icon">📦</span>
-                        <span class="badge-text">pokerpocket</span>
-                    </div>
-                    <div class="badge performance-badge">
-                        <span class="badge-icon">⚡</span>
-                        <span class="badge-text">&lt;50ms showdown</span>
-                    </div>
-                </div>
+          <!-- Trust Badges -->
+          <div class="hero-badges">
+            <div class="badge-group">
+              <a
+                href="https://github.com/yisselda/pokerpocket"
+                class="github-badge"
+                target="_blank"
+                rel="noopener"
+              >
+                <span class="badge-icon">⭐</span>
+                <span class="badge-text">Star on GitHub</span>
+              </a>
+              <div class="badge npm-badge">
+                <span class="badge-icon">📦</span>
+                <span class="badge-text">pokerpocket</span>
+              </div>
+              <div class="badge performance-badge">
+                <span class="badge-icon">⚡</span>
+                <span class="badge-text">&lt;50ms showdown</span>
+              </div>
+            </div>
+          </div>
+
+          <h1 class="hero-title">PokerPocket</h1>
+          <p class="hero-subtitle">
+            Fast, deterministic Texas Hold'em engine for JavaScript/TypeScript.
+            Zero dependencies, embeddable anywhere.
+          </p>
+
+          <!-- Hero Code Preview -->
+          <div class="hero-code-preview">
+            <div class="hero-tabs">
+              <button
+                class="hero-tab active"
+                onclick="switchHeroTab('cli')"
+                id="hero-cli-tab"
+              >
+                🚀 Try CLI
+              </button>
+              <button
+                class="hero-tab"
+                onclick="switchHeroTab('api')"
+                id="hero-api-tab"
+              >
+                ⚡ Use API
+              </button>
             </div>
 
-            <h1 class="hero-title">PokerPocket</h1>
-            <p class="hero-subtitle">Fast, deterministic Texas Hold'em engine for JavaScript/TypeScript. Zero dependencies, embeddable anywhere.</p>
-
-            <!-- Hero Code Preview -->
-            <div class="hero-code-preview">
-                <div class="hero-tabs">
-                    <button class="hero-tab active" onclick="switchHeroTab('cli')" id="hero-cli-tab">
-                        🚀 Try CLI
-                    </button>
-                    <button class="hero-tab" onclick="switchHeroTab('api')" id="hero-api-tab">
-                        ⚡ Use API
-                    </button>
-                </div>
-
-                <div class="hero-code-content active" id="hero-cli-content">
-                    <div class="hero-terminal">
-                        <div class="terminal-prompt">$</div>
-                        <div class="terminal-command">npm install pokerpocket</div>
-                    </div>
-                    <div class="hero-features">
-                        ✓ Interactive CLI included<br>
-                        ✓ Step-by-step gameplay<br>
-                        ✓ Deterministic results
-                    </div>
-                </div>
-
-                <div class="hero-code-content" id="hero-api-content">
-                    <div class="hero-api-code">
-                        <code>import { newGame } from 'pokerpocket'
-const game = newGame({ players: 4 })
-game.deal()
-game.flop()
-game.showdown()</code>
-                    </div>
-                    <div class="hero-features">
-                        ✓ TypeScript-first<br>
-                        ✓ Zero dependencies<br>
-                        ✓ Framework agnostic
-                    </div>
-                </div>
+            <div class="hero-code-content active" id="hero-cli-content">
+              <div class="hero-terminal">
+                <div class="terminal-prompt">$</div>
+                <div class="terminal-command">npm install pokerpocket</div>
+              </div>
+              <div class="hero-features">
+                ✓ Interactive CLI included<br />
+                ✓ Step-by-step gameplay<br />
+                ✓ Deterministic results
+              </div>
             </div>
 
-            <div class="hero-buttons">
-                <a href="#demo" class="btn btn-primary">Try Interactive Demo</a>
-                <a href="#quick-start" class="btn btn-secondary">Get Started</a>
+            <div class="hero-code-content" id="hero-api-content">
+              <div class="hero-api-code">
+                <code
+                  >import { newGame } from 'pokerpocket' const game = newGame({
+                  players: 4 }) game.deal() game.flop() game.showdown()</code
+                >
+              </div>
+              <div class="hero-features">
+                ✓ TypeScript-first<br />
+                ✓ Zero dependencies<br />
+                ✓ Framework agnostic
+              </div>
             </div>
+          </div>
+
+          <div class="hero-buttons">
+            <a href="#demo" class="btn btn-primary">Try Interactive Demo</a>
+            <a href="#quick-start" class="btn btn-secondary">Get Started</a>
+          </div>
         </div>
-    </header>
+      </header>
 
-    <!-- Interactive Demo Section -->
-    <section id="demo" class="demo">
+      <!-- Interactive Demo Section -->
+      <section id="demo" class="demo">
         <div class="container">
-            <h2>Interactive Playground</h2>
-            <p>Explore PokerPocket's engine, CLI tools, and integration examples</p>
+          <h2>Interactive Playground</h2>
+          <p>
+            Explore PokerPocket's engine, CLI tools, and integration examples
+          </p>
 
-            <!-- Demo Tabs -->
-            <div class="demo-tabs">
-                <button class="tab-btn active" onclick="switchTab('game-engine')" id="tab-game-engine">🎲 Game Engine</button>
-                <button class="tab-btn" onclick="switchTab('cli-demo')" id="tab-cli-demo">💻 CLI Demo</button>
-                <button class="tab-btn" onclick="switchTab('code-examples')" id="tab-code-examples">⚡ Code Examples</button>
-            </div>
+          <!-- Demo Tabs -->
+          <div class="demo-tabs">
+            <button
+              class="tab-btn active"
+              onclick="switchTab('game-engine')"
+              id="tab-game-engine"
+            >
+              🎲 Game Engine
+            </button>
+            <button
+              class="tab-btn"
+              onclick="switchTab('cli-demo')"
+              id="tab-cli-demo"
+            >
+              💻 CLI Demo
+            </button>
+            <button
+              class="tab-btn"
+              onclick="switchTab('code-examples')"
+              id="tab-code-examples"
+            >
+              ⚡ Code Examples
+            </button>
+          </div>
 
-            <!-- Game Engine Tab -->
-            <div class="tab-content active" id="content-game-engine">
-                <div class="demo-grid">
-                    <div class="demo-section">
-                        <h3>Complete Game Simulation</h3>
-                        <div class="controls">
-                            <label for="live-players">Players:</label>
-                            <select id="live-players" aria-label="Number of players for poker hand">
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                            </select>
-                            <input type="number" id="seed" placeholder="Seed (optional)" min="1">
-                            <button onclick="dealLiveHand()" id="deal-btn" aria-describedby="live-output">Deal Hand</button>
-                            <button onclick="resetLiveDemo()" id="reset-btn" aria-describedby="live-output">Reset</button>
-                        </div>
-                        <div id="live-output" class="demo-output" aria-live="polite" role="region" aria-label="Poker hand results">
-                            Click "Deal Hand" to simulate a complete Texas Hold'em round
-                        </div>
-                        <div class="demo-links">
-                            <a href="https://github.com/yisselda/pokerpocket#readme" class="demo-link">📖 API Documentation</a> •
-                            <a href="https://github.com/yisselda/pokerpocket/blob/main/app.js" class="demo-link">🔍 View Source</a>
-                        </div>
-                    </div>
-
-                    <div class="demo-section">
-                        <h3>Hand Evaluator</h3>
-                        <div class="controls">
-                            <select id="cardRank">
-                                <option value="A">A</option>
-                                <option value="K">K</option>
-                                <option value="Q">Q</option>
-                                <option value="J">J</option>
-                                <option value="T">T</option>
-                                <option value="9">9</option>
-                                <option value="8">8</option>
-                                <option value="7">7</option>
-                                <option value="6">6</option>
-                                <option value="5">5</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                            </select>
-                            <select id="cardSuit">
-                                <option value="s">♠</option>
-                                <option value="h">♥</option>
-                                <option value="d">♦</option>
-                                <option value="c">♣</option>
-                            </select>
-                            <button onclick="addCard()">Add Card</button>
-                            <button onclick="addRandomCards()">Random 5-7</button>
-                            <button onclick="clearCards()">Clear All</button>
-                            <button onclick="evaluateHand()" disabled id="evalBtn">Evaluate Hand</button>
-                        </div>
-                        <div id="cards" class="card-area"></div>
-                        <div id="evalResult" class="demo-output">Select 5-7 cards to evaluate hand strength</div>
-                    </div>
-
-                    <div class="demo-section">
-                        <h3>Performance Benchmark</h3>
-                        <div class="controls">
-                            <button onclick="runBenchmark()">Run 1000 Hands</button>
-                        </div>
-                        <div id="benchResult" class="demo-output">Test engine speed: simulates 1000 complete poker hands and measures hands/second performance.</div>
-                    </div>
+          <!-- Game Engine Tab -->
+          <div class="tab-content active" id="content-game-engine">
+            <div class="demo-grid">
+              <div class="demo-section">
+                <h3>Complete Game Simulation</h3>
+                <div class="controls">
+                  <label for="live-players">Players:</label>
+                  <select
+                    id="live-players"
+                    aria-label="Number of players for poker hand"
+                  >
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
+                  <input
+                    type="number"
+                    id="seed"
+                    placeholder="Seed (optional)"
+                    min="1"
+                  />
+                  <button
+                    onclick="dealLiveHand()"
+                    id="deal-btn"
+                    aria-describedby="live-output"
+                  >
+                    Deal Hand
+                  </button>
+                  <button
+                    onclick="resetLiveDemo()"
+                    id="reset-btn"
+                    aria-describedby="live-output"
+                  >
+                    Reset
+                  </button>
                 </div>
-            </div>
-
-            <!-- CLI Demo Tab -->
-            <div class="tab-content" id="content-cli-demo">
-                <div class="cli-demo">
-                    <h3>Command Line Interface</h3>
-                    <p>PokerPocket includes a full-featured CLI for interactive poker games:</p>
-
-                    <div class="terminal-demo">
-                        <div class="terminal-header">
-                            <span class="terminal-title">Terminal</span>
-                            <div class="terminal-controls">
-                                <span class="terminal-dot red"></span>
-                                <span class="terminal-dot yellow"></span>
-                                <span class="terminal-dot green"></span>
-                            </div>
-                        </div>
-                        <div class="terminal-body">
-                            <div class="terminal-line">
-                                <span class="terminal-prompt">$</span>
-                                <span class="terminal-command">npx poker-pocket</span>
-                            </div>
-                            <div class="terminal-output">
-🃏 Poker Pocket CLI
-Players: 2, Phase: IDLE
-Available: deal, players &lt;n&gt;, seed &lt;n&gt;
-
-<span class="terminal-prompt">&gt;</span> players 3
-Players set to 3
-
-<span class="terminal-prompt">&gt;</span> deal
-Cards dealt!
-Players: 3, Phase: PREFLOP
-Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-Available: flop
-
-<span class="terminal-prompt">&gt;</span> flop
-Flop dealt!
-Board: 7♦ K♠ 2♥
-
-<span class="terminal-prompt">&gt;</span> showdown
-P1: T♣ J♠  ⇒  STRAIGHT (A♣,K♠,Q♠,J♠,T♣)
-P2: 4♦ 9♦  ⇒  HIGH CARD (A♣,K♠,Q♠,9♦,7♦)
-P3: K♥ A♠  ⇒  TWO PAIR (A♠,A♣,K♥,K♠,Q♠)
-
-Winner: P1
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="cli-features">
-                        <div class="cli-feature">
-                            <h4>🎯 Interactive Gameplay</h4>
-                            <p>Step through poker phases: deal → flop → turn → river → showdown</p>
-                        </div>
-                        <div class="cli-feature">
-                            <h4>🔧 Developer Tools</h4>
-                            <p>Seedable RNG, player management, hand inspection, and debugging</p>
-                        </div>
-                        <div class="cli-feature">
-                            <h4>📊 Game Analysis</h4>
-                            <p>Detailed hand evaluation, winner determination, and game state tracking</p>
-                        </div>
-                    </div>
-
-                    <div class="try-cli">
-                        <button onclick="showCliInstall()" class="btn btn-primary">🚀 Try CLI Now</button>
-                        <div id="cli-install" class="cli-install-instructions" style="display: none;">
-                            <div class="code-block">
-                                <div class="code-header">
-                                    <span class="code-title">Quick Start - No Installation Required</span>
-                                    <button onclick="copyCliCommand()" class="copy-btn">
-                                        <span id="cli-copy-text">Copy</span>
-                                    </button>
-                                </div>
-                                <pre class="code-content"><code>npx poker-pocket</code></pre>
-                            </div>
-                        </div>
-                    </div>
+                <div
+                  id="live-output"
+                  class="demo-output"
+                  aria-live="polite"
+                  role="region"
+                  aria-label="Poker hand results"
+                >
+                  Click "Deal Hand" to simulate a complete Texas Hold'em round
                 </div>
+                <div class="demo-links">
+                  <a
+                    href="https://github.com/yisselda/pokerpocket#readme"
+                    class="demo-link"
+                    >📖 API Documentation</a
+                  >
+                  •
+                  <a
+                    href="https://github.com/yisselda/pokerpocket/blob/main/app.js"
+                    class="demo-link"
+                    >🔍 View Source</a
+                  >
+                </div>
+              </div>
+
+              <div class="demo-section">
+                <h3>Hand Evaluator</h3>
+                <div class="controls">
+                  <select id="cardRank">
+                    <option value="A">A</option>
+                    <option value="K">K</option>
+                    <option value="Q">Q</option>
+                    <option value="J">J</option>
+                    <option value="T">T</option>
+                    <option value="9">9</option>
+                    <option value="8">8</option>
+                    <option value="7">7</option>
+                    <option value="6">6</option>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                  </select>
+                  <select id="cardSuit">
+                    <option value="s">♠</option>
+                    <option value="h">♥</option>
+                    <option value="d">♦</option>
+                    <option value="c">♣</option>
+                  </select>
+                  <button onclick="addCard()">Add Card</button>
+                  <button onclick="addRandomCards()">Random 5-7</button>
+                  <button onclick="clearCards()">Clear All</button>
+                  <button onclick="evaluateHand()" disabled id="evalBtn">
+                    Evaluate Hand
+                  </button>
+                </div>
+                <div id="cards" class="card-area"></div>
+                <div id="evalResult" class="demo-output">
+                  Select 5-7 cards to evaluate hand strength
+                </div>
+              </div>
+
+              <div class="demo-section">
+                <h3>Performance Benchmark</h3>
+                <div class="controls">
+                  <button onclick="runBenchmark()">Run 1000 Hands</button>
+                </div>
+                <div id="benchResult" class="demo-output">
+                  Test engine speed: simulates 1000 complete poker hands and
+                  measures hands/second performance.
+                </div>
+              </div>
             </div>
+          </div>
 
-            <!-- Code Examples Tab -->
-            <div class="tab-content" id="content-code-examples">
-                <div class="code-examples">
-                    <h3>Integration Examples</h3>
-                    <p>Ready-to-use code snippets for different frameworks and use cases:</p>
+          <!-- CLI Demo Tab -->
+          <div class="tab-content" id="content-cli-demo">
+            <div class="cli-demo">
+              <h3>Command Line Interface</h3>
+              <p>
+                PokerPocket includes a full-featured CLI for interactive poker
+                games:
+              </p>
 
-                    <div class="example-tabs">
-                        <button class="example-btn active" onclick="switchExample('basic')" id="ex-basic">Basic Usage</button>
-                        <button class="example-btn" onclick="switchExample('react')" id="ex-react">React</button>
-                        <button class="example-btn" onclick="switchExample('node')" id="ex-node">Node.js</button>
-                        <button class="example-btn" onclick="switchExample('typescript')" id="ex-typescript">TypeScript</button>
+              <div class="terminal-demo">
+                <div class="terminal-header">
+                  <span class="terminal-title">Terminal</span>
+                  <div class="terminal-controls">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                  </div>
+                </div>
+                <div class="terminal-body">
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npx poker-pocket</span>
+                  </div>
+                  <div class="terminal-output">
+                    🃏 Poker Pocket CLI Players: 2, Phase: IDLE Available: deal,
+                    players &lt;n&gt;, seed &lt;n&gt;
+
+                    <span class="terminal-prompt">&gt;</span> players 3 Players
+                    set to 3
+
+                    <span class="terminal-prompt">&gt;</span> deal Cards dealt!
+                    Players: 3, Phase: PREFLOP Hole: P1: 2 cards, P2: 2 cards,
+                    P3: 2 cards Available: flop
+
+                    <span class="terminal-prompt">&gt;</span> flop Flop dealt!
+                    Board: 7♦ K♠ 2♥
+
+                    <span class="terminal-prompt">&gt;</span> showdown P1: T♣
+                    J♠ ⇒ STRAIGHT (A♣,K♠,Q♠,J♠,T♣) P2: 4♦ 9♦ ⇒ HIGH CARD
+                    (A♣,K♠,Q♠,9♦,7♦) P3: K♥ A♠ ⇒ TWO PAIR
+                    (A♠,A♣,K♥,K♠,Q♠) Winner: P1
+                  </div>
+                </div>
+              </div>
+
+              <div class="cli-features">
+                <div class="cli-feature">
+                  <h4>🎯 Interactive Gameplay</h4>
+                  <p>
+                    Step through poker phases: deal → flop → turn → river →
+                    showdown
+                  </p>
+                </div>
+                <div class="cli-feature">
+                  <h4>🔧 Developer Tools</h4>
+                  <p>
+                    Seedable RNG, player management, hand inspection, and
+                    debugging
+                  </p>
+                </div>
+                <div class="cli-feature">
+                  <h4>📊 Game Analysis</h4>
+                  <p>
+                    Detailed hand evaluation, winner determination, and game
+                    state tracking
+                  </p>
+                </div>
+              </div>
+
+              <div class="try-cli">
+                <button onclick="showCliInstall()" class="btn btn-primary">
+                  🚀 Try CLI Now
+                </button>
+                <div
+                  id="cli-install"
+                  class="cli-install-instructions"
+                  style="display: none"
+                >
+                  <div class="code-block">
+                    <div class="code-header">
+                      <span class="code-title"
+                        >Quick Start - No Installation Required</span
+                      >
+                      <button onclick="copyCliCommand()" class="copy-btn">
+                        <span id="cli-copy-text">Copy</span>
+                      </button>
                     </div>
+                    <pre
+                      class="code-content"
+                    ><code>npx poker-pocket</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                    <div class="example-content active" id="example-basic">
-                        <div class="code-block">
-                            <div class="code-header">
-                                <span class="code-title">Basic Engine Usage</span>
-                                <button onclick="copyExample('basic')" class="copy-btn">
-                                    <span id="copy-basic">Copy</span>
-                                </button>
-                            </div>
-                            <pre class="code-content"><code>import { newGame, evaluate7 } from 'pokerpocket'
+          <!-- Code Examples Tab -->
+          <div class="tab-content" id="content-code-examples">
+            <div class="code-examples">
+              <h3>Integration Examples</h3>
+              <p>
+                Ready-to-use code snippets for different frameworks and use
+                cases:
+              </p>
+
+              <div class="example-tabs">
+                <button
+                  class="example-btn active"
+                  onclick="switchExample('basic')"
+                  id="ex-basic"
+                >
+                  Basic Usage
+                </button>
+                <button
+                  class="example-btn"
+                  onclick="switchExample('react')"
+                  id="ex-react"
+                >
+                  React
+                </button>
+                <button
+                  class="example-btn"
+                  onclick="switchExample('node')"
+                  id="ex-node"
+                >
+                  Node.js
+                </button>
+                <button
+                  class="example-btn"
+                  onclick="switchExample('typescript')"
+                  id="ex-typescript"
+                >
+                  TypeScript
+                </button>
+              </div>
+
+              <div class="example-content active" id="example-basic">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="code-title">Basic Engine Usage</span>
+                    <button onclick="copyExample('basic')" class="copy-btn">
+                      <span id="copy-basic">Copy</span>
+                    </button>
+                  </div>
+                  <pre
+                    class="code-content"
+                  ><code>import { newGame, evaluate7 } from 'pokerpocket'
 
 // Quick game simulation
 const game = newGame({ players: 4, seed: 12345 })
@@ -285,18 +407,20 @@ const cards = [
 ]
 const result = evaluate7(cards)
 console.log(result.rank) // 'STRAIGHT_FLUSH'</code></pre>
-                        </div>
-                    </div>
+                </div>
+              </div>
 
-                    <div class="example-content" id="example-react">
-                        <div class="code-block">
-                            <div class="code-header">
-                                <span class="code-title">React Component</span>
-                                <button onclick="copyExample('react')" class="copy-btn">
-                                    <span id="copy-react">Copy</span>
-                                </button>
-                            </div>
-                            <pre class="code-content"><code>import { useState } from 'react'
+              <div class="example-content" id="example-react">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="code-title">React Component</span>
+                    <button onclick="copyExample('react')" class="copy-btn">
+                      <span id="copy-react">Copy</span>
+                    </button>
+                  </div>
+                  <pre
+                    class="code-content"
+                  ><code>import { useState } from 'react'
 import { newGame } from 'pokerpocket'
 
 function PokerGame() {
@@ -327,18 +451,18 @@ function PokerGame() {
     &lt;/div&gt;
   )
 }</code></pre>
-                        </div>
-                    </div>
+                </div>
+              </div>
 
-                    <div class="example-content" id="example-node">
-                        <div class="code-block">
-                            <div class="code-header">
-                                <span class="code-title">Node.js Server</span>
-                                <button onclick="copyExample('node')" class="copy-btn">
-                                    <span id="copy-node">Copy</span>
-                                </button>
-                            </div>
-                            <pre class="code-content"><code>import express from 'express'
+              <div class="example-content" id="example-node">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="code-title">Node.js Server</span>
+                    <button onclick="copyExample('node')" class="copy-btn">
+                      <span id="copy-node">Copy</span>
+                    </button>
+                  </div>
+                  <pre class="code-content"><code>import express from 'express'
 import { newGame } from 'pokerpocket'
 
 const app = express()
@@ -370,18 +494,21 @@ app.post('/api/poker/simulate', (req, res) => {
 app.listen(3000, () => {
   console.log('Poker server running on port 3000')
 })</code></pre>
-                        </div>
-                    </div>
+                </div>
+              </div>
 
-                    <div class="example-content" id="example-typescript">
-                        <div class="code-block">
-                            <div class="code-header">
-                                <span class="code-title">TypeScript with Full Types</span>
-                                <button onclick="copyExample('typescript')" class="copy-btn">
-                                    <span id="copy-typescript">Copy</span>
-                                </button>
-                            </div>
-                            <pre class="code-content"><code>import {
+              <div class="example-content" id="example-typescript">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="code-title">TypeScript with Full Types</span>
+                    <button
+                      onclick="copyExample('typescript')"
+                      class="copy-btn"
+                    >
+                      <span id="copy-typescript">Copy</span>
+                    </button>
+                  </div>
+                  <pre class="code-content"><code>import {
   newGame,
   evaluate7,
   type GameResult,
@@ -441,62 +568,83 @@ class PokerAnalyzer {
       : 0
   }
 }</code></pre>
-                        </div>
-                    </div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Quick Start Section -->
-    <section id="quick-start" class="quick-start">
+      <!-- Quick Start Section -->
+      <section id="quick-start" class="quick-start">
         <div class="container">
-            <h2>Quick Start</h2>
-            <p>Get started with PokerPocket in minutes - try the CLI or install the library</p>
+          <h2>Quick Start</h2>
+          <p>
+            Get started with PokerPocket in minutes - try the CLI or install the
+            library
+          </p>
 
-            <!-- Quick Start Options -->
-            <div class="quickstart-options">
-                <div class="quickstart-option">
-                    <div class="option-badge cli">🎮 CLI</div>
-                    <h3>Interactive CLI</h3>
-                    <p>Install the package and use the built-in command-line interface</p>
-                    <div class="code-block small">
-                        <div class="code-header">
-                            <span class="code-title">Install & Run CLI</span>
-                            <button onclick="copyCliQuickStart()" class="copy-btn">
-                                <span id="copy-cli-quick">Copy</span>
-                            </button>
-                        </div>
-                        <pre class="code-content"><code>npm install pokerpocket
-npx pokerpocket</code></pre>
-                    </div>
-                    <div class="cli-preview">
-                        <span class="cli-preview-text">💻 Interactive poker CLI with step-by-step gameplay</span>
-                    </div>
+          <!-- Quick Start Options -->
+          <div class="quickstart-options">
+            <div class="quickstart-option">
+              <div class="option-badge cli">🎮 CLI</div>
+              <h3>Interactive CLI</h3>
+              <p>
+                Install the package and use the built-in command-line interface
+              </p>
+              <div class="code-block small">
+                <div class="code-header">
+                  <span class="code-title">Install & Run CLI</span>
+                  <button onclick="copyCliQuickStart()" class="copy-btn">
+                    <span id="copy-cli-quick">Copy</span>
+                  </button>
                 </div>
+                <pre class="code-content"><code>npm install pokerpocket
+npx pokerpocket</code></pre>
+              </div>
+              <div class="cli-preview">
+                <span class="cli-preview-text"
+                  >💻 Interactive poker CLI with step-by-step gameplay</span
+                >
+              </div>
+            </div>
 
-                <div class="quickstart-option">
-                    <div class="option-badge lib">⚡ Library</div>
-                    <h3>Install & Integrate</h3>
-                    <p>Add PokerPocket engine to your project</p>
-                    <div class="code-block small">
-                        <div class="code-header">
-                            <span class="code-title">Installation</span>
-                            <button onclick="copyInstallation()" class="copy-btn" id="copy-install-btn">
-                                <span id="copy-install-text">Copy</span>
-                            </button>
-                        </div>
-                        <pre id="install-code" class="code-content"><code>npm install pokerpocket</code></pre>
-                    </div>
+            <div class="quickstart-option">
+              <div class="option-badge lib">⚡ Library</div>
+              <h3>Install & Integrate</h3>
+              <p>Add PokerPocket engine to your project</p>
+              <div class="code-block small">
+                <div class="code-header">
+                  <span class="code-title">Installation</span>
+                  <button
+                    onclick="copyInstallation()"
+                    class="copy-btn"
+                    id="copy-install-btn"
+                  >
+                    <span id="copy-install-text">Copy</span>
+                  </button>
+                </div>
+                <pre
+                  id="install-code"
+                  class="code-content"
+                ><code>npm install pokerpocket</code></pre>
+              </div>
 
-                    <div class="code-block small">
-                        <div class="code-header">
-                            <span class="code-title">Basic Usage</span>
-                            <button onclick="copyBasicUsage()" class="copy-btn" id="copy-usage-btn">
-                                <span id="copy-usage-text">Copy</span>
-                            </button>
-                        </div>
-                        <pre id="usage-code" class="code-content"><code>import { newGame } from "pokerpocket";
+              <div class="code-block small">
+                <div class="code-header">
+                  <span class="code-title">Basic Usage</span>
+                  <button
+                    onclick="copyBasicUsage()"
+                    class="copy-btn"
+                    id="copy-usage-btn"
+                  >
+                    <span id="copy-usage-text">Copy</span>
+                  </button>
+                </div>
+                <pre
+                  id="usage-code"
+                  class="code-content"
+                ><code>import { newGame } from "pokerpocket";
 
 const game = newGame({ players: 3 });
 game.deal();
@@ -505,210 +653,234 @@ game.turn();
 game.river();
 const result = game.showdown();
 console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
 
-            <!-- CLI Commands Reference -->
-            <div class="cli-commands">
-                <h3>CLI Commands</h3>
-                <div class="commands-grid">
-                    <div class="command-item">
-                        <code>deal</code>
-                        <span>Deal new hand (2 cards per player)</span>
-                    </div>
-                    <div class="command-item">
-                        <code>flop</code>
-                        <span>Deal flop (3 community cards)</span>
-                    </div>
-                    <div class="command-item">
-                        <code>turn</code>
-                        <span>Deal turn (4th community card)</span>
-                    </div>
-                    <div class="command-item">
-                        <code>river</code>
-                        <span>Deal river (5th community card)</span>
-                    </div>
-                    <div class="command-item">
-                        <code>showdown</code>
-                        <span>Evaluate hands and determine winner</span>
-                    </div>
-                    <div class="command-item">
-                        <code>players &lt;n&gt;</code>
-                        <span>Set number of players (2-9)</span>
-                    </div>
-                    <div class="command-item">
-                        <code>seed &lt;n&gt;</code>
-                        <span>Set RNG seed for reproducible games</span>
-                    </div>
-                    <div class="command-item">
-                        <code>help</code>
-                        <span>Show all available commands</span>
-                    </div>
-                </div>
+          <!-- CLI Commands Reference -->
+          <div class="cli-commands">
+            <h3>CLI Commands</h3>
+            <div class="commands-grid">
+              <div class="command-item">
+                <code>deal</code>
+                <span>Deal new hand (2 cards per player)</span>
+              </div>
+              <div class="command-item">
+                <code>flop</code>
+                <span>Deal flop (3 community cards)</span>
+              </div>
+              <div class="command-item">
+                <code>turn</code>
+                <span>Deal turn (4th community card)</span>
+              </div>
+              <div class="command-item">
+                <code>river</code>
+                <span>Deal river (5th community card)</span>
+              </div>
+              <div class="command-item">
+                <code>showdown</code>
+                <span>Evaluate hands and determine winner</span>
+              </div>
+              <div class="command-item">
+                <code>players &lt;n&gt;</code>
+                <span>Set number of players (2-9)</span>
+              </div>
+              <div class="command-item">
+                <code>seed &lt;n&gt;</code>
+                <span>Set RNG seed for reproducible games</span>
+              </div>
+              <div class="command-item">
+                <code>help</code>
+                <span>Show all available commands</span>
+              </div>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- API Methods Section -->
-    <section id="api-methods" class="api-methods">
+      <!-- API Methods Section -->
+      <section id="api-methods" class="api-methods">
         <div class="container">
-            <h2>API Reference</h2>
-            <p>Complete reference for PokerPocket engine methods</p>
+          <h2>API Reference</h2>
+          <p>Complete reference for PokerPocket engine methods</p>
 
-            <div class="api-sections">
-                <!-- Engine Methods -->
-                <div class="api-section">
-                    <h3>Engine Methods</h3>
-                    <div class="methods-grid">
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>newGame(options?: GameOptions): PokerEngine</code>
-                            </div>
-                            <p>Create a new poker game instance with optional configuration.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>const game = newGame({ players: 6, seed: 12345 })</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.setPlayers(count: number): void</code>
-                            </div>
-                            <p>Set number of players (2-9). Only available in IDLE phase.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.setPlayers(4)</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.setSeed(seed: number): void</code>
-                            </div>
-                            <p>Set RNG seed for next deal to ensure reproducible games.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.setSeed(42)</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.deal(): void</code>
-                            </div>
-                            <p>Deal hole cards (2 cards per player) and start new hand.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.deal()</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.flop(): void</code>
-                            </div>
-                            <p>Deal the flop (3 community cards). Burns 1 card first.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.flop()</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.turn(): void</code>
-                            </div>
-                            <p>Deal the turn (4th community card). Burns 1 card first.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.turn()</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.river(): void</code>
-                            </div>
-                            <p>Deal the river (5th community card). Burns 1 card first.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>game.river()</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.showdown(): ShowdownResult</code>
-                            </div>
-                            <p>Evaluate all hands and determine winners. Returns results and winner indices.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>const { results, winners } = game.showdown()</code></pre>
-                            </div>
-                        </div>
-
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>game.status(): GameStatus</code>
-                            </div>
-                            <p>Get current game state including phase, players, and cards.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>const status = game.status()</code></pre>
-                            </div>
-                        </div>
-                    </div>
+          <div class="api-sections">
+            <!-- Engine Methods -->
+            <div class="api-section">
+              <h3>Engine Methods</h3>
+              <div class="methods-grid">
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>newGame(options?: GameOptions): PokerEngine</code>
+                  </div>
+                  <p>
+                    Create a new poker game instance with optional
+                    configuration.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const game = newGame({ players: 6, seed: 12345 })</code></pre>
+                  </div>
                 </div>
 
-                <!-- Evaluation Methods -->
-                <div class="api-section">
-                    <h3>Evaluation Methods</h3>
-                    <div class="methods-grid">
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>evaluate7(cards: Card[]): EvalResult</code>
-                            </div>
-                            <p>Evaluate 7 cards and return best 5-card hand with score and rank.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>const result = evaluate7([...holeCards, ...board])
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.setPlayers(count: number): void</code>
+                  </div>
+                  <p>
+                    Set number of players (2-9). Only available in IDLE phase.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.setPlayers(4)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.setSeed(seed: number): void</code>
+                  </div>
+                  <p>
+                    Set RNG seed for next deal to ensure reproducible games.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.setSeed(42)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.deal(): void</code>
+                  </div>
+                  <p>
+                    Deal hole cards (2 cards per player) and start new hand.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.deal()</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.flop(): void</code>
+                  </div>
+                  <p>Deal the flop (3 community cards). Burns 1 card first.</p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.flop()</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.turn(): void</code>
+                  </div>
+                  <p>Deal the turn (4th community card). Burns 1 card first.</p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.turn()</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.river(): void</code>
+                  </div>
+                  <p>
+                    Deal the river (5th community card). Burns 1 card first.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.river()</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.showdown(): ShowdownResult</code>
+                  </div>
+                  <p>
+                    Evaluate all hands and determine winners. Returns results
+                    and winner indices.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const { results, winners } = game.showdown()</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>game.status(): GameStatus</code>
+                  </div>
+                  <p>
+                    Get current game state including phase, players, and cards.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const status = game.status()</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evaluation Methods -->
+            <div class="api-section">
+              <h3>Evaluation Methods</h3>
+              <div class="methods-grid">
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>evaluate7(cards: Card[]): EvalResult</code>
+                  </div>
+                  <p>
+                    Evaluate 7 cards and return best 5-card hand with score and
+                    rank.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const result = evaluate7([...holeCards, ...board])
 console.log(result.rank) // 'FULL_HOUSE'</code></pre>
-                            </div>
-                        </div>
-                    </div>
+                  </div>
                 </div>
-
-                <!-- Utility Methods -->
-                <div class="api-section">
-                    <h3>Utility Methods</h3>
-                    <div class="methods-grid">
-                        <div class="method-card">
-                            <div class="method-signature">
-                                <code>drawRandom(count: number, seed?: number): Card[]</code>
-                            </div>
-                            <p>Generate random cards for testing or demos. Optionally seeded.</p>
-                            <div class="method-example">
-                                <strong>Example:</strong>
-                                <pre><code>const randomHand = drawRandom(7, 42)</code></pre>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
+
+            <!-- Utility Methods -->
+            <div class="api-section">
+              <h3>Utility Methods</h3>
+              <div class="methods-grid">
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >drawRandom(count: number, seed?: number): Card[]</code
+                    >
+                  </div>
+                  <p>
+                    Generate random cards for testing or demos. Optionally
+                    seeded.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const randomHand = drawRandom(7, 42)</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- How It Works Section -->
-    <section id="architecture" class="architecture">
+      <!-- How It Works Section -->
+      <section id="architecture" class="architecture">
         <div class="container">
-            <h2>How It Works</h2>
-            <p>Simple, focused architecture for Texas Hold'em poker</p>
+          <h2>How It Works</h2>
+          <p>Simple, focused architecture for Texas Hold'em poker</p>
 
-            <div class="diagram-container">
-                <div class="architecture-diagram">
-                    <pre class="diagram">
+          <div class="diagram-container">
+            <div class="architecture-diagram">
+              <pre class="diagram">
 ┌─────┐    ┌──────┐    ┌────────┐    ┌───────────┐
 │ RNG │───▶│ Deck │───▶│ Engine │───▶│ Evaluator │
 └─────┘    └──────┘    └────────┘    └───────────┘
@@ -716,108 +888,139 @@ console.log(result.rank) // 'FULL_HOUSE'</code></pre>
     │          │           │             │
 Seeded     52 Cards    Game State   7→5 Hand
 Random     Shuffle     & Phases     Evaluation
-                    </pre>
-                </div>
+                    </pre
+              >
             </div>
+          </div>
 
-            <div class="architecture-features">
-                <div class="feature-item">
-                    <h3>Core Engine</h3>
-                    <p>Handles deck shuffling, hand evaluation, and game logic with deterministic randomness</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Flexible Players</h3>
-                    <p>Easy setup for 2-9 players with individual hole cards and folding state</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Texas Hold'em Focus</h3>
-                    <p>Built specifically for Hold'em with preflop, flop, turn, river phases</p>
-                </div>
+          <div class="architecture-features">
+            <div class="feature-item">
+              <h3>Core Engine</h3>
+              <p>
+                Handles deck shuffling, hand evaluation, and game logic with
+                deterministic randomness
+              </p>
             </div>
+            <div class="feature-item">
+              <h3>Flexible Players</h3>
+              <p>
+                Easy setup for 2-9 players with individual hole cards and
+                folding state
+              </p>
+            </div>
+            <div class="feature-item">
+              <h3>Texas Hold'em Focus</h3>
+              <p>
+                Built specifically for Hold'em with preflop, flop, turn, river
+                phases
+              </p>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Value Props Section -->
-    <section id="value-props" class="value-props">
+      <!-- Value Props Section -->
+      <section id="value-props" class="value-props">
         <div class="container">
-            <h2>Why PokerPocket?</h2>
-            <p>Developer-friendly features that matter</p>
+          <h2>Why PokerPocket?</h2>
+          <p>Developer-friendly features that matter</p>
 
-            <div class="value-props-list">
-                <div class="value-item">
-                    <div class="check-icon">✅</div>
-                    <div class="value-content">
-                        <h3>Zero Dependencies</h3>
-                        <p>Pure TypeScript/JavaScript implementation with no runtime dependencies</p>
-                    </div>
-                </div>
-
-                <div class="value-item">
-                    <div class="check-icon">✅</div>
-                    <div class="value-content">
-                        <h3>Deterministic & Reproducible</h3>
-                        <p>Seedable RNG ensures games are reproducible for testing and debugging</p>
-                    </div>
-                </div>
-
-                <div class="value-item">
-                    <div class="check-icon">✅</div>
-                    <div class="value-content">
-                        <h3>Fast Performance</h3>
-                        <p>Under 50ms showdown time for 9 players with correct hand evaluation</p>
-                    </div>
-                </div>
-
-                <div class="value-item">
-                    <div class="check-icon">✅</div>
-                    <div class="value-content">
-                        <h3>Embeddable Anywhere</h3>
-                        <p>Works in React Native, web browsers, Node.js, and other JavaScript environments</p>
-                    </div>
-                </div>
+          <div class="value-props-list">
+            <div class="value-item">
+              <div class="check-icon">✅</div>
+              <div class="value-content">
+                <h3>Zero Dependencies</h3>
+                <p>
+                  Pure TypeScript/JavaScript implementation with no runtime
+                  dependencies
+                </p>
+              </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Explore More Section -->
-    <section id="links" class="links">
+            <div class="value-item">
+              <div class="check-icon">✅</div>
+              <div class="value-content">
+                <h3>Deterministic & Reproducible</h3>
+                <p>
+                  Seedable RNG ensures games are reproducible for testing and
+                  debugging
+                </p>
+              </div>
+            </div>
+
+            <div class="value-item">
+              <div class="check-icon">✅</div>
+              <div class="value-content">
+                <h3>Fast Performance</h3>
+                <p>
+                  Under 50ms showdown time for 9 players with correct hand
+                  evaluation
+                </p>
+              </div>
+            </div>
+
+            <div class="value-item">
+              <div class="check-icon">✅</div>
+              <div class="value-content">
+                <h3>Embeddable Anywhere</h3>
+                <p>
+                  Works in React Native, web browsers, Node.js, and other
+                  JavaScript environments
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Explore More Section -->
+      <section id="links" class="links">
         <div class="container">
-            <h2>Explore More</h2>
-            <p>Documentation, examples, and community resources</p>
+          <h2>Explore More</h2>
+          <p>Documentation, examples, and community resources</p>
 
-            <div class="links-grid">
-                <a href="https://github.com/yisselda/pokerpocket#readme" class="link-btn">
-                    <span class="link-icon">📖</span>
-                    <span class="link-text">Documentation</span>
-                </a>
+          <div class="links-grid">
+            <a
+              href="https://github.com/yisselda/pokerpocket#readme"
+              class="link-btn"
+            >
+              <span class="link-icon">📖</span>
+              <span class="link-text">Documentation</span>
+            </a>
 
-                <a href="https://github.com/yisselda/pokerpocket" class="link-btn">
-                    <span class="link-icon">🔗</span>
-                    <span class="link-text">GitHub Repo</span>
-                </a>
+            <a href="https://github.com/yisselda/pokerpocket" class="link-btn">
+              <span class="link-icon">🔗</span>
+              <span class="link-text">GitHub Repo</span>
+            </a>
 
-                <a href="https://www.npmjs.com/package/pokerpocket" class="link-btn">
-                    <span class="link-icon">📦</span>
-                    <span class="link-text">NPM Package</span>
-                </a>
+            <a
+              href="https://www.npmjs.com/package/pokerpocket"
+              class="link-btn"
+            >
+              <span class="link-icon">📦</span>
+              <span class="link-text">NPM Package</span>
+            </a>
 
-                <a href="https://github.com/yisselda/pokerpocket/issues" class="link-btn">
-                    <span class="link-icon">🤝</span>
-                    <span class="link-text">Contribute</span>
-                </a>
-            </div>
+            <a
+              href="https://github.com/yisselda/pokerpocket/issues"
+              class="link-btn"
+            >
+              <span class="link-icon">🤝</span>
+              <span class="link-text">Contribute</span>
+            </a>
+          </div>
         </div>
-    </section>
+      </section>
     </main>
 
     <!-- Footer Section -->
     <footer id="footer" class="footer">
-        <div class="container">
-            <p>&copy; 2025 PokerPocket | MIT License | Built with ♥ by yisselda</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 PokerPocket | MIT License | Built with ♥ by yisselda</p>
+      </div>
     </footer>
 
     <script type="module" src="app.js" defer></script>
     <script type="module" src="tab-functions.js" defer></script>
-</body>
+  </body>
 </html>

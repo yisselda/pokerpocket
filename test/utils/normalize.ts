@@ -38,7 +38,7 @@ export const CATEGORY_MAP = {
     'FLUSH',
     'FULL_HOUSE',
     'FOUR_OF_A_KIND',
-    'STRAIGHT_FLUSH'
+    'STRAIGHT_FLUSH',
   ],
   // Their -> Name
   theirToName: [
@@ -51,8 +51,8 @@ export const CATEGORY_MAP = {
     'FLUSH',
     'FULL_HOUSE',
     'FOUR_OF_A_KIND',
-    'STRAIGHT_FLUSH'
-  ]
+    'STRAIGHT_FLUSH',
+  ],
 }
 
 export interface NormalizedEval {
@@ -68,20 +68,35 @@ export interface NormalizedEval {
  */
 export function getRankValue(rank: Rank | string): number {
   switch (rank) {
-    case '2': return 2
-    case '3': return 3
-    case '4': return 4
-    case '5': return 5
-    case '6': return 6
-    case '7': return 7
-    case '8': return 8
-    case '9': return 9
-    case 'T': case '10': return 10
-    case 'J': return 11
-    case 'Q': return 12
-    case 'K': return 13
-    case 'A': return 14
-    default: throw new Error(`Invalid rank: ${rank}`)
+    case '2':
+      return 2
+    case '3':
+      return 3
+    case '4':
+      return 4
+    case '5':
+      return 5
+    case '6':
+      return 6
+    case '7':
+      return 7
+    case '8':
+      return 8
+    case '9':
+      return 9
+    case 'T':
+    case '10':
+      return 10
+    case 'J':
+      return 11
+    case 'Q':
+      return 12
+    case 'K':
+      return 13
+    case 'A':
+      return 14
+    default:
+      throw new Error(`Invalid rank: ${rank}`)
   }
 }
 
@@ -102,15 +117,19 @@ export function normalizeOurEval(evalResult: {
   // Handle wheel straight special case
   if (categoryName === 'STRAIGHT' || categoryName === 'STRAIGHT_FLUSH') {
     const uniqueRanks = Array.from(new Set(ranks)).sort((a, b) => b - a)
-    if (uniqueRanks.includes(14) && uniqueRanks.includes(5) &&
-        uniqueRanks.includes(4) && uniqueRanks.includes(3) &&
-        uniqueRanks.includes(2)) {
+    if (
+      uniqueRanks.includes(14) &&
+      uniqueRanks.includes(5) &&
+      uniqueRanks.includes(4) &&
+      uniqueRanks.includes(3) &&
+      uniqueRanks.includes(2)
+    ) {
       // Wheel straight - A is low, high card is 5
       return {
         category: categoryName,
         categoryNum,
         ranks: [5, 4, 3, 2, 1], // A is treated as 1 in wheel
-        best5: evalResult.best5
+        best5: evalResult.best5,
       }
     }
   }
@@ -119,7 +138,7 @@ export function normalizeOurEval(evalResult: {
     category: categoryName,
     categoryNum,
     ranks: ranks.sort((a, b) => b - a),
-    best5: evalResult.best5
+    best5: evalResult.best5,
   }
 }
 
@@ -167,14 +186,18 @@ export function normalizeTheirEval(
   // Handle wheel straight for poker-evaluator
   if (categoryName === 'STRAIGHT' || categoryName === 'STRAIGHT_FLUSH') {
     const uniqueRanks = Array.from(new Set(ranks)).sort((a, b) => b - a)
-    if (uniqueRanks.includes(14) && uniqueRanks.includes(5) &&
-        uniqueRanks.includes(4) && uniqueRanks.includes(3) &&
-        uniqueRanks.includes(2)) {
+    if (
+      uniqueRanks.includes(14) &&
+      uniqueRanks.includes(5) &&
+      uniqueRanks.includes(4) &&
+      uniqueRanks.includes(3) &&
+      uniqueRanks.includes(2)
+    ) {
       return {
         category: categoryName,
         categoryNum,
         ranks: [5, 4, 3, 2, 1], // Normalized wheel
-        best5
+        best5,
       }
     }
   }
@@ -183,7 +206,7 @@ export function normalizeTheirEval(
     category: categoryName,
     categoryNum,
     ranks: ranks.sort((a, b) => b - a),
-    best5
+    best5,
   }
 }
 
@@ -253,7 +276,10 @@ export function getPrimaryRanks(evalResult: NormalizedEval): number[] {
  * Compare two normalized evaluations
  * Returns true if they match, false otherwise
  */
-export function evalsMatch(ours: NormalizedEval, theirs: NormalizedEval): boolean {
+export function evalsMatch(
+  ours: NormalizedEval,
+  theirs: NormalizedEval
+): boolean {
   // Categories must match
   if (ours.category !== theirs.category) {
     return false
@@ -308,6 +334,8 @@ export function formatMismatch(
  * Generate a repro command for a mismatch
  */
 export function generateRepro(cards: Card[]): string {
-  const cardStrs = cards.map(c => `{rank:'${c.rank}',suit:'${c.suit}'}`).join(',')
+  const cardStrs = cards
+    .map(c => `{rank:'${c.rank}',suit:'${c.suit}'}`)
+    .join(',')
   return `node -e "const {evaluateSeven}=require('./dist/evaluator.js');console.log(evaluateSeven([${cardStrs}]))"`
 }

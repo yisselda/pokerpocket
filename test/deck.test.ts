@@ -55,7 +55,9 @@ describe('Deck', () => {
 
   it('draw throws when not enough cards', () => {
     const deck = createDeck()
-    expect(() => draw(deck, 53)).toThrow('Cannot draw 53 cards, only 52 remaining')
+    expect(() => draw(deck, 53)).toThrow(
+      'Cannot draw 53 cards, only 52 remaining'
+    )
   })
 
   describe('drawRandom', () => {
@@ -103,7 +105,21 @@ describe('Deck', () => {
 
         // All cards should be valid
         cards.forEach(card => {
-          expect(['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']).toContain(card.rank)
+          expect([
+            'A',
+            'K',
+            'Q',
+            'J',
+            'T',
+            '9',
+            '8',
+            '7',
+            '6',
+            '5',
+            '4',
+            '3',
+            '2',
+          ]).toContain(card.rank)
           expect(['s', 'h', 'd', 'c']).toContain(card.suit)
         })
       }

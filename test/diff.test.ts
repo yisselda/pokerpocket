@@ -17,19 +17,32 @@ function parseCard(cardStr: string): Card {
 
 function getRankValue(rank: Rank): number {
   switch (rank) {
-    case '2': return 2
-    case '3': return 3
-    case '4': return 4
-    case '5': return 5
-    case '6': return 6
-    case '7': return 7
-    case '8': return 8
-    case '9': return 9
-    case 'T': return 10
-    case 'J': return 11
-    case 'Q': return 12
-    case 'K': return 13
-    case 'A': return 14
+    case '2':
+      return 2
+    case '3':
+      return 3
+    case '4':
+      return 4
+    case '5':
+      return 5
+    case '6':
+      return 6
+    case '7':
+      return 7
+    case '8':
+      return 8
+    case '9':
+      return 9
+    case 'T':
+      return 10
+    case 'J':
+      return 11
+    case 'Q':
+      return 12
+    case 'K':
+      return 13
+    case 'A':
+      return 14
   }
 }
 
@@ -40,17 +53,26 @@ function getHighCardFromHand(hand: Card[], rank: string): Rank {
     const uniqueValues = Array.from(new Set(values))
 
     // Check for wheel straight
-    if (uniqueValues.includes(14) && uniqueValues.includes(5) &&
-        uniqueValues.includes(4) && uniqueValues.includes(3) &&
-        uniqueValues.includes(2)) {
+    if (
+      uniqueValues.includes(14) &&
+      uniqueValues.includes(5) &&
+      uniqueValues.includes(4) &&
+      uniqueValues.includes(3) &&
+      uniqueValues.includes(2)
+    ) {
       return '5'
     }
 
     // Regular straight - return highest card
-    return hand.find(c => getRankValue(c.rank) === Math.max(...uniqueValues))!.rank
+    return hand.find(c => getRankValue(c.rank) === Math.max(...uniqueValues))!
+      .rank
   }
 
-  if (rank === 'FOUR_OF_A_KIND' || rank === 'FULL_HOUSE' || rank === 'THREE_OF_A_KIND') {
+  if (
+    rank === 'FOUR_OF_A_KIND' ||
+    rank === 'FULL_HOUSE' ||
+    rank === 'THREE_OF_A_KIND'
+  ) {
     // Find the rank that appears most frequently
     const rankCounts = new Map<Rank, number>()
     hand.forEach(card => {
@@ -109,14 +131,18 @@ describe('Differential tests against oracle', () => {
 
       // Compare primary category
       if (result.rank !== testCase.rank) {
-        failures.push(`Cards: ${testCase.cards.join(' ')} | Expected: ${testCase.rank}, Got: ${result.rank}`)
+        failures.push(
+          `Cards: ${testCase.cards.join(' ')} | Expected: ${testCase.rank}, Got: ${result.rank}`
+        )
         continue
       }
 
       // Compare high card/rank for the hand type
       const actualHigh = getHighCardFromHand(result.best5, result.rank)
       if (actualHigh !== testCase.high) {
-        failures.push(`Cards: ${testCase.cards.join(' ')} | Rank: ${result.rank} | Expected high: ${testCase.high}, Got: ${actualHigh}`)
+        failures.push(
+          `Cards: ${testCase.cards.join(' ')} | Rank: ${result.rank} | Expected high: ${testCase.high}, Got: ${actualHigh}`
+        )
       }
     }
 
@@ -152,12 +178,33 @@ describe('Differential tests against oracle', () => {
 
       // Verify rank is valid
       expect([
-        'STRAIGHT_FLUSH', 'FOUR_OF_A_KIND', 'FULL_HOUSE', 'FLUSH',
-        'STRAIGHT', 'THREE_OF_A_KIND', 'TWO_PAIR', 'ONE_PAIR', 'HIGH_CARD'
+        'STRAIGHT_FLUSH',
+        'FOUR_OF_A_KIND',
+        'FULL_HOUSE',
+        'FLUSH',
+        'STRAIGHT',
+        'THREE_OF_A_KIND',
+        'TWO_PAIR',
+        'ONE_PAIR',
+        'HIGH_CARD',
       ]).toContain(testCase.rank)
 
       // Verify high card is valid
-      expect(['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']).toContain(testCase.high)
+      expect([
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        'T',
+        'J',
+        'Q',
+        'K',
+        'A',
+      ]).toContain(testCase.high)
     }
   })
 })
