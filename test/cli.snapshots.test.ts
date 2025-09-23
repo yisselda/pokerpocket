@@ -74,7 +74,8 @@ function normalizeOutput(output: string): string {
   // Remove ANSI color codes if any
   return (
     output
-      .replace(/\x1b\[[0-9;]*m/g, '')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\u001b\[[0-9;]*m/g, '')
       // Normalize line endings
       .replace(/\r\n/g, '\n')
       // Remove trailing whitespace from lines
