@@ -240,7 +240,9 @@ export function cardToAscii(card: Card): string {
     's': '♠', 'h': '❤', 'd': '♦', 'c': '♣'
   }
 
-  const useUnicode = process.env.DISABLE_UNICODE !== '1' && process.platform !== 'win32'
+  const useUnicode = typeof process !== 'undefined'
+    ? process.env.DISABLE_UNICODE !== '1' && process.platform !== 'win32'
+    : true
   const suitDisplay = useUnicode ? suitSymbols[card.suit] : card.suit
 
   return `${card.rank}${suitDisplay}`
