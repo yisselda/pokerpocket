@@ -1,6 +1,6 @@
 import { expectType, expectNotType } from 'tsd'
-import { newGame, evaluate7, PokerEngine, GameOptions, ShowdownResult } from 'poker-pocket'
-import { Card, EvalResult } from 'poker-pocket/types'
+import { newGame, evaluate7, PokerEngine, GameOptions, ShowdownResult } from 'pokerpocket'
+import { Card, EvalResult } from 'pokerpocket/types'
 
 // Test newGame function
 const game = newGame({ players: 2 })

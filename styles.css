@@ -476,6 +476,21 @@ button:disabled {
     color: var(--color-black);
 }
 
+.card.placeholder {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    color: #6c757d;
+    cursor: default;
+    opacity: 0.6;
+    font-size: 24px;
+}
+
+.card.placeholder:hover {
+    transform: none;
+    box-shadow: none;
+    opacity: 0.8;
+}
+
 /* Divider */
 .divider {
     height: 1px;
@@ -1214,4 +1229,159 @@ button:disabled {
 .fold-indicator {
     opacity: 0.3;
     text-decoration: line-through;
+}
+
+/* API Methods Section */
+.api-methods {
+    background: var(--color-surface);
+    padding: var(--spacing-4xl) 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.api-methods h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.api-methods > .container > p {
+    text-align: center;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-3xl);
+    font-size: var(--font-size-base);
+}
+
+.api-sections {
+    display: grid;
+    gap: var(--spacing-3xl);
+}
+
+.api-section {
+    background: var(--color-background);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.api-section h3 {
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-primary);
+    display: inline-block;
+}
+
+.methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: var(--spacing-xl);
+}
+
+.method-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.method-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.method-signature {
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+}
+
+.method-signature code {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    background: none;
+    padding: 0;
+    font-weight: var(--font-weight-medium);
+    display: block;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.method-card p {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+    font-size: var(--font-size-sm);
+}
+
+.method-example {
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+}
+
+.method-example strong {
+    color: var(--color-text);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-surface);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    display: block;
+    font-weight: var(--font-weight-semibold);
+}
+
+.method-example pre {
+    margin: 0;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    line-height: 1.5;
+    padding: var(--spacing-md);
+    overflow-x: auto;
+}
+
+.method-example code {
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* Documentation-style table layout for smaller screens */
+@media (max-width: 768px) {
+    .api-methods {
+        padding: var(--spacing-3xl) 0;
+    }
+
+    .methods-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .method-card {
+        padding: var(--spacing-lg);
+    }
+
+    .method-signature code {
+        font-size: var(--font-size-xs);
+    }
+
+    .api-section {
+        padding: var(--spacing-xl);
+    }
 }

@@ -147,7 +147,7 @@ describe('CLI E2E', () => {
     expect(result.stdout).toContain('Turn dealt!')
     expect(result.stdout).toContain('River dealt!')
     expect(result.stdout).toMatch(/P[12]: .+ ⇒ .+/)  // Player results
-    expect(result.stdout).toMatch(/Winner\(s\): P[12]/)  // Winner announcement
+    expect(result.stdout).toMatch(/(Winner\(s\): P[12]|Split: P[12],P[12])/)  // Winner or tie announcement
     expect(result.stdout).toContain('Hand complete!')
     expect(result.stdout).toContain('Available: deal (new hand), players <n>')
     expect(result.stdout).toContain('Goodbye!')

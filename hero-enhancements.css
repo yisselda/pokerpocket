@@ -149,6 +149,7 @@
     padding: 0;
     display: block;
     white-space: pre-line;
+    text-align: left;
 }
 
 .hero-features {

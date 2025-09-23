@@ -146,3 +146,79 @@ function switchHeroTab(tabName) {
 }
 
 window.switchHeroTab = switchHeroTab
+
+// Copy installation command
+async function copyInstallation() {
+    const command = 'npm install pokerpocket'
+    const copyBtn = document.getElementById('copy-install-text')
+
+    try {
+        await navigator.clipboard.writeText(command)
+
+        // Visual feedback
+        copyBtn.textContent = 'Copied!'
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy'
+        }, 2000)
+
+    } catch (err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = command
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+
+        copyBtn.textContent = 'Copied!'
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy'
+        }, 2000)
+    }
+}
+
+// Copy basic usage code
+async function copyBasicUsage() {
+    const code = `import { newGame } from "pokerpocket";
+
+const game = newGame({ players: 3 });
+game.deal();
+game.flop();
+game.turn();
+game.river();
+const result = game.showdown();
+console.log('Winner:', result.winners.map(w => \`P\${w + 1}\`));`
+
+    const copyBtn = document.getElementById('copy-usage-text')
+
+    try {
+        await navigator.clipboard.writeText(code)
+
+        // Visual feedback
+        copyBtn.textContent = 'Copied!'
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy'
+        }, 2000)
+
+    } catch (err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = code
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+
+        copyBtn.textContent = 'Copied!'
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy'
+        }, 2000)
+    }
+}
+
+window.copyInstallation = copyInstallation
+window.copyBasicUsage = copyBasicUsage

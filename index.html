@@ -60,7 +60,9 @@
                     <div class="hero-api-code">
                         <code>import { newGame } from 'pokerpocket'
 const game = newGame({ players: 4 })
-game.deal(); game.flop(); game.showdown()</code>
+game.deal()
+game.flop()
+game.showdown()</code>
                     </div>
                     <div class="hero-features">
                         ✓ TypeScript-first<br>
@@ -479,17 +481,28 @@ npx pokerpocket</code></pre>
                     <p>Add PokerPocket engine to your project</p>
                     <div class="code-block small">
                         <div class="code-header">
-                            <span class="code-title">Installation & Basic Usage</span>
-                            <button onclick="copyQuickStart()" class="copy-btn" id="copy-btn">
-                                <span id="copy-text">Copy</span>
+                            <span class="code-title">Installation</span>
+                            <button onclick="copyInstallation()" class="copy-btn" id="copy-install-btn">
+                                <span id="copy-install-text">Copy</span>
                             </button>
                         </div>
-                        <pre id="quick-start-code" class="code-content"><code>npm install pokerpocket
+                        <pre id="install-code" class="code-content"><code>npm install pokerpocket</code></pre>
+                    </div>
 
-import { newGame } from "pokerpocket";
+                    <div class="code-block small">
+                        <div class="code-header">
+                            <span class="code-title">Basic Usage</span>
+                            <button onclick="copyBasicUsage()" class="copy-btn" id="copy-usage-btn">
+                                <span id="copy-usage-text">Copy</span>
+                            </button>
+                        </div>
+                        <pre id="usage-code" class="code-content"><code>import { newGame } from "pokerpocket";
 
 const game = newGame({ players: 3 });
-game.deal(); game.flop(); game.turn(); game.river();
+game.deal();
+game.flop();
+game.turn();
+game.river();
 const result = game.showdown();
 console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
                     </div>
@@ -531,6 +544,156 @@ console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
                     <div class="command-item">
                         <code>help</code>
                         <span>Show all available commands</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Methods Section -->
+    <section id="api-methods" class="api-methods">
+        <div class="container">
+            <h2>API Reference</h2>
+            <p>Complete reference for PokerPocket engine methods</p>
+
+            <div class="api-sections">
+                <!-- Engine Methods -->
+                <div class="api-section">
+                    <h3>Engine Methods</h3>
+                    <div class="methods-grid">
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>newGame(options?: GameOptions): PokerEngine</code>
+                            </div>
+                            <p>Create a new poker game instance with optional configuration.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>const game = newGame({ players: 6, seed: 12345 })</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.setPlayers(count: number): void</code>
+                            </div>
+                            <p>Set number of players (2-9). Only available in IDLE phase.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.setPlayers(4)</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.setSeed(seed: number): void</code>
+                            </div>
+                            <p>Set RNG seed for next deal to ensure reproducible games.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.setSeed(42)</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.deal(): void</code>
+                            </div>
+                            <p>Deal hole cards (2 cards per player) and start new hand.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.deal()</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.flop(): void</code>
+                            </div>
+                            <p>Deal the flop (3 community cards). Burns 1 card first.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.flop()</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.turn(): void</code>
+                            </div>
+                            <p>Deal the turn (4th community card). Burns 1 card first.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.turn()</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.river(): void</code>
+                            </div>
+                            <p>Deal the river (5th community card). Burns 1 card first.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>game.river()</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.showdown(): ShowdownResult</code>
+                            </div>
+                            <p>Evaluate all hands and determine winners. Returns results and winner indices.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>const { results, winners } = game.showdown()</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>game.status(): GameStatus</code>
+                            </div>
+                            <p>Get current game state including phase, players, and cards.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>const status = game.status()</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluation Methods -->
+                <div class="api-section">
+                    <h3>Evaluation Methods</h3>
+                    <div class="methods-grid">
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>evaluate7(cards: Card[]): EvalResult</code>
+                            </div>
+                            <p>Evaluate 7 cards and return best 5-card hand with score and rank.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>const result = evaluate7([...holeCards, ...board])
+console.log(result.rank) // 'FULL_HOUSE'</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Utility Methods -->
+                <div class="api-section">
+                    <h3>Utility Methods</h3>
+                    <div class="methods-grid">
+                        <div class="method-card">
+                            <div class="method-signature">
+                                <code>drawRandom(count: number, seed?: number): Card[]</code>
+                            </div>
+                            <p>Generate random cards for testing or demos. Optionally seeded.</p>
+                            <div class="method-example">
+                                <strong>Example:</strong>
+                                <pre><code>const randomHand = drawRandom(7, 42)</code></pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
