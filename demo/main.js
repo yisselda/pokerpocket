@@ -1,137 +1,71 @@
 import { newGame, evaluate7 } from 'poker-pocket'
 
-// Game state
-let currentGame = null
-let currentPhase = 'idle'
-let handsPlayedCount = 0
-
-// Hand evaluator state
+// State
 let selectedCards = []
 
-// Card symbols mapping
-const suitSymbols = {
-    's': '♠',
-    'h': '♥',
-    'd': '♦',
-    'c': '♣'
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🃏 Poker Pocket Demo loaded!')
-    updateStats()
-})
-
-// Global functions for demo
-window.dealNewHand = dealNewHand
-window.nextStreet = nextStreet
+// Make functions global
+window.playQuickGame = playQuickGame
 window.addCard = addCard
 window.clearCards = clearCards
 window.evaluateHand = evaluateHand
 window.runBenchmark = runBenchmark
 
-function dealNewHand() {
-    const players = parseInt(document.getElementById('players').value) || 4
+function playQuickGame() {
+    const players = parseInt(document.getElementById('players').value) || 3
     const seedInput = document.getElementById('seed').value
-    const seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 100000)
-
-    const options = { players }
-    if (seed) options.seed = seed
-
-    currentGame = newGame(options)
-    currentGame.deal()
-    currentPhase = 'preflop'
-    handsPlayedCount++
-
-    updateGameDisplay()
-    document.getElementById('nextBtn').disabled = false
-    updateStats()
-}
-
-function nextStreet() {
-    if (!currentGame) return
+    const seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 10000)
 
     try {
-        switch (currentPhase) {
-            case 'preflop':
-                currentGame.flop()
-                currentPhase = 'flop'
-                break
-            case 'flop':
-                currentGame.turn()
-                currentPhase = 'turn'
-                break
-            case 'turn':
-                currentGame.river()
-                currentPhase = 'river'
-                break
-            case 'river':
-                const result = currentGame.showdown()
-                currentPhase = 'showdown'
-                document.getElementById('nextBtn').disabled = true
-                break
+        // Create game
+        const game = newGame({ players, seed })
+
+        // Play full hand
+        game.deal()
+        game.flop()
+        game.turn()
+        game.river()
+        const result = game.showdown()
+
+        // Format results with minimalist styling
+        const status = game.status()
+        let output = `SEED ${seed} • ${players} PLAYERS\n\n`
+        output += `BOARD\n${status.boardAscii}\n\n`
+
+        output += `RESULTS\n`
+        result.results.forEach(({ player, eval: evalResult, hole }) => {
+            const holeStr = hole.map(cardToString).join(' ')
+            const handRank = evalResult.rank.replace(/_/g, ' ')
+            const winner = result.winners.includes(player) ? ' ◦' : ''
+            const playerLabel = `P${player + 1}`.padEnd(3)
+            output += `${playerLabel} ${holeStr.padEnd(8)} ${handRank}${winner}\n`
+        })
+
+        if (result.winners.length === 1) {
+            output += `\nWINNER: P${result.winners[0] + 1}`
+        } else {
+            const winnerList = result.winners.map(w => `P${w + 1}`).join(' ')
+            output += `\nTIE: ${winnerList}`
         }
-        updateGameDisplay()
+
+        document.getElementById('gameResult').textContent = output
+
     } catch (error) {
-        console.error('Error in game progression:', error)
+        document.getElementById('gameResult').textContent = `Error: ${error.message}`
     }
 }
 
-function updateGameDisplay() {
-    if (!currentGame) return
-
-    const status = currentGame.status()
-    let display = `🎮 Game Status - ${currentPhase.toUpperCase()}\n`
-    display += `Players: ${status.players}\n`
-    display += `Phase: ${status.phase}\n\n`
-
-    // Show board cards
-    if (status.boardAscii) {
-        display += `🃏 Board: ${status.boardAscii}\n\n`
-    }
-
-    // Show hole cards for each player
-    display += `👥 Player Hole Cards:\n`
-    for (let i = 0; i < status.players; i++) {
-        const holeCards = currentGame.getHoleCards(i)
-        if (holeCards.length > 0) {
-            const holeDisplay = holeCards.map(formatCard).join(' ')
-            display += `  P${i + 1}: ${holeDisplay}\n`
-        }
-    }
-
-    // Show showdown results if available
-    if (currentPhase === 'showdown' && status.lastShowdown) {
-        display += `\n🏆 SHOWDOWN RESULTS:\n`
-        display += status.lastShowdown.results + '\n'
-        display += status.lastShowdown.winners + '\n'
-    }
-
-    document.getElementById('gameDisplay').textContent = display
-}
-
-function formatCard(card) {
-    return `${card.rank}${suitSymbols[card.suit] || card.suit}`
-}
-
-// Hand Evaluator Functions
 function addCard() {
     if (selectedCards.length >= 7) {
-        alert('Maximum 7 cards allowed')
+        alert('Maximum 7 cards')
         return
     }
 
     const rank = document.getElementById('cardRank').value
     const suit = document.getElementById('cardSuit').value
-
     const newCard = { rank, suit }
 
-    // Check for duplicates
-    const isDuplicate = selectedCards.some(card =>
-        card.rank === newCard.rank && card.suit === newCard.suit
-    )
-
-    if (isDuplicate) {
+    // Check duplicates
+    if (selectedCards.some(card => card.rank === newCard.rank && card.suit === newCard.suit)) {
         alert('Card already selected')
         return
     }
@@ -139,77 +73,59 @@ function addCard() {
     selectedCards.push(newCard)
     updateCardDisplay()
 
-    if (selectedCards.length >= 5) {
-        document.getElementById('evalBtn').disabled = false
-    }
+    document.getElementById('evalBtn').disabled = selectedCards.length < 5
 }
 
 function clearCards() {
     selectedCards = []
     updateCardDisplay()
     document.getElementById('evalBtn').disabled = true
-    document.getElementById('evaluationResult').textContent = 'Add 5-7 cards to evaluate a poker hand'
+    document.getElementById('evalResult').textContent = 'Add 5-7 cards to evaluate'
 }
 
 function updateCardDisplay() {
-    const container = document.getElementById('selectedCards')
-    container.innerHTML = ''
-
-    selectedCards.forEach((card, index) => {
-        const cardElement = document.createElement('div')
-        cardElement.className = `card ${getSuitClass(card.suit)}`
-        cardElement.textContent = `${card.rank}${suitSymbols[card.suit]}`
-        cardElement.onclick = () => removeCard(index)
-        cardElement.style.cursor = 'pointer'
-        cardElement.title = 'Click to remove'
-        container.appendChild(cardElement)
-    })
-}
-
-function getSuitClass(suit) {
-    return suit === 'h' || suit === 'd' ? 'hearts' : 'spades'
+    const container = document.getElementById('cards')
+    container.innerHTML = selectedCards.map((card, i) =>
+        `<div class="card ${getSuitColor(card.suit)}" onclick="removeCard(${i})" title="Click to remove">
+            ${cardToString(card)}
+        </div>`
+    ).join('')
 }
 
 function removeCard(index) {
     selectedCards.splice(index, 1)
     updateCardDisplay()
-
-    if (selectedCards.length < 5) {
-        document.getElementById('evalBtn').disabled = true
-    }
+    document.getElementById('evalBtn').disabled = selectedCards.length < 5
 }
 
+// Make removeCard global
+window.removeCard = removeCard
+
 function evaluateHand() {
-    if (selectedCards.length < 5) {
-        alert('Need at least 5 cards to evaluate')
-        return
-    }
+    if (selectedCards.length < 5) return
 
     try {
         const result = evaluate7(selectedCards)
+        let output = `CARDS\n${selectedCards.map(cardToString).join(' ')}\n\n`
+        output += `HAND\n${result.rank.replace(/_/g, ' ')}\n\n`
+        output += `SCORE\n${result.score}\n\n`
+        output += `BEST FIVE\n${result.best5.map(cardToString).join(' ')}`
 
-        let display = `🎯 HAND EVALUATION\n\n`
-        display += `Selected Cards: ${selectedCards.map(formatCard).join(' ')}\n\n`
-        display += `🏆 Hand Rank: ${result.rank.replace(/_/g, ' ')}\n`
-        display += `📊 Score: ${result.score.toString()}\n`
-        display += `🃏 Best 5: ${result.best5.map(formatCard).join(' ')}\n`
-        display += `🎲 Tiebreak: [${result.tiebreak.join(', ')}]\n`
-
-        document.getElementById('evaluationResult').textContent = display
+        document.getElementById('evalResult').textContent = output
     } catch (error) {
-        document.getElementById('evaluationResult').textContent = `Error: ${error.message}`
+        document.getElementById('evalResult').textContent = `ERROR\n${error.message}`
     }
 }
 
-// Performance benchmark
 function runBenchmark() {
-    const startTime = performance.now()
-    const iterations = 1000
+    const button = event.target
+    button.disabled = true
+    button.textContent = 'Running...'
 
-    document.getElementById('handsPerSec').textContent = 'Running...'
-
-    // Use setTimeout to prevent blocking the UI
     setTimeout(() => {
+        const start = performance.now()
+        const iterations = 1000
+
         for (let i = 0; i < iterations; i++) {
             const game = newGame({ players: 6, seed: i })
             game.deal()
@@ -219,18 +135,26 @@ function runBenchmark() {
             game.showdown()
         }
 
-        const endTime = performance.now()
-        const duration = (endTime - startTime) / 1000
-        const handsPerSecond = Math.round(iterations / duration)
+        const duration = (performance.now() - start) / 1000
+        const handsPerSec = Math.round(iterations / duration)
 
-        document.getElementById('handsPerSec').textContent = handsPerSecond.toLocaleString()
+        document.getElementById('benchResult').textContent =
+            `BENCHMARK COMPLETE\n\n` +
+            `HANDS\n${iterations.toLocaleString()}\n\n` +
+            `TIME\n${duration.toFixed(2)}s\n\n` +
+            `RATE\n${handsPerSec.toLocaleString()} hands/sec`
 
-        // Update total hands played
-        handsPlayedCount += iterations
-        updateStats()
+        button.disabled = false
+        button.textContent = 'Run 1000 Hands'
     }, 10)
 }
 
-function updateStats() {
-    document.getElementById('handsPlayed').textContent = handsPlayedCount.toLocaleString()
+// Helper functions
+function cardToString(card) {
+    const suits = { s: '♠', h: '♥', d: '♦', c: '♣' }
+    return `${card.rank}${suits[card.suit] || card.suit}`
+}
+
+function getSuitColor(suit) {
+    return (suit === 'h' || suit === 'd') ? 'red' : 'black'
 }

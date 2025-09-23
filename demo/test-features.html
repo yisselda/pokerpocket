@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Feature Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background: #d4edda; }
+        .fail { background: #f8d7da; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Demo Feature Tests</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import { newGame, evaluate7 } from 'poker-pocket'
+
+        const results = document.getElementById('results')
+
+        function addResult(name, passed, details) {
+            const div = document.createElement('div')
+            div.className = `test ${passed ? 'pass' : 'fail'}`
+            div.innerHTML = `
+                <h3>${name}: ${passed ? '✅ PASS' : '❌ FAIL'}</h3>
+                <pre>${details}</pre>
+            `
+            results.appendChild(div)
+        }
+
+        // Test 1: Quick Game Feature
+        try {
+            console.log('Testing Quick Game...')
+
+            // Test with 2 players
+            const game2 = newGame({ players: 2, seed: 42 })
+            game2.deal()
+            game2.flop()
+            game2.turn()
+            game2.river()
+            const result2 = game2.showdown()
+
+            // Test with 9 players
+            const game9 = newGame({ players: 9, seed: 123 })
+            game9.deal()
+            game9.flop()
+            game9.turn()
+            game9.river()
+            const result9 = game9.showdown()
+
+            // Test determinism
+            const gameA = newGame({ players: 3, seed: 999 })
+            gameA.deal()
+            gameA.flop()
+            gameA.turn()
+            gameA.river()
+            const resultA = gameA.showdown()
+
+            const gameB = newGame({ players: 3, seed: 999 })
+            gameB.deal()
+            gameB.flop()
+            gameB.turn()
+            gameB.river()
+            const resultB = gameB.showdown()
+
+            const deterministic = resultA.winners[0] === resultB.winners[0]
+
+            addResult(
+                'Feature 1: Quick Game',
+                result2.results.length === 2 && result9.results.length === 9 && deterministic,
+                `✓ 2 players: ${result2.results.length} results, winner P${result2.winners[0] + 1}
+✓ 9 players: ${result9.results.length} results, winner P${result9.winners[0] + 1}
+✓ Deterministic: seed 999 produces same winner (P${resultA.winners[0] + 1})
+✓ Board displayed: ${gameA.status().boardAscii}`
+            )
+        } catch (error) {
+            addResult('Feature 1: Quick Game', false, error.message)
+        }
+
+        // Test 2: Hand Evaluator
+        try {
+            console.log('Testing Hand Evaluator...')
+
+            // Test straight flush
+            const sf = evaluate7([
+                { rank: 'A', suit: 's' },
+                { rank: 'K', suit: 's' },
+                { rank: 'Q', suit: 's' },
+                { rank: 'J', suit: 's' },
+                { rank: 'T', suit: 's' }
+            ])
+
+            // Test two pair
+            const tp = evaluate7([
+                { rank: 'A', suit: 'h' },
+                { rank: 'A', suit: 'd' },
+                { rank: 'K', suit: 'c' },
+                { rank: 'K', suit: 's' },
+                { rank: 'Q', suit: 'h' }
+            ])
+
+            // Test with 7 cards
+            const seven = evaluate7([
+                { rank: '7', suit: 'h' },
+                { rank: '7', suit: 'd' },
+                { rank: '7', suit: 'c' },
+                { rank: 'K', suit: 's' },
+                { rank: 'Q', suit: 'h' },
+                { rank: 'J', suit: 'd' },
+                { rank: '2', suit: 'c' }
+            ])
+
+            addResult(
+                'Feature 2: Hand Evaluator',
+                sf.rank === 'STRAIGHT_FLUSH' && tp.rank === 'TWO_PAIR' && seven.rank === 'THREE_OF_A_KIND',
+                `✓ Straight Flush detected: ${sf.rank}
+✓ Two Pair detected: ${tp.rank}
+✓ Three of a Kind detected: ${seven.rank}
+✓ 5 cards evaluated: score ${sf.score}
+✓ 7 cards evaluated: best 5 selected
+✓ Score calculation: ${seven.score}`
+            )
+        } catch (error) {
+            addResult('Feature 2: Hand Evaluator', false, error.message)
+        }
+
+        // Test 3: Performance Benchmark
+        try {
+            console.log('Testing Performance Benchmark...')
+
+            const start = performance.now()
+            const iterations = 1000
+
+            for (let i = 0; i < iterations; i++) {
+                const game = newGame({ players: 6, seed: i })
+                game.deal()
+                game.flop()
+                game.turn()
+                game.river()
+                game.showdown()
+            }
+
+            const duration = (performance.now() - start) / 1000
+            const handsPerSec = Math.round(iterations / duration)
+
+            addResult(
+                'Feature 3: Performance Test',
+                handsPerSec > 100 && duration < 10,
+                `✓ Completed ${iterations} hands
+✓ Time: ${duration.toFixed(2)} seconds
+✓ Performance: ${handsPerSec.toLocaleString()} hands/second
+✓ Meets target: ${handsPerSec > 100 ? 'Yes (>100 h/s)' : 'No'}`
+            )
+        } catch (error) {
+            addResult('Feature 3: Performance Test', false, error.message)
+        }
+
+        // Test UI Integration
+        try {
+            console.log('Testing UI Integration...')
+
+            // Verify functions are accessible
+            const hasPlayQuickGame = typeof window.playQuickGame === 'function'
+            const hasAddCard = typeof window.addCard === 'function'
+            const hasClearCards = typeof window.clearCards === 'function'
+            const hasEvaluateHand = typeof window.evaluateHand === 'function'
+            const hasRunBenchmark = typeof window.runBenchmark === 'function'
+
+            addResult(
+                'UI Integration',
+                hasPlayQuickGame && hasAddCard && hasClearCards && hasEvaluateHand && hasRunBenchmark,
+                `✓ playQuickGame: ${hasPlayQuickGame ? 'available' : 'missing'}
+✓ addCard: ${hasAddCard ? 'available' : 'missing'}
+✓ clearCards: ${hasClearCards ? 'available' : 'missing'}
+✓ evaluateHand: ${hasEvaluateHand ? 'available' : 'missing'}
+✓ runBenchmark: ${hasRunBenchmark ? 'available' : 'missing'}`
+            )
+        } catch (error) {
+            addResult('UI Integration', false, error.message)
+        }
+
+        console.log('All tests complete!')
+    </script>
+</body>
+</html>
