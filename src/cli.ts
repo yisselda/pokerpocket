@@ -167,7 +167,7 @@ async function main() {
           console.log(formatStatus(engine))
           break
 
-        case 'hole':
+        case 'hole': {
           if (args.length !== 1 || isNaN(Number(args[0]))) {
             console.log('Usage: hole <player> (e.g. hole 1)')
             break
@@ -191,8 +191,9 @@ async function main() {
             console.log(`Error: ${(error as Error).message}`)
           }
           break
+        }
 
-        case 'fold':
+        case 'fold': {
           if (args.length !== 1 || isNaN(Number(args[0]))) {
             console.log('Usage: fold <player> (e.g. fold 1)')
             break
@@ -219,6 +220,7 @@ async function main() {
             console.log(`Error: ${(error as Error).message}`)
           }
           break
+        }
 
         case 'seed':
           if (args.length !== 1 || isNaN(Number(args[0]))) {
@@ -243,6 +245,7 @@ async function main() {
           console.log('Goodbye!')
           rl.close()
           process.exit(0)
+          break
 
         default:
           console.log(`Unknown command: ${cmd}`)
