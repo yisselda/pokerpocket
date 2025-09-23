@@ -115,6 +115,13 @@ async function main() {
       continue
     }
 
+    // Handle extremely long input gracefully
+    if (input.length > 10000) {
+      console.log('Input too long. Type "help" for available commands')
+      rl.prompt()
+      continue
+    }
+
     const [cmd, ...args] = input.toLowerCase().split(/\s+/)
 
     try {
@@ -236,6 +243,7 @@ async function main() {
         default:
           console.log(`Unknown command: ${cmd}`)
           console.log('Type "help" for available commands')
+          console.log('\nQuick commands: deal, flop, turn, river, showdown, status, players <n>')
       }
     } catch (error) {
       console.log(`Error: ${(error as Error).message}`)
