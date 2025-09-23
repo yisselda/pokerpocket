@@ -266,3 +266,6 @@ export function newGame(options: GameOptions = {}): PokerEngine {
 
 // Re-export evaluator for convenience
 export { evaluateSeven as evaluate7 } from './evaluator.js'
+
+// Re-export deck utilities for convenience
+export { drawRandom } from './deck.js'
