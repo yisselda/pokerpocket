@@ -1,4 +1,4 @@
-import { newGame, evaluate7 } from 'poker-pocket'
+import { newGame, evaluate7, drawRandom } from 'poker-pocket'
 
 // State
 let selectedCards = []
@@ -6,6 +6,7 @@ let selectedCards = []
 // Make functions global
 window.playQuickGame = playQuickGame
 window.addCard = addCard
+window.addRandomCards = addRandomCards
 window.clearCards = clearCards
 window.evaluateHand = evaluateHand
 window.runBenchmark = runBenchmark
@@ -74,6 +75,14 @@ function addCard() {
     updateCardDisplay()
 
     document.getElementById('evalBtn').disabled = selectedCards.length < 5
+}
+
+function addRandomCards() {
+    clearCards()
+    const numCards = 5 + Math.floor(Math.random() * 3) // 5-7 cards
+    selectedCards = drawRandom(numCards)
+    updateCardDisplay()
+    document.getElementById('evalBtn').disabled = false
 }
 
 function clearCards() {

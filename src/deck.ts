@@ -1,5 +1,5 @@
 import { Card, Rank, Suit } from './types.js'
-import { RNG } from './rng.js'
+import { RNG, LCG } from './rng.js'
 
 const SUITS: Suit[] = ['s', 'h', 'd', 'c']
 const RANKS: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
@@ -26,4 +26,17 @@ export function draw(deck: Card[], n: number): Card[] {
     throw new Error(`Cannot draw ${n} cards, only ${deck.length} remaining`)
   }
   return deck.splice(0, n)
+}
+
+export function drawRandom(count: number, seed?: number): Card[] {
+  const rng = new LCG()
+  if (seed !== undefined) {
+    rng.seed(seed)
+  } else {
+    rng.seed(Math.floor(Math.random() * 10000))
+  }
+
+  const deck = createDeck()
+  shuffle(deck, rng)
+  return draw(deck, count)
 }
