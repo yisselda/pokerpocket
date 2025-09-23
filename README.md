@@ -17,7 +17,7 @@ A lightweight, dependency-free Texas Hold'em CLI with a clean, embeddable engine
 
 ```bash
 # Install latest beta
-npm install poker-pocket@beta
+npm install pokerpocket
 
 # Or install from GitHub
 npm install github:yisselda/pokerpocket
@@ -33,13 +33,13 @@ Interactive web demo featuring:
 ## CLI Usage
 
 ```bash
-npx pocket
+npx pokerpocket
 ```
 
 ### Example Session
 
 ```
-$ pocket
+$ pokerpocket
 🃏 Poker Pocket CLI
 Type "help" for commands
 Players: 2, Phase: IDLE
@@ -97,7 +97,7 @@ Winner(s): P1
 Use the engine in your own projects:
 
 ```typescript
-import { newGame, evaluate7, drawRandom } from 'poker-pocket'
+import { newGame, evaluate7, drawRandom } from 'pokerpocket'
 
 // Quick game with helper function
 const game = newGame({ players: 6, seed: 12345 })
