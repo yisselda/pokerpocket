@@ -1,5 +1,11 @@
 import { expectType, expectNotType } from 'tsd'
-import { newGame, evaluate7, PokerEngine, GameOptions, ShowdownResult } from 'pokerpocket'
+import {
+  newGame,
+  evaluate7,
+  PokerEngine,
+  GameOptions,
+  ShowdownResult,
+} from 'pokerpocket'
 import { Card, EvalResult } from 'pokerpocket/types'
 
 // Test newGame function
@@ -27,7 +33,7 @@ const cards: Card[] = [
   { rank: 'K', suit: 'h' },
   { rank: 'Q', suit: 'd' },
   { rank: 'J', suit: 'c' },
-  { rank: 'T', suit: 's' }
+  { rank: 'T', suit: 's' },
 ]
 
 const evaluation = evaluate7(cards)

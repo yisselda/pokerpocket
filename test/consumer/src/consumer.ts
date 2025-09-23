@@ -46,7 +46,7 @@ function testEvaluator() {
     { rank: 'K' as const, suit: 'h' as const },
     { rank: 'Q' as const, suit: 'd' as const },
     { rank: 'J' as const, suit: 'c' as const },
-    { rank: 'T' as const, suit: 's' as const }
+    { rank: 'T' as const, suit: 's' as const },
   ]
 
   const evaluation = evaluate7(cards)
@@ -66,7 +66,6 @@ try {
   console.log('✅ All tests passed!')
   console.log('✅ Library imports work correctly')
   console.log('✅ No CLI code should be bundled (tree-shaken)')
-
 } catch (error) {
   console.error('❌ Test failed:', error)
   process.exit(1)

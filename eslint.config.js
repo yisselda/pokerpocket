@@ -10,7 +10,7 @@ export default [
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 2022,
-        sourceType: 'module'
+        sourceType: 'module',
       },
       globals: {
         console: 'readonly',
@@ -19,11 +19,11 @@ export default [
         __dirname: 'readonly',
         __filename: 'readonly',
         performance: 'readonly',
-        require: 'readonly'
-      }
+        require: 'readonly',
+      },
     },
     plugins: {
-      '@typescript-eslint': typescript
+      '@typescript-eslint': typescript,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -32,8 +32,8 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       'prefer-const': 'error',
       'no-console': 'off',
-      'no-undef': 'off' // TypeScript handles this
-    }
+      'no-undef': 'off', // TypeScript handles this
+    },
   },
   {
     files: ['demo/**/*.js'],
@@ -48,16 +48,21 @@ export default [
         setTimeout: 'readonly',
         performance: 'readonly',
         navigator: 'readonly',
-        event: 'readonly'
-      }
+        event: 'readonly',
+      },
     },
     rules: {
       'no-unused-vars': 'warn',
       'no-console': 'off',
-      'prefer-const': 'error'
-    }
+      'prefer-const': 'error',
+    },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'demo/dist/**', 'test/consumer/dist/**']
-  }
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'demo/dist/**',
+      'test/consumer/dist/**',
+    ],
+  },
 ]

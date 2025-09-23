@@ -87,7 +87,7 @@ describe('Demo Feature Validation', () => {
         { rank: 'K', suit: 's' },
         { rank: 'Q', suit: 's' },
         { rank: 'J', suit: 's' },
-        { rank: 'T', suit: 's' }
+        { rank: 'T', suit: 's' },
       ]
 
       const result = evaluate7(cards)
@@ -102,7 +102,7 @@ describe('Demo Feature Validation', () => {
         { rank: 'K', suit: 'c' },
         { rank: 'K', suit: 's' },
         { rank: 'Q', suit: 'h' },
-        { rank: 'J', suit: 'd' }
+        { rank: 'J', suit: 'd' },
       ]
 
       const result = evaluate7(cards)
@@ -118,7 +118,7 @@ describe('Demo Feature Validation', () => {
         { rank: 'K', suit: 's' },
         { rank: 'Q', suit: 'h' },
         { rank: 'J', suit: 'd' },
-        { rank: '2', suit: 'c' }
+        { rank: '2', suit: 'c' },
       ]
 
       const result = evaluate7(cards)
@@ -133,12 +133,14 @@ describe('Demo Feature Validation', () => {
         { rank: 'A', suit: 's' }, // duplicate
         { rank: 'K', suit: 's' },
         { rank: 'Q', suit: 's' },
-        { rank: 'J', suit: 's' }
+        { rank: 'J', suit: 's' },
       ]
 
       // The demo checks for duplicates before calling evaluate7
       const hasDuplicates = cards.some((card, i) =>
-        cards.some((c, j) => i !== j && card.rank === c.rank && card.suit === c.suit)
+        cards.some(
+          (c, j) => i !== j && card.rank === c.rank && card.suit === c.suit
+        )
       )
 
       expect(hasDuplicates).toBe(true)
@@ -150,7 +152,7 @@ describe('Demo Feature Validation', () => {
         { rank: 'K', suit: 'd' },
         { rank: 'Q', suit: 'c' },
         { rank: 'J', suit: 's' },
-        { rank: 'T', suit: 'h' }
+        { rank: 'T', suit: 'h' },
       ]
 
       const result = evaluate7(cards)
@@ -169,7 +171,7 @@ describe('Demo Feature Validation', () => {
         { rank: '3', suit: 'd' },
         { rank: '4', suit: 'c' },
         { rank: '5', suit: 's' },
-        { rank: '7', suit: 'h' }
+        { rank: '7', suit: 'h' },
       ]
       expect(() => evaluate7(min)).not.toThrow()
 
@@ -181,7 +183,7 @@ describe('Demo Feature Validation', () => {
         { rank: '5', suit: 's' },
         { rank: '7', suit: 'h' },
         { rank: '8', suit: 'd' },
-        { rank: '9', suit: 'c' }
+        { rank: '9', suit: 'c' },
       ]
       expect(() => evaluate7(max)).not.toThrow()
     })

@@ -53,8 +53,10 @@ describe('Evaluator Tie-break Fixtures', () => {
       })
 
       // Find winners using the same logic as PokerEngine.showdown()
-      const bestScore = results.reduce((max, r) =>
-        Number(r.eval.score) > max ? Number(r.eval.score) : max, 0)
+      const bestScore = results.reduce(
+        (max, r) => (Number(r.eval.score) > max ? Number(r.eval.score) : max),
+        0
+      )
       const actualWinners = results
         .filter(r => Number(r.eval.score) === bestScore)
         .map(r => r.player)
@@ -90,12 +92,22 @@ describe('Evaluator Ties - Manual Tests', () => {
 
   it('identical straight high results in tie', () => {
     const cards1 = [
-      makeCard('A', 's'), makeCard('K', 'h'), makeCard('Q', 'd'),
-      makeCard('J', 's'), makeCard('T', 'h'), makeCard('2', 'h'), makeCard('3', 'c')
+      makeCard('A', 's'),
+      makeCard('K', 'h'),
+      makeCard('Q', 'd'),
+      makeCard('J', 's'),
+      makeCard('T', 'h'),
+      makeCard('2', 'h'),
+      makeCard('3', 'c'),
     ]
     const cards2 = [
-      makeCard('A', 'c'), makeCard('K', 'd'), makeCard('Q', 'h'),
-      makeCard('J', 'c'), makeCard('T', 'd'), makeCard('4', 'h'), makeCard('5', 'c')
+      makeCard('A', 'c'),
+      makeCard('K', 'd'),
+      makeCard('Q', 'h'),
+      makeCard('J', 'c'),
+      makeCard('T', 'd'),
+      makeCard('4', 'h'),
+      makeCard('5', 'c'),
     ]
 
     const result1 = evaluateSeven(cards1)
@@ -109,12 +121,22 @@ describe('Evaluator Ties - Manual Tests', () => {
 
   it('quads with different kickers', () => {
     const cards1 = [
-      makeCard('A', 's'), makeCard('A', 'h'), makeCard('A', 'd'),
-      makeCard('A', 'c'), makeCard('K', 's'), makeCard('Q', 'h'), makeCard('J', 'h')
+      makeCard('A', 's'),
+      makeCard('A', 'h'),
+      makeCard('A', 'd'),
+      makeCard('A', 'c'),
+      makeCard('K', 's'),
+      makeCard('Q', 'h'),
+      makeCard('J', 'h'),
     ]
     const cards2 = [
-      makeCard('A', 's'), makeCard('A', 'h'), makeCard('A', 'd'),
-      makeCard('A', 'c'), makeCard('Q', 's'), makeCard('J', 'h'), makeCard('T', 'h')
+      makeCard('A', 's'),
+      makeCard('A', 'h'),
+      makeCard('A', 'd'),
+      makeCard('A', 'c'),
+      makeCard('Q', 's'),
+      makeCard('J', 'h'),
+      makeCard('T', 'h'),
     ]
 
     const result1 = evaluateSeven(cards1)

@@ -130,13 +130,15 @@ export class PokerEngine {
       .map(r => r.player)
 
     // Store results for display in HAND_COMPLETE phase
-    this.lastShowdownResults = results.map(({ player, eval: evalResult, hole }) => {
-      const holeStr = hole.map(cardToAscii).join(' ')
-      const best5Str = evalResult.best5.map(cardToAscii).join(',')
-      const rankStr = evalResult.rank.replace(/_/g, ' ')
-      const foldedStr = this.folded[player] ? ' (FOLDED)' : ''
-      return `P${player + 1}: ${holeStr}  ⇒  ${rankStr} (${best5Str})${foldedStr}`
-    }).join('\n')
+    this.lastShowdownResults = results
+      .map(({ player, eval: evalResult, hole }) => {
+        const holeStr = hole.map(cardToAscii).join(' ')
+        const best5Str = evalResult.best5.map(cardToAscii).join(',')
+        const rankStr = evalResult.rank.replace(/_/g, ' ')
+        const foldedStr = this.folded[player] ? ' (FOLDED)' : ''
+        return `P${player + 1}: ${holeStr}  ⇒  ${rankStr} (${best5Str})${foldedStr}`
+      })
+      .join('\n')
 
     if (winners.length === 1) {
       this.lastShowdownWinners = `Winner(s): P${winners[0] + 1}`
@@ -166,7 +168,9 @@ export class PokerEngine {
   }
 
   getActivePlayers(): number[] {
-    return this.folded.map((folded, i) => folded ? null : i).filter(p => p !== null) as number[]
+    return this.folded
+      .map((folded, i) => (folded ? null : i))
+      .filter(p => p !== null) as number[]
   }
 
   getWinnerByFold(): number | null {
@@ -191,7 +195,9 @@ export class PokerEngine {
   status(): EngineStatus {
     const boardAscii = this.board.map(cardToAscii).join(' ')
     const holeCounts = this.hole.map(h => h.length)
-    const foldedPlayers = this.folded.map((folded, i) => folded ? i + 1 : null).filter(p => p !== null) as number[]
+    const foldedPlayers = this.folded
+      .map((folded, i) => (folded ? i + 1 : null))
+      .filter(p => p !== null) as number[]
 
     let nextCmdHints: string[] = []
     switch (this.phase) {
@@ -216,10 +222,14 @@ export class PokerEngine {
     }
 
     let lastShowdown
-    if (this.phase === 'HAND_COMPLETE' && this.lastShowdownResults && this.lastShowdownWinners) {
+    if (
+      this.phase === 'HAND_COMPLETE' &&
+      this.lastShowdownResults &&
+      this.lastShowdownWinners
+    ) {
       lastShowdown = {
         results: this.lastShowdownResults,
-        winners: this.lastShowdownWinners
+        winners: this.lastShowdownWinners,
       }
     }
 
@@ -230,19 +240,23 @@ export class PokerEngine {
       holeCounts,
       foldedPlayers,
       nextCmdHints,
-      lastShowdown
+      lastShowdown,
     }
   }
 }
 
 export function cardToAscii(card: Card): string {
   const suitSymbols: Record<string, string> = {
-    's': '♠', 'h': '❤', 'd': '♦', 'c': '♣'
+    s: '♠',
+    h: '❤',
+    d: '♦',
+    c: '♣',
   }
 
-  const useUnicode = typeof process !== 'undefined'
-    ? process.env.DISABLE_UNICODE !== '1' && process.platform !== 'win32'
-    : true
+  const useUnicode =
+    typeof process !== 'undefined'
+      ? process.env.DISABLE_UNICODE !== '1' && process.platform !== 'win32'
+      : true
   const suitDisplay = useUnicode ? suitSymbols[card.suit] : card.suit
 
   return `${card.rank}${suitDisplay}`

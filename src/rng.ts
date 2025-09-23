@@ -8,7 +8,7 @@ export class LCG implements RNG {
   private state: number
 
   constructor(seed?: number) {
-    this.state = (seed ?? (Date.now() >>> 0)) >>> 0
+    this.state = (seed ?? Date.now() >>> 0) >>> 0
   }
 
   seed(n: number): void {
@@ -16,7 +16,7 @@ export class LCG implements RNG {
   }
 
   next(): number {
-    this.state = ((this.state * 1664525 + 1013904223) >>> 0)
+    this.state = (this.state * 1664525 + 1013904223) >>> 0
     return this.state / 0x100000000
   }
 

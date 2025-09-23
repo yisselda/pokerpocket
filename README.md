@@ -26,6 +26,7 @@ npm install github:yisselda/pokerpocket
 ## 🌐 [Try the Live Demo](https://yisselda.github.io/pokerpocket/)
 
 Interactive web demo featuring:
+
 - **Quick Game** - Play complete poker hands with multiple players
 - **Hand Evaluator** - Test poker hands with manual card selection or random generation
 - **Performance Benchmark** - Measure engine speed on your device
@@ -108,14 +109,20 @@ game.river()
 
 // Get results
 const { results, winners } = game.showdown()
-console.log('Winners:', winners.map(w => `P${w + 1}`))
+console.log(
+  'Winners:',
+  winners.map(w => `P${w + 1}`)
+)
 
 // Direct hand evaluation
 const cards = [
-  { rank: 'A', suit: 's' }, { rank: 'K', suit: 's' },
-  { rank: 'Q', suit: 's' }, { rank: 'J', suit: 's' },
-  { rank: 'T', suit: 's' }, { rank: '2', suit: 'h' },
-  { rank: '3', suit: 'h' }
+  { rank: 'A', suit: 's' },
+  { rank: 'K', suit: 's' },
+  { rank: 'Q', suit: 's' },
+  { rank: 'J', suit: 's' },
+  { rank: 'T', suit: 's' },
+  { rank: '2', suit: 'h' },
+  { rank: '3', suit: 'h' },
 ]
 const result = evaluate7(cards)
 console.log(result.rank) // 'STRAIGHT_FLUSH'

@@ -9,8 +9,12 @@ function cardEquals(a: Card, b: Card): boolean {
 
 function cardArrayEquals(a: Card[], b: Card[]): boolean {
   if (a.length !== b.length) return false
-  const sortedA = [...a].sort((x, y) => x.rank.localeCompare(y.rank) || x.suit.localeCompare(y.suit))
-  const sortedB = [...b].sort((x, y) => x.rank.localeCompare(y.rank) || x.suit.localeCompare(y.suit))
+  const sortedA = [...a].sort(
+    (x, y) => x.rank.localeCompare(y.rank) || x.suit.localeCompare(y.suit)
+  )
+  const sortedB = [...b].sort(
+    (x, y) => x.rank.localeCompare(y.rank) || x.suit.localeCompare(y.suit)
+  )
   return sortedA.every((card, i) => cardEquals(card, sortedB[i]))
 }
 
@@ -72,12 +76,12 @@ describe('Street Evaluation Invariants', () => {
     // Create a scenario with exactly 5 cards
     const hole = [
       { rank: 'A' as const, suit: 's' as const },
-      { rank: 'K' as const, suit: 'h' as const }
+      { rank: 'K' as const, suit: 'h' as const },
     ]
     const board = [
       { rank: 'Q' as const, suit: 'd' as const },
       { rank: 'J' as const, suit: 'c' as const },
-      { rank: 'T' as const, suit: 's' as const }
+      { rank: 'T' as const, suit: 's' as const },
     ]
 
     const allCards = [...hole, ...board]
@@ -96,13 +100,13 @@ describe('Street Evaluation Invariants', () => {
     // Create a scenario with exactly 6 cards
     const hole = [
       { rank: 'A' as const, suit: 's' as const },
-      { rank: 'K' as const, suit: 'h' as const }
+      { rank: 'K' as const, suit: 'h' as const },
     ]
     const board = [
       { rank: 'Q' as const, suit: 'd' as const },
       { rank: 'J' as const, suit: 'c' as const },
       { rank: 'T' as const, suit: 's' as const },
-      { rank: '2' as const, suit: 'h' as const }
+      { rank: '2' as const, suit: 'h' as const },
     ]
 
     const allCards = [...hole, ...board]
@@ -129,14 +133,14 @@ describe('Street Evaluation Invariants', () => {
     // Create a scenario with 7 cards (full game)
     const hole = [
       { rank: 'A' as const, suit: 's' as const },
-      { rank: 'K' as const, suit: 'h' as const }
+      { rank: 'K' as const, suit: 'h' as const },
     ]
     const board = [
       { rank: 'Q' as const, suit: 'd' as const },
       { rank: 'J' as const, suit: 'c' as const },
       { rank: 'T' as const, suit: 's' as const },
       { rank: '9' as const, suit: 'h' as const },
-      { rank: '2' as const, suit: 'c' as const }
+      { rank: '2' as const, suit: 'c' as const },
     ]
 
     const allCards = [...hole, ...board]
@@ -149,14 +153,17 @@ describe('Street Evaluation Invariants', () => {
     const allResults = allCombinations.map(combo => evaluateSeven(combo))
 
     // The chosen result should have the highest score among all combinations
-    const maxScore = allResults.reduce((max, r) => r.score > max ? r.score : max, 0n)
+    const maxScore = allResults.reduce(
+      (max, r) => (r.score > max ? r.score : max),
+      0n
+    )
 
     expect(result.score).toBe(maxScore)
     expect(allCombinations).toHaveLength(21) // 7 choose 5 = 21
 
     // The chosen best5 must be exactly one of the combinations that achieve max score
-    const optimalCombinations = allCombinations.filter((combo, i) =>
-      allResults[i].score === maxScore
+    const optimalCombinations = allCombinations.filter(
+      (combo, i) => allResults[i].score === maxScore
     )
 
     const matchingCombination = optimalCombinations.find(combo =>
@@ -170,7 +177,10 @@ describe('Street Evaluation Invariants', () => {
     console.log('7-card test - Hand rank:', result.rank)
     console.log('7-card test - Score:', result.score.toString())
     console.log('7-card test - Max possible score:', maxScore.toString())
-    console.log('7-card test - Optimal combinations count:', optimalCombinations.length)
+    console.log(
+      '7-card test - Optimal combinations count:',
+      optimalCombinations.length
+    )
   })
 
   it('monotonicity with multiple seeds: scores never decrease', () => {
