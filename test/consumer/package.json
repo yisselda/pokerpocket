@@ -1,0 +1,17 @@
+{
+  "name": "poker-pocket-consumer-test",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Test consumer project to verify tree-shaking and portability",
+  "scripts": {
+    "build": "esbuild src/consumer.ts --bundle --outfile=dist/bundle.js --format=esm --metafile=dist/meta.json",
+    "analyze": "esbuild src/consumer.ts --bundle --outfile=dist/bundle.js --format=esm --metafile=dist/meta.json --analyze"
+  },
+  "dependencies": {
+    "poker-pocket": "file:../.."
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.10"
+  }
+}

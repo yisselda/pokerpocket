@@ -1,0 +1,18 @@
+{
+  "name": "poker-pocket-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Web demo for poker-pocket library",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "poker-pocket": "file:.."
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

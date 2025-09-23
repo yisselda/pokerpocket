@@ -7,25 +7,41 @@
     "pocket": "dist/cli.js"
   },
   "main": "dist/cli.js",
+  "types": "dist/engine.d.ts",
   "exports": {
-    ".": "./dist/engine.js",
-    "./engine": "./dist/engine.js",
-    "./evaluator": "./dist/evaluator.js",
-    "./types": "./dist/types.js"
+    ".": {
+      "types": "./dist/engine.d.ts",
+      "import": "./dist/engine.js"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "import": "./dist/engine.js"
+    },
+    "./evaluator": {
+      "types": "./dist/evaluator.d.ts",
+      "import": "./dist/evaluator.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "e2e": "vitest run test/cli.e2e.test.ts",
-    "watch:test": "vitest"
+    "watch:test": "vitest",
+    "typecheck:pub": "tsd --files test/types.test-d.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "esbuild": "^0.25.10",
     "execa": "^8.0.1",
     "fast-check": "^4.3.0",
     "poker-evaluator": "^2.1.1",
     "tinybench": "^2.9.0",
+    "tsd": "^0.33.0",
     "tsx": "^4.7.0",
     "typescript": "^5.5.0",
     "vitest": "^3.2.4"
