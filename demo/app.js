@@ -1,6 +1,6 @@
 // PokerPocket Demo Application
 // Imports from the PokerPocket engine
-import { newGame, evaluate7, drawRandom } from './dist/engine.js'
+import { newGame, evaluate7, drawRandom } from 'poker-pocket'
 
 // Application State
 let selectedCards = []
