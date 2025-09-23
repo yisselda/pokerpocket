@@ -1,0 +1,331 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CLI Snapshot Tests > complete game sequence 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 3
+Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 123 for next deal
+> Cards dealt!
+Players: 3, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: flop, fold <player>
+
+> Flop dealt!
+Players: 3, Phase: FLOP
+Board: Ts 2d 7c
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: turn, showdown, fold <player>
+
+> Turn dealt!
+Players: 3, Phase: TURN
+Board: Ts 2d 7c 9d
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: river, showdown, fold <player>
+
+> River dealt!
+Players: 3, Phase: RIVER
+Board: Ts 2d 7c 9d Td
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: showdown, fold <player>
+
+>
+P1: 5c Kc  ⇒  ONE PAIR (Kc,Ts,7c,9d,Td)
+P2: Th Js  ⇒  THREE OF A KIND (Th,Js,Ts,9d,Td)
+P3: Ks Jc  ⇒  ONE PAIR (Ks,Jc,Ts,9d,Td)
+
+Winner(s): P2
+
+Hand complete!
+
+P1: 5c Kc  ⇒  ONE PAIR (Kc,Ts,7c,9d,Td)
+P2: Th Js  ⇒  THREE OF A KIND (Th,Js,Ts,9d,Td)
+P3: Ks Jc  ⇒  ONE PAIR (Ks,Jc,Ts,9d,Td)
+
+Winner(s): P2
+
+Board: Ts 2d 7c 9d Td
+Available: deal (new hand), players <n>
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > deal command output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 3
+Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 42 for next deal
+> Cards dealt!
+Players: 3, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: flop, fold <player>
+
+> Players: 3, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: flop, fold <player>
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > error handling - invalid commands 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Unknown command: invalid-command
+Type "help" for available commands
+
+Quick commands: deal, flop, turn, river, showdown, status, players <n>
+> Usage: players <number>
+> Usage: players <number>
+> Usage: seed <number>
+> Usage: hole <player> (e.g. hole 1)
+> Usage: fold <player> (e.g. fold 1)
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > error handling - out of range values 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Error: Players must be between 2 and 9
+> Error: Players must be between 2 and 9
+> Player must be 1-9
+> Player must be 1-9
+> Player must be 1-9
+> Player must be 1-9
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > fold sequence 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 4
+Players: 4, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 777 for next deal
+> Cards dealt!
+Players: 4, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards, P4: 2 cards
+Available: flop, fold <player>
+
+> P1 folds
+Players: 4, Phase: PREFLOP
+Hole: P1: FOLDED, P2: 2 cards, P3: 2 cards, P4: 2 cards
+Folded: P1
+Available: flop, fold <player>
+
+> P2 folds
+Players: 4, Phase: PREFLOP
+Hole: P1: FOLDED, P2: FOLDED, P3: 2 cards, P4: 2 cards
+Folded: P1, P2
+Available: flop, fold <player>
+
+> Players: 4, Phase: PREFLOP
+Hole: P1: FOLDED, P2: FOLDED, P3: 2 cards, P4: 2 cards
+Folded: P1, P2
+Available: flop, fold <player>
+
+> P3 folds
+
+P4 wins! (All other players folded)
+
+> Players: 4, Phase: PREFLOP
+Hole: P1: FOLDED, P2: FOLDED, P3: FOLDED, P4: 2 cards
+Folded: P1, P2, P3
+Available: flop, fold <player>
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > game state errors 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Error: Can only flop from preflop phase
+> Error: Can only showdown from flop, turn, or river phase
+> Players set to 3
+Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 12345 for next deal
+> Cards dealt!
+Players: 3, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: flop, fold <player>
+
+> Error: Cannot change players mid-hand
+> Flop dealt!
+Players: 3, Phase: FLOP
+Board: 5d 7h Ah
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: turn, showdown, fold <player>
+
+> Error: Can only flop from preflop phase
+>
+P1: 9s 4h  ⇒  HIGH CARD (9s,4h,5d,7h,Ah)
+P2: Qh 8c  ⇒  HIGH CARD (Qh,8c,5d,7h,Ah)
+P3: 7c Qc  ⇒  ONE PAIR (7c,Qc,5d,7h,Ah)
+
+Winner(s): P3
+
+Hand complete!
+
+P1: 9s 4h  ⇒  HIGH CARD (9s,4h,5d,7h,Ah)
+P2: Qh 8c  ⇒  HIGH CARD (Qh,8c,5d,7h,Ah)
+P3: 7c Qc  ⇒  ONE PAIR (7c,Qc,5d,7h,Ah)
+
+Winner(s): P3
+
+Board: 5d 7h Ah
+Available: deal (new hand), players <n>
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > help command output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+>
+Commands:
+  deal              - Deal new hand
+  flop              - Deal flop (3 community cards)
+  turn              - Deal turn (4th community card)
+  river             - Deal river (5th community card)
+  showdown          - Evaluate hands and determine winner(s)
+  players <n>       - Set number of players (2-9, IDLE only)
+  hole <player>     - Show hole cards for player (1-based, e.g. hole 1)
+  fold <player>     - Fold player's hand (1-based, e.g. fold 1)
+  status            - Show current game state
+  help              - Show this help
+  q                 - Quit
+
+Advanced:
+  seed <n>          - Set RNG seed for reproducible games
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > hole card reveal 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 3
+Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 999 for next deal
+> Cards dealt!
+Players: 3, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+Available: flop, fold <player>
+
+> P1: Qs Qc
+> P2: 2s 9d
+> P3: 9c 6s
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > players command output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 3
+Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Players: 3, Phase: IDLE
+Available: deal, players <n>
+
+> Goodbye!"
+`;
+
+exports[`CLI Snapshot Tests > seed command output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 123 for next deal
+> Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Goodbye!"
+`;
+
+exports[`CLI Unicode vs ASCII Tests > ascii mode output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 2
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 42 for next deal
+> Cards dealt!
+Players: 2, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards
+Available: flop, fold <player>
+
+> Flop dealt!
+Players: 2, Phase: FLOP
+Board: 3h Td Qd
+Hole: P1: 2 cards, P2: 2 cards
+Available: turn, showdown, fold <player>
+
+> Goodbye!"
+`;
+
+exports[`CLI Unicode vs ASCII Tests > unicode mode output 1`] = `
+"🃏 Poker Pocket CLI
+Type "help" for commands
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Players set to 2
+Players: 2, Phase: IDLE
+Available: deal, players <n>
+
+> Seed set to 42 for next deal
+> Cards dealt!
+Players: 2, Phase: PREFLOP
+Hole: P1: 2 cards, P2: 2 cards
+Available: flop, fold <player>
+
+> Flop dealt!
+Players: 2, Phase: FLOP
+Board: 3❤ T♦ Q♦
+Hole: P1: 2 cards, P2: 2 cards
+Available: turn, showdown, fold <player>
+
+> Goodbye!"
+`;
