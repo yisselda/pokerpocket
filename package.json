@@ -52,7 +52,11 @@
     "e2e": "vitest run test/cli.e2e.test.ts",
     "watch:test": "vitest",
     "typecheck:pub": "tsd --files test/types.test-d.ts",
-    "prepublishOnly": "npm run build && npm test && npm run typecheck:pub",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepublishOnly": "npm run format:check && npm run lint && npm run build && npm test && npm run typecheck:pub",
     "publish:beta": "npm publish --tag beta",
     "publish:latest": "npm publish"
   },
@@ -63,16 +67,21 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "esbuild": "^0.25.10",
-    "execa": "^8.0.1",
-    "fast-check": "^4.3.0",
-    "poker-evaluator": "^2.1.1",
-    "tinybench": "^2.9.0",
-    "tsd": "^0.33.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.5.0",
-    "vitest": "^3.2.4"
+    "@eslint/js": "9.36.0",
+    "@types/node": "20.11.0",
+    "@typescript-eslint/eslint-plugin": "8.44.1",
+    "@typescript-eslint/parser": "8.44.1",
+    "esbuild": "0.25.10",
+    "eslint": "9.36.0",
+    "execa": "8.0.1",
+    "fast-check": "4.3.0",
+    "poker-evaluator": "2.1.1",
+    "prettier": "3.6.2",
+    "tinybench": "2.9.0",
+    "tsd": "0.33.0",
+    "tsx": "4.7.0",
+    "typescript": "5.5.0",
+    "vitest": "3.2.4"
   },
   "engines": {
     "node": ">=20"
