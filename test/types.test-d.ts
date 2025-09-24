@@ -1,4 +1,4 @@
-import { expectType, expectNotType } from 'tsd'
+import { expectType } from 'tsd'
 import {
   newGame,
   evaluate7,

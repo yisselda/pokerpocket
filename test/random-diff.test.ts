@@ -220,7 +220,7 @@ describe('Random differential test against poker-evaluator', () => {
 
       try {
         // Run the property test
-        const result = fc.check(property, {
+        fc.check(property, {
           numRuns: NUM_RUNS,
           seed: Date.now(),
           verbose: false,

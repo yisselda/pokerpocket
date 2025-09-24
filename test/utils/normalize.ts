@@ -216,7 +216,7 @@ export function normalizeTheirEval(
  * For straights/flushes: the high card
  */
 export function getPrimaryRanks(evalResult: NormalizedEval): number[] {
-  const { category, ranks, best5 } = evalResult
+  const { category, ranks } = evalResult
 
   switch (category) {
     case 'FOUR_OF_A_KIND':

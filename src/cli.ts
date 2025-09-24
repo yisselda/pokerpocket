@@ -4,32 +4,7 @@ import { createInterface } from 'readline'
 import { PokerEngine, cardToAscii } from './engine.js'
 import * as betting from './betting.js'
 
-function formatHandRank(rank: string): string {
-  return rank.replace(/_/g, ' ')
-}
 
-function formatShowdownResult(engine: PokerEngine) {
-  const result = engine.showdown()
-
-  let output = '\n'
-
-  result.results.forEach(({ player, eval: evalResult, hole }) => {
-    const holeStr = hole.map(cardToAscii).join(' ')
-    const best5Str = evalResult.best5.map(cardToAscii).join(',')
-    const rankStr = formatHandRank(evalResult.rank)
-    const foldedStr = engine.isFolded(player) ? ' (FOLDED)' : ''
-    output += `P${player + 1}: ${holeStr}  ⇒  ${rankStr} (${best5Str})${foldedStr}\n`
-  })
-
-  if (result.winners.length === 1) {
-    output += `\nWinner(s): P${result.winners[0] + 1}\n`
-  } else {
-    const winnerLabels = result.winners.map(w => `P${w + 1}`).join(',')
-    output += `\nSplit: ${winnerLabels}\n`
-  }
-
-  return output
-}
 
 function formatStoredShowdownResult(engine: PokerEngine) {
   const status = engine.status()
@@ -147,7 +122,7 @@ Advanced:
 async function main() {
   const engine = new PokerEngine()
   let bettingState: betting.BettingState
-  let bettingConfig: betting.TableConfig = {
+  const bettingConfig: betting.TableConfig = {
     smallBlind: 50,
     bigBlind: 100,
     ante: 0
@@ -190,7 +165,7 @@ async function main() {
 
     try {
       switch (cmd) {
-        case 'deal':
+        case 'deal': {
           engine.deal()
 
           // Initialize betting for this hand
@@ -204,6 +179,7 @@ async function main() {
           // Move button for next hand
           buttonIndex = (buttonIndex + 1) % playerCount
           break
+        }
 
         case 'flop':
           // Check if betting round is complete
@@ -247,7 +223,7 @@ async function main() {
           console.log(formatStatus(engine, bettingState, defaultStack))
           break
 
-        case 'showdown':
+        case 'showdown': {
           // Check if betting round is complete
           if (!betting.isRoundComplete(bettingState)) {
             console.log('Complete the betting round first!')
@@ -278,8 +254,9 @@ async function main() {
 
           console.log(formatStatus(engine, bettingState, defaultStack))
           break
+        }
 
-        case 'players':
+        case 'players': {
           if (args.length !== 1 || isNaN(Number(args[0]))) {
             console.log('Usage: players <number>')
             break
@@ -293,6 +270,7 @@ async function main() {
           console.log(`Players set to ${args[0]}`)
           console.log(formatStatus(engine, bettingState, defaultStack))
           break
+        }
 
         case 'hole': {
           if (args.length !== 1 || isNaN(Number(args[0]))) {
@@ -418,7 +396,7 @@ async function main() {
           console.log(`Default stack set to ${args[0]}`)
           break
 
-        case 'button':
+        case 'button': {
           if (args.length !== 1 || isNaN(Number(args[0]))) {
             console.log('Usage: button <player> (0-based)')
             break
@@ -431,6 +409,7 @@ async function main() {
           buttonIndex = buttonPlayer
           console.log(`Button set to P${buttonPlayer + 1}`)
           break
+        }
 
         case 'seed':
           if (args.length !== 1 || isNaN(Number(args[0]))) {

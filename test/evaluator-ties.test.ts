@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { PokerEngine } from '../src/engine.js'
-import { Card } from '../src/types.js'
+import { Card, Rank, Suit } from '../src/types.js'
 import { evaluateSeven } from '../src/evaluator.js'
 import tiebreakFixtures from './data/tiebreak.json'
 
@@ -87,7 +87,7 @@ describe('Evaluator Tie-break Fixtures', () => {
 // Keep the original manual tests for additional coverage
 describe('Evaluator Ties - Manual Tests', () => {
   function makeCard(rank: string, suit: string): Card {
-    return { rank: rank as any, suit: suit as any }
+    return { rank: rank as Rank, suit: suit as Suit }
   }
 
   it('identical straight high results in tie', () => {

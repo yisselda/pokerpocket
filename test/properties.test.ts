@@ -127,7 +127,6 @@ describe('Property-based tests', () => {
           }
 
           const showdownResult = engine.showdown()
-          const status = engine.status()
 
           // For each player, verify their best5 cards come from their available cards
           return showdownResult.results.every(
