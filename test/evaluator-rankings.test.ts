@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { evaluateSeven } from '../src/evaluator.js'
-import { Card } from '../src/types.js'
+import { Card, Rank, Suit } from '../src/types.js'
 
 function makeCard(rank: string, suit: string): Card {
-  return { rank: rank as any, suit: suit as any }
+  return { rank: rank as Rank, suit: suit as Suit }
 }
 
 describe('Evaluator Rankings', () => {

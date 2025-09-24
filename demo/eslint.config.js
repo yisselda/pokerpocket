@@ -9,7 +9,12 @@ export default [
       globals: {
         window: 'readonly',
         document: 'readonly',
-        console: 'readonly'
+        console: 'readonly',
+        alert: 'readonly',
+        setTimeout: 'readonly',
+        performance: 'readonly',
+        navigator: 'readonly',
+        event: 'readonly'
       }
     },
     rules: {

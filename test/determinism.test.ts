@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { PokerEngine } from '../src/engine.js'
 import { createDeck, shuffle } from '../src/deck.js'
 import { LCG } from '../src/rng.js'
-import { Card } from '../src/types.js'
 
 /**
  * Play a complete hand from deal to showdown
@@ -100,7 +99,7 @@ describe('Determinism tests', () => {
 
     // Each card should appear as first card between 2 and 50 times out of 1000
     // (Loose bounds - with true randomness, expect ~19 per card with some variance)
-    for (const [card, count] of cardCounts) {
+    for (const [, count] of cardCounts) {
       expect(count).toBeGreaterThanOrEqual(2)
       expect(count).toBeLessThanOrEqual(50)
     }
