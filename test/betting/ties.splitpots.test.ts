@@ -12,9 +12,18 @@ describe('ties and split pots', () => {
     bettingState = betting.postBlinds(bettingState, config)
 
     // All players call to see flop
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'call' }) // Button calls 100
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'call' }) // SB calls 50 more
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'check' }) // BB checks
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'call',
+    }) // Button calls 100
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'call',
+    }) // SB calls 50 more
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'check',
+    }) // BB checks
 
     expect(betting.isRoundComplete(bettingState)).toBe(true)
     expect(betting.getTotalPot(bettingState)).toBe(300)
@@ -24,9 +33,19 @@ describe('ties and split pots', () => {
     bettingState = betting.startNewRound(bettingState)
 
     // More betting
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'bet', amount: 200 })
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'call' })
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'call' })
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'bet',
+      amount: 200,
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'call',
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'call',
+    })
 
     expect(betting.getTotalPot(bettingState)).toBe(900)
 
@@ -52,10 +71,22 @@ describe('ties and split pots', () => {
     bettingState = betting.postBlinds(bettingState, config)
 
     // Create multiple all-ins for side pots
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'allin' }) // 190 more
-    bettingState = betting.applyAction(bettingState, { player: 3, type: 'call' }) // Calls P2's all-in
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'allin' }) // 95 more
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'call' }) // Calls to match everyone
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'allin',
+    }) // 190 more
+    bettingState = betting.applyAction(bettingState, {
+      player: 3,
+      type: 'call',
+    }) // Calls P2's all-in
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'allin',
+    }) // 95 more
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'call',
+    }) // Calls to match everyone
 
     const pots = betting.buildPots(bettingState.players)
 
@@ -83,9 +114,18 @@ describe('ties and split pots', () => {
     bettingState = betting.postBlinds(bettingState, config)
 
     // Simple betting round
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'call' }) // Button calls 50
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'call' }) // SB calls 25 more
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'check' }) // BB checks
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'call',
+    }) // Button calls 50
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'call',
+    }) // SB calls 25 more
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'check',
+    }) // BB checks
 
     expect(betting.getTotalPot(bettingState)).toBe(150)
 
@@ -110,8 +150,15 @@ describe('ties and split pots', () => {
     bettingState = betting.postBlinds(bettingState, config)
 
     // Create pot with odd total (151)
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'raise', amount: 76 }) // Total bet 101
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'call' })
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'raise',
+      amount: 76,
+    }) // Total bet 101
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'call',
+    })
 
     expect(betting.getTotalPot(bettingState)).toBe(202)
 
@@ -125,7 +172,9 @@ describe('ties and split pots', () => {
 
     // Should floor divide (101 each, 1 chip remainder)
     expect(distribution).toHaveLength(2)
-    expect(distribution[0].amount + distribution[1].amount).toBeLessThanOrEqual(203)
+    expect(distribution[0].amount + distribution[1].amount).toBeLessThanOrEqual(
+      203
+    )
 
     // Each player should get at least 101
     for (const dist of distribution) {
@@ -140,15 +189,34 @@ describe('ties and split pots', () => {
     bettingState = betting.postBlinds(bettingState, config)
 
     // P0 goes all-in, others call and then bet more
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'call' })
-    bettingState = betting.applyAction(bettingState, { player: 0, type: 'allin' })
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'call' })
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'call' })
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'call',
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 0,
+      type: 'allin',
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'call',
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'call',
+    })
 
     // Now P1 and P2 bet more (side pot)
     bettingState = betting.startNewRound(bettingState)
-    bettingState = betting.applyAction(bettingState, { player: 1, type: 'bet', amount: 100 })
-    bettingState = betting.applyAction(bettingState, { player: 2, type: 'call' })
+    bettingState = betting.applyAction(bettingState, {
+      player: 1,
+      type: 'bet',
+      amount: 100,
+    })
+    bettingState = betting.applyAction(bettingState, {
+      player: 2,
+      type: 'call',
+    })
 
     const pots = betting.buildPots(bettingState.players)
     expect(pots.length).toBeGreaterThan(1)

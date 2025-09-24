@@ -46,7 +46,10 @@ function cloneState(state: BettingState): BettingState {
   return {
     ...state,
     players: state.players.map(p => ({ ...p })),
-    pots: state.pots.map(p => ({ ...p, eligiblePlayers: [...p.eligiblePlayers] }))
+    pots: state.pots.map(p => ({
+      ...p,
+      eligiblePlayers: [...p.eligiblePlayers],
+    })),
   }
 }
 
@@ -65,14 +68,14 @@ export function initBetting(
       committed: 0,
       totalCommitted: 0,
       hasFolded: false,
-      isAllIn: false
+      isAllIn: false,
     })),
     buttonIndex,
     actingIndex: (buttonIndex + 1) % playerCount,
     currentBet: 0,
     lastRaise: 0,
     minRaise: 0,
-    pots: []
+    pots: [],
   }
 }
 
@@ -85,7 +88,10 @@ export function initBettingWithDefaults(
   return initBetting(playerCount, stacks, buttonIndex)
 }
 
-export function postBlinds(state: BettingState, config: TableConfig): BettingState {
+export function postBlinds(
+  state: BettingState,
+  config: TableConfig
+): BettingState {
   const newState = cloneState(state)
   const n = newState.players.length
 
@@ -140,7 +146,10 @@ export function postBlinds(state: BettingState, config: TableConfig): BettingSta
   return newState
 }
 
-export function legalActions(state: BettingState, player: number): { type: BetType; min?: number; max?: number }[] {
+export function legalActions(
+  state: BettingState,
+  player: number
+): { type: BetType; min?: number; max?: number }[] {
   if (player < 0 || player >= state.players.length) {
     throw new Error(`Invalid player index: ${player}`)
   }
@@ -148,7 +157,9 @@ export function legalActions(state: BettingState, player: number): { type: BetTy
   const p = state.players[player]
   if (p.hasFolded || p.isAllIn) return []
 
-  const actions: { type: BetType; min?: number; max?: number }[] = [{ type: 'fold' }]
+  const actions: { type: BetType; min?: number; max?: number }[] = [
+    { type: 'fold' },
+  ]
   const toCall = state.currentBet - p.committed
   const canCall = Math.min(toCall, p.stack)
 
@@ -181,7 +192,11 @@ export function legalActions(state: BettingState, player: number): { type: BetTy
         if (minRaiseTotal <= playerTotal) {
           const minRaiseAmount = minRaiseTotal - p.committed
           const maxRaiseAmount = p.stack
-          actions.push({ type: 'raise', min: minRaiseAmount, max: maxRaiseAmount })
+          actions.push({
+            type: 'raise',
+            min: minRaiseAmount,
+            max: maxRaiseAmount,
+          })
         }
 
         if (p.stack > toCall) {
@@ -211,7 +226,10 @@ export function applyAction(state: BettingState, action: Action): BettingState {
       break
 
     case 'call': {
-      const toCall = Math.min(newState.currentBet - player.committed, player.stack)
+      const toCall = Math.min(
+        newState.currentBet - player.committed,
+        player.stack
+      )
       player.stack -= toCall
       player.committed += toCall
       player.totalCommitted += toCall
@@ -332,7 +350,9 @@ export function startNewRound(state: BettingState): BettingState {
   return newState
 }
 
-export function buildPots(players: { totalCommitted: number; hasFolded: boolean }[]): Pot[] {
+export function buildPots(
+  players: { totalCommitted: number; hasFolded: boolean }[]
+): Pot[] {
   const pots: Pot[] = []
   const activePlayers = players
     .map((p, i) => ({ ...p, index: i }))
@@ -341,7 +361,9 @@ export function buildPots(players: { totalCommitted: number; hasFolded: boolean 
   if (activePlayers.length === 0) return pots
 
   // Sort by total committed amount
-  const sorted = [...activePlayers].sort((a, b) => a.totalCommitted - b.totalCommitted)
+  const sorted = [...activePlayers].sort(
+    (a, b) => a.totalCommitted - b.totalCommitted
+  )
 
   let prevCommitted = 0
   for (let i = 0; i < sorted.length; i++) {
@@ -356,11 +378,15 @@ export function buildPots(players: { totalCommitted: number; hasFolded: boolean 
       const foldedContribution = players
         .map((p, idx) => ({ ...p, index: idx }))
         .filter(p => p.hasFolded && p.totalCommitted > prevCommitted)
-        .reduce((sum, p) => sum + Math.min(potContribution, p.totalCommitted - prevCommitted), 0)
+        .reduce(
+          (sum, p) =>
+            sum + Math.min(potContribution, p.totalCommitted - prevCommitted),
+          0
+        )
 
       pots.push({
         amount: potAmount + foldedContribution,
-        eligiblePlayers: eligiblePlayers
+        eligiblePlayers: eligiblePlayers,
       })
     }
 
@@ -399,7 +425,7 @@ export function distributePots(
 
 export function getActivePlayers(state: BettingState): number[] {
   return state.players
-    .map((p, i) => p.hasFolded ? -1 : i)
+    .map((p, i) => (p.hasFolded ? -1 : i))
     .filter(i => i !== -1)
 }
 

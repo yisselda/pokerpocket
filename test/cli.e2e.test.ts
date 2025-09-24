@@ -113,7 +113,15 @@ describe('CLI E2E', () => {
   })
 
   it('should handle early showdown at flop', async () => {
-    const input = ['seed 54321', 'deal', 'skipbet', 'flop', 'skipbet', 'showdown', 'q'].join('\n')
+    const input = [
+      'seed 54321',
+      'deal',
+      'skipbet',
+      'flop',
+      'skipbet',
+      'showdown',
+      'q',
+    ].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,

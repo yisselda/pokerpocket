@@ -28,7 +28,7 @@ describe('heads-up basic betting', () => {
     bettingState = betting.applyAction(bettingState, {
       player: 0,
       type: 'raise',
-      amount: 250 // Total bet 300 (50 committed + 250)
+      amount: 250, // Total bet 300 (50 committed + 250)
     })
 
     expect(bettingState.players[0].stack).toBe(700)
@@ -42,7 +42,7 @@ describe('heads-up basic betting', () => {
 
     bettingState = betting.applyAction(bettingState, {
       player: 1,
-      type: 'call'
+      type: 'call',
     })
 
     expect(bettingState.players[1].stack).toBe(700) // 900 - 200 more
@@ -92,7 +92,7 @@ describe('heads-up basic betting', () => {
     // P0 goes all-in
     bettingState = betting.applyAction(bettingState, {
       player: 0,
-      type: 'allin'
+      type: 'allin',
     })
 
     expect(bettingState.players[0].stack).toBe(0)
@@ -102,7 +102,7 @@ describe('heads-up basic betting', () => {
     // P1 calls
     bettingState = betting.applyAction(bettingState, {
       player: 1,
-      type: 'call'
+      type: 'call',
     })
 
     expect(betting.isRoundComplete(bettingState)).toBe(true)

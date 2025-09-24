@@ -4,8 +4,6 @@ import { createInterface } from 'readline'
 import { PokerEngine, cardToAscii } from './engine.js'
 import * as betting from './betting.js'
 
-
-
 function formatStoredShowdownResult(engine: PokerEngine) {
   const status = engine.status()
 
@@ -16,7 +14,11 @@ function formatStoredShowdownResult(engine: PokerEngine) {
   return '\nNo showdown results available\n'
 }
 
-function formatStatus(engine: PokerEngine, bettingState: betting.BettingState, defaultStack: number = 10000): string {
+function formatStatus(
+  engine: PokerEngine,
+  bettingState: betting.BettingState,
+  defaultStack: number = 10000
+): string {
   const status = engine.status()
   let output = ''
 
@@ -48,9 +50,15 @@ function formatStatus(engine: PokerEngine, bettingState: betting.BettingState, d
     // Show player stacks and status
     output += 'Players:\n'
     for (let i = 0; i < status.players; i++) {
-      const p = bettingState.players[i] || { stack: defaultStack, committed: 0, hasFolded: false, isAllIn: false }
+      const p = bettingState.players[i] || {
+        stack: defaultStack,
+        committed: 0,
+        hasFolded: false,
+        isAllIn: false,
+      }
       const isButton = i === bettingState.buttonIndex
-      const isActing = i === bettingState.actingIndex && !betting.isRoundComplete(bettingState)
+      const isActing =
+        i === bettingState.actingIndex && !betting.isRoundComplete(bettingState)
       const folded = p.hasFolded || status.foldedPlayers.includes(i + 1)
 
       let playerStr = `  P${i + 1}`
@@ -125,7 +133,7 @@ async function main() {
   const bettingConfig: betting.TableConfig = {
     smallBlind: 50,
     bigBlind: 100,
-    ante: 0
+    ante: 0,
   }
   let defaultStack = 10000
   let buttonIndex = 0
@@ -170,7 +178,11 @@ async function main() {
 
           // Initialize betting for this hand
           const playerCount = engine.status().players
-          bettingState = betting.initBettingWithDefaults(playerCount, buttonIndex, defaultStack)
+          bettingState = betting.initBettingWithDefaults(
+            playerCount,
+            buttonIndex,
+            defaultStack
+          )
           bettingState = betting.postBlinds(bettingState, bettingConfig)
 
           console.log('Cards dealt! Blinds posted.')
@@ -235,7 +247,10 @@ async function main() {
           console.log(formatStoredShowdownResult(engine))
 
           // Handle pot distribution
-          const distribution = betting.distributePots(bettingState, showdownResult.winners)
+          const distribution = betting.distributePots(
+            bettingState,
+            showdownResult.winners
+          )
 
           console.log('\n💰 Pot Distribution:')
           for (const dist of distribution) {
@@ -265,7 +280,11 @@ async function main() {
 
           // Reinitialize betting state for new player count
           const newPlayerCount = Number(args[0])
-          bettingState = betting.initBettingWithDefaults(newPlayerCount, buttonIndex, defaultStack)
+          bettingState = betting.initBettingWithDefaults(
+            newPlayerCount,
+            buttonIndex,
+            defaultStack
+          )
 
           console.log(`Players set to ${args[0]}`)
           console.log(formatStatus(engine, bettingState, defaultStack))
@@ -307,7 +326,7 @@ async function main() {
             try {
               bettingState = betting.applyAction(bettingState, {
                 player: actingPlayer,
-                type: cmd as betting.BetType
+                type: cmd as betting.BetType,
               })
 
               if (cmd === 'fold') {
@@ -324,7 +343,10 @@ async function main() {
 
                   // Award pot to winner
                   const pots = betting.buildPots(bettingState.players)
-                  const totalPot = pots.reduce((sum, pot) => sum + pot.amount, 0)
+                  const totalPot = pots.reduce(
+                    (sum, pot) => sum + pot.amount,
+                    0
+                  )
                   bettingState.players[activePlayers[0]].stack += totalPot
                 }
               }
@@ -354,7 +376,7 @@ async function main() {
               bettingState = betting.applyAction(bettingState, {
                 player: actingPlayer,
                 type: cmd as betting.BetType,
-                amount: amount
+                amount: amount,
               })
 
               console.log(`P${actingPlayer + 1} ${cmd}s ${amount}`)
@@ -369,7 +391,11 @@ async function main() {
         }
 
         case 'blinds':
-          if (args.length !== 2 || isNaN(Number(args[0])) || isNaN(Number(args[1]))) {
+          if (
+            args.length !== 2 ||
+            isNaN(Number(args[0])) ||
+            isNaN(Number(args[1]))
+          ) {
             console.log('Usage: blinds <small> <big>')
             break
           }
@@ -426,7 +452,10 @@ async function main() {
             // Make all players check/call to complete the round
             while (!betting.isRoundComplete(bettingState)) {
               const actingPlayer = bettingState.actingIndex
-              const legalActions = betting.legalActions(bettingState, actingPlayer)
+              const legalActions = betting.legalActions(
+                bettingState,
+                actingPlayer
+              )
 
               // Choose the safest action (check if possible, otherwise call)
               let action: betting.Action

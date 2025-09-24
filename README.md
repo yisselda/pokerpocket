@@ -173,6 +173,7 @@ console.log(`Random hand: ${handResult.rank}`)
 ## Commands
 
 ### Game Flow
+
 - `deal` - Deal new hand, post blinds, start pre-flop betting
 - `flop` - Deal flop (3 community cards), start new betting round
 - `turn` - Deal turn (4th community card), start new betting round
@@ -180,6 +181,7 @@ console.log(`Random hand: ${handResult.rank}`)
 - `showdown` - Evaluate hands, determine winner(s), distribute pot
 
 ### Betting Actions
+
 - `check` - Check (when no bet to call)
 - `call` - Call the current bet
 - `bet <amount>` - Bet specified amount (when no current bet)
@@ -188,6 +190,7 @@ console.log(`Random hand: ${handResult.rank}`)
 - `allin` - Go all-in with remaining chips
 
 ### Game Setup
+
 - `players <n>` - Set number of players (2-9, IDLE only)
 - `blinds <sb> <bb>` - Set small and big blind amounts
 - `ante <amount>` - Set ante amount (0 for none)
@@ -196,6 +199,7 @@ console.log(`Random hand: ${handResult.rank}`)
 - `seed <n>` - Set RNG seed for reproducible games
 
 ### Utility
+
 - `hole <player>` - Show hole cards for specific player (1-based)
 - `status` - Show current game state
 - `skipbet` - Auto-complete current betting round (testing)

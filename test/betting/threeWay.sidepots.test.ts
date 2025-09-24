@@ -11,7 +11,7 @@ describe('three-way side pots', () => {
     // P2 (short stack) goes all-in preflop for 180 remaining
     bettingState = betting.applyAction(bettingState, {
       player: 2, // UTG
-      type: 'allin'
+      type: 'allin',
     })
 
     expect(bettingState.players[2].stack).toBe(0)
@@ -21,7 +21,7 @@ describe('three-way side pots', () => {
     // P0 (button) calls
     bettingState = betting.applyAction(bettingState, {
       player: 0,
-      type: 'call'
+      type: 'call',
     })
 
     expect(bettingState.players[0].totalCommitted).toBe(200) // 10 SB + 190 call
@@ -29,7 +29,7 @@ describe('three-way side pots', () => {
     // P1 (BB) calls
     bettingState = betting.applyAction(bettingState, {
       player: 1,
-      type: 'call'
+      type: 'call',
     })
 
     expect(bettingState.players[1].totalCommitted).toBe(200) // 20 BB + 180 call
@@ -53,7 +53,7 @@ describe('three-way side pots', () => {
     // P2 (shortest) goes all-in for 90 remaining
     bettingState = betting.applyAction(bettingState, {
       player: 2,
-      type: 'allin'
+      type: 'allin',
     })
 
     expect(bettingState.players[2].totalCommitted).toBe(100)
@@ -62,7 +62,7 @@ describe('three-way side pots', () => {
     bettingState = betting.applyAction(bettingState, {
       player: 0,
       type: 'raise',
-      amount: 245 // P0 had 0 committed initially
+      amount: 245, // P0 had 0 committed initially
     })
 
     expect(bettingState.players[0].totalCommitted).toBe(245)
@@ -70,7 +70,7 @@ describe('three-way side pots', () => {
     // P1 goes all-in for 590 more (600 total)
     bettingState = betting.applyAction(bettingState, {
       player: 1,
-      type: 'allin'
+      type: 'allin',
     })
 
     expect(bettingState.players[1].totalCommitted).toBe(600)
@@ -78,7 +78,7 @@ describe('three-way side pots', () => {
     // P0 calls remaining
     bettingState = betting.applyAction(bettingState, {
       player: 0,
-      type: 'call'
+      type: 'call',
     })
 
     expect(bettingState.players[0].totalCommitted).toBe(300) // All of P0's stack
@@ -114,26 +114,26 @@ describe('three-way side pots', () => {
     // P3 folds
     bettingState = betting.applyAction(bettingState, {
       player: 3,
-      type: 'fold'
+      type: 'fold',
     })
 
     // P0 raises to 100
     bettingState = betting.applyAction(bettingState, {
       player: 0,
       type: 'raise',
-      amount: 100
+      amount: 100,
     })
 
     // P1 calls
     bettingState = betting.applyAction(bettingState, {
       player: 1,
-      type: 'call'
+      type: 'call',
     })
 
     // P2 calls
     bettingState = betting.applyAction(bettingState, {
       player: 2,
-      type: 'call'
+      type: 'call',
     })
 
     const pots = betting.buildPots(bettingState.players)
