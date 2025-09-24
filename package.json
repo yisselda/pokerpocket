@@ -1,6 +1,6 @@
 {
   "name": "pokerpocket",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0",
   "type": "module",
   "description": "Fast, deterministic Texas Hold'em poker engine for JavaScript/TypeScript",
   "keywords": [
