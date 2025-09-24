@@ -1,6 +1,6 @@
 {
   "name": "pokerpocket",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Fast, deterministic Texas Hold'em poker engine for JavaScript/TypeScript",
   "keywords": [
@@ -22,36 +22,33 @@
     "url": "https://github.com/yisselda/pokerpocket/issues"
   },
   "bin": {
-    "pokerpocket": "dist/cli.js"
+    "pokerpocket": "./dist/cli.js"
   },
-  "main": "dist/cli.js",
-  "types": "dist/engine.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/engine.d.ts",
-      "import": "./dist/engine.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
     },
-    "./engine": {
-      "types": "./dist/engine.d.ts",
-      "import": "./dist/engine.js"
-    },
-    "./evaluator": {
-      "types": "./dist/evaluator.d.ts",
-      "import": "./dist/evaluator.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.js"
-    }
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsx src/cli.ts",
+    "build": "npm run build:lib && npm run build:cli && chmod +x dist/cli.js",
+    "build:lib": "tsup src/index.ts --format esm,cjs --dts --out-dir dist --clean",
+    "build:cli": "tsup src/cli.ts --format esm --out-dir dist",
+    "dev": "npm run build && node dist/cli.js",
     "test": "vitest run",
     "bench": "vitest run test/bench.test.ts",
     "e2e": "vitest run test/cli.e2e.test.ts",
     "watch:test": "vitest",
-    "typecheck:pub": "tsd --files test/types.test-d.ts",
+    "typecheck:pub": "tsc -p examples/tsconfig.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
@@ -61,11 +58,9 @@
     "publish:latest": "npm publish"
   },
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
+  "sideEffects": false,
   "devDependencies": {
     "@eslint/js": "9.36.0",
     "@types/node": "20.19.17",
@@ -79,11 +74,12 @@
     "prettier": "3.6.2",
     "tinybench": "2.9.0",
     "tsd": "0.33.0",
+    "tsup": "^8.5.0",
     "tsx": "4.20.5",
     "typescript": "5.9.2",
     "vitest": "3.2.4"
   },
-  "engines": {
-    "node": ">=20"
+  "overrides": {
+    "source-map": "^0.7.4"
   }
 }

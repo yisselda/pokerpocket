@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 
-import { createInterface } from 'readline'
+import { createInterface } from 'node:readline'
 import { PokerEngine, cardToAscii } from './engine.js'
 import * as betting from './betting.js'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const argv = process.argv.slice(2)
+if (argv.includes('-h') || argv.includes('--help')) {
+  console.log(showHelp())
+  process.exit(0)
+}
 
 function formatStoredShowdownResult(engine: PokerEngine) {
   const status = engine.status()
@@ -127,6 +134,17 @@ Advanced:
 `
 }
 
+function isRunDirectly(): boolean {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    const thisFile = fileURLToPath(import.meta.url)
+    const invoked = process.argv[1]
+      ? fileURLToPath(pathToFileURL(process.argv[1]).href)
+      : ''
+    return thisFile === invoked
+  }
+  return false
+}
+
 async function main() {
   const engine = new PokerEngine()
   let bettingState: betting.BettingState
@@ -145,6 +163,23 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
     prompt: '> ',
+  })
+
+  let hasQuit = false
+  const quit = () => {
+    if (hasQuit) return
+    hasQuit = true
+    console.log('Goodbye!')
+    rl.close() // ends the async iterator, triggers 'close'
+  }
+  rl.on('SIGINT', quit) // Ctrl-C inside readline
+  rl.on('close', () => {
+    // EOF / Ctrl-D OR after quit()
+    if (!hasQuit) {
+      // No 'q' processed (e.g. last line had no trailing \n) → still say goodbye
+      console.log('Goodbye!')
+    }
+    process.exit(0)
   })
 
   console.log('🃏 Poker Pocket CLI')
@@ -488,9 +523,7 @@ async function main() {
         case 'q':
         case 'quit':
         case 'exit':
-          console.log('Goodbye!')
-          rl.close()
-          process.exit(0)
+          quit()
           break
 
         default:
@@ -508,6 +541,11 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(console.error)
+export { main } // handy for tests: import { main } from '../dist/cli.js'
+
+if (isRunDirectly()) {
+  main().catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
 }

@@ -23,4 +23,13 @@ export class LCG implements RNG {
   randInt(n: number): number {
     return Math.floor(this.next() * n)
   }
+
+  // State persistence methods for deterministic resume
+  getState(): number {
+    return this.state
+  }
+
+  setState(state: number): void {
+    this.state = state >>> 0
+  }
 }
