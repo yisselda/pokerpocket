@@ -1,9 +1,9 @@
 {
-  "name": "poker-pocket-demo",
+  "name": "pokerpocket-demo",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Web demo for poker-pocket library",
+  "description": "Web demo for pokerpocket library",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,7 +13,7 @@
     "lint:fix": "eslint *.js --fix"
   },
   "dependencies": {
-    "poker-pocket": "file:.."
+    "pokerpocket": "file:.."
   },
   "devDependencies": {
     "@eslint/js": "9.36.0",

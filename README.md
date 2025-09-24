@@ -37,60 +37,97 @@ Interactive web demo featuring:
 npx pokerpocket
 ```
 
-### Example Session
+The CLI features a full Texas Hold'em game with betting, chip stacks, blinds, and pot distribution.
+
+### Typical Game Session
 
 ```
 $ pokerpocket
 🃏 Poker Pocket CLI
 Type "help" for commands
-Players: 2, Phase: IDLE
-Available: deal, players <n>, seed <n>
+Betting: ON | Blinds: 50/100 | Default stack: 10000
 
+# 1. Setup game (optional)
 > players 3
-Players set to 3
-Players: 3, Phase: IDLE
-Available: deal, players <n>, seed <n>
+> blinds 25 50        # Set small/big blinds
+> stacks 5000         # Set starting chip stacks
+> seed 12345          # Set seed for reproducible games
 
-> seed 12345
-Seed set to 12345 for next deal
-Players: 3, Phase: IDLE
-Next seed: 12345
-Available: deal, players <n>, seed <n>
-
+# 2. Deal a hand - automatically posts blinds and starts pre-flop betting
 > deal
-Cards dealt!
+Cards dealt! Blinds posted.
 Players: 3, Phase: PREFLOP
-Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-Available: flop
+💰 Pot: 75 | Current bet: 50
+Players:
+  P1: 4975 chips [25 in pot]    # Small blind
+  P2 (D): 4950 chips [50 in pot] ← TO ACT    # Big blind, dealer button
+  P3: 5000 chips
 
-> flop
+P3 actions: call, raise <amount> (100-5000), fold
+
+# 3. Complete betting rounds
+> call               # P3 calls the big blind
+> call               # P1 calls (completes the bet)
+> check              # P2 checks (already posted big blind)
+
+# 4. Continue through streets
+> flop               # Deal 3 community cards, start new betting round
 Flop dealt!
-Players: 3, Phase: FLOP
 Board: 7♦ K♠ 2♥
-Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-Available: turn, showdown
+P1 actions: check, bet <amount> (50-4925)
 
-> turn
+> check              # All players check through
+> check
+> check
+
+> turn               # Deal 4th community card
 Turn dealt!
-Players: 3, Phase: TURN
 Board: 7♦ K♠ 2♥ A♣
-Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-Available: river, showdown
 
-> river
+# 5. More betting...
+> bet 100            # P1 bets 100
+> call               # P2 calls
+> fold               # P3 folds
+
+> river              # Deal 5th community card
 River dealt!
-Players: 3, Phase: RIVER
 Board: 7♦ K♠ 2♥ A♣ Q♠
-Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-Available: showdown
 
+> check              # Final betting round
+> check
+
+# 6. Showdown and pot distribution
 > showdown
 
 P1: T♣ J♠  ⇒  STRAIGHT (A♣,K♠,Q♠,J♠,T♣)
 P2: 4♦ 9♦  ⇒  HIGH CARD (A♣,K♠,Q♠,9♦,7♦)
-P3: K♥ A♠  ⇒  TWO PAIR (A♠,A♣,K♥,K♠,Q♠)
+P3: K♥ A♠  ⇒  TWO PAIR (A♠,A♣,K♥,K♠,Q♠) (FOLDED)
 
 Winner(s): P1
+
+💰 Pot Distribution:
+  P1 wins 350 chips
+
+Final Stacks:
+  P1: 5175 chips
+  P2: 4750 chips
+  P3: 4975 chips
+```
+
+### Quick Testing Session
+
+For rapid testing, use `skipbet` to auto-complete betting rounds:
+
+```
+> deal
+> skipbet             # Skip pre-flop betting (all players check/call)
+> flop
+> skipbet             # Skip flop betting
+> turn
+> skipbet             # Skip turn betting
+> river
+> skipbet             # Skip river betting
+> showdown            # See results
 ```
 
 ## Engine API
@@ -135,15 +172,34 @@ console.log(`Random hand: ${handResult.rank}`)
 
 ## Commands
 
-- `deal` - Deal new hand (2 cards per player)
-- `flop` - Deal flop (3 community cards)
-- `turn` - Deal turn (4th community card)
-- `river` - Deal river (5th community card)
-- `showdown` - Evaluate hands and determine winner(s)
+### Game Flow
+- `deal` - Deal new hand, post blinds, start pre-flop betting
+- `flop` - Deal flop (3 community cards), start new betting round
+- `turn` - Deal turn (4th community card), start new betting round
+- `river` - Deal river (5th community card), start new betting round
+- `showdown` - Evaluate hands, determine winner(s), distribute pot
+
+### Betting Actions
+- `check` - Check (when no bet to call)
+- `call` - Call the current bet
+- `bet <amount>` - Bet specified amount (when no current bet)
+- `raise <amount>` - Raise by specified amount
+- `fold` - Fold your hand
+- `allin` - Go all-in with remaining chips
+
+### Game Setup
 - `players <n>` - Set number of players (2-9, IDLE only)
-- `seed <n>` - Set RNG seed for next deal
+- `blinds <sb> <bb>` - Set small and big blind amounts
+- `ante <amount>` - Set ante amount (0 for none)
+- `stacks <amount>` - Set default starting stack
+- `button <player>` - Set dealer button position (0-based)
+- `seed <n>` - Set RNG seed for reproducible games
+
+### Utility
+- `hole <player>` - Show hole cards for specific player (1-based)
 - `status` - Show current game state
-- `help` - Show help
+- `skipbet` - Auto-complete current betting round (testing)
+- `help` - Show all commands
 - `q` - Quit
 
 ## Hand Rankings

@@ -74,10 +74,14 @@
 
             <div class="hero-code-content" id="hero-api-content">
               <div class="hero-api-code">
-                <code
-                  >import { newGame } from 'pokerpocket' const game = newGame({
-                  players: 4 }) game.deal() game.flop() game.showdown()</code
-                >
+                <pre><code>import { newGame } from 'pokerpocket'
+
+const game = newGame({ players: 4 })
+game.deal()
+game.flop()
+game.turn()
+game.river()
+game.showdown()</code></pre>
               </div>
               <div class="hero-features">
                 ✓ TypeScript-first<br />
@@ -174,7 +178,8 @@
                   role="region"
                   aria-label="Poker hand results"
                 >
-                  Click "Deal Hand" to simulate a complete Texas Hold'em round
+                  Click "Deal Hand" to simulate a complete Texas Hold'em hand
+                  with betting
                 </div>
                 <div class="demo-links">
                   <a
@@ -262,50 +267,69 @@
                 <div class="terminal-body">
                   <div class="terminal-line">
                     <span class="terminal-prompt">$</span>
-                    <span class="terminal-command">npx poker-pocket</span>
+                    <span class="terminal-command">npx pokerpocket</span>
                   </div>
                   <div class="terminal-output">
-                    🃏 Poker Pocket CLI Players: 2, Phase: IDLE Available: deal,
-                    players &lt;n&gt;, seed &lt;n&gt;
+                    🃏 Poker Pocket CLI Betting: ON | Blinds: 50/100 | Default
+                    stack: 10000 Players: 2, Phase: IDLE
 
                     <span class="terminal-prompt">&gt;</span> players 3 Players
                     set to 3
 
                     <span class="terminal-prompt">&gt;</span> deal Cards dealt!
-                    Players: 3, Phase: PREFLOP Hole: P1: 2 cards, P2: 2 cards,
-                    P3: 2 cards Available: flop
+                    Blinds posted. Players: 3, Phase: PREFLOP 💰 Pot: 150 |
+                    Current bet: 100 Players: P1: 9950 chips [50 in pot] # Small
+                    blind P2 (D): 9900 chips [100 in pot] # Big blind, dealer
+                    button P3: 10000 chips ← TO ACT
+
+                    <span class="terminal-prompt">&gt;</span> call P3 calls
+
+                    <span class="terminal-prompt">&gt;</span> call P1 calls
+
+                    <span class="terminal-prompt">&gt;</span> check P2 checks
 
                     <span class="terminal-prompt">&gt;</span> flop Flop dealt!
-                    Board: 7♦ K♠ 2♥
+                    Board: 7♦ K♠ 2♥ 💰 Pot: 300
 
+                    <span class="terminal-prompt">&gt;</span> skipbet Betting
+                    round auto-completed
+
+                    <span class="terminal-prompt">&gt;</span> turn Turn dealt!
+                    Board: 7♦ K♠ 2♥ A♣
+
+                    <span class="terminal-prompt">&gt;</span> skipbet
+                    <span class="terminal-prompt">&gt;</span> river
+                    <span class="terminal-prompt">&gt;</span> skipbet
                     <span class="terminal-prompt">&gt;</span> showdown P1: T♣
                     J♠ ⇒ STRAIGHT (A♣,K♠,Q♠,J♠,T♣) P2: 4♦ 9♦ ⇒ HIGH CARD
                     (A♣,K♠,Q♠,9♦,7♦) P3: K♥ A♠ ⇒ TWO PAIR
-                    (A♠,A♣,K♥,K♠,Q♠) Winner: P1
+                    (A♠,A♣,K♥,K♠,Q♠) Winner(s): P1 💰 Pot Distribution: P1
+                    wins 300 chips Final Stacks: P1: 10200 chips P2: 9900 chips
+                    P3: 9900 chips
                   </div>
                 </div>
               </div>
 
               <div class="cli-features">
                 <div class="cli-feature">
-                  <h4>🎯 Interactive Gameplay</h4>
+                  <h4>🎯 Full Betting System</h4>
                   <p>
-                    Step through poker phases: deal → flop → turn → river →
-                    showdown
+                    Complete betting rounds with blinds, chip stacks, pot
+                    management, and distribution
                   </p>
                 </div>
                 <div class="cli-feature">
                   <h4>🔧 Developer Tools</h4>
                   <p>
                     Seedable RNG, player management, hand inspection, and
-                    debugging
+                    skipbet for testing
                   </p>
                 </div>
                 <div class="cli-feature">
                   <h4>📊 Game Analysis</h4>
                   <p>
-                    Detailed hand evaluation, winner determination, and game
-                    state tracking
+                    Detailed hand evaluation, winner determination, and chip
+                    stack tracking
                   </p>
                 </div>
               </div>
@@ -328,9 +352,7 @@
                         <span id="cli-copy-text">Copy</span>
                       </button>
                     </div>
-                    <pre
-                      class="code-content"
-                    ><code>npx poker-pocket</code></pre>
+                    <pre class="code-content"><code>npx pokerpocket</code></pre>
                   </div>
                 </div>
               </div>
@@ -387,26 +409,29 @@
                   </div>
                   <pre
                     class="code-content"
-                  ><code>import { newGame, evaluate7 } from 'pokerpocket'
+                  ><code>import { newGame, evaluate7, betting } from 'pokerpocket'
 
-// Quick game simulation
+// Quick game simulation with betting
 const game = newGame({ players: 4, seed: 12345 })
+let bettingState = betting.initBettingWithDefaults(4, 0, 10000)
+
+// Deal and post blinds
 game.deal()
+bettingState = betting.postBlinds(bettingState, {
+  smallBlind: 50, bigBlind: 100
+})
+
+// Play through streets (simplified: everyone checks/calls)
 game.flop()
 game.turn()
 game.river()
 
-const { winners, results } = game.showdown()
-console.log('Winners:', winners.map(w => `P${w + 1}`))
+// Showdown and distribute pot
+const { winners } = game.showdown()
+const distribution = betting.distributePots(bettingState, winners)
 
-// Direct hand evaluation
-const cards = [
-  { rank: 'A', suit: 's' }, { rank: 'K', suit: 's' },
-  { rank: 'Q', suit: 's' }, { rank: 'J', suit: 's' },
-  { rank: 'T', suit: 's' }
-]
-const result = evaluate7(cards)
-console.log(result.rank) // 'STRAIGHT_FLUSH'</code></pre>
+console.log('Winners:', winners.map(w => `P${w + 1}`))
+console.log('Pot distribution:', distribution)</code></pre>
                 </div>
               </div>
 
@@ -421,22 +446,41 @@ console.log(result.rank) // 'STRAIGHT_FLUSH'</code></pre>
                   <pre
                     class="code-content"
                   ><code>import { useState } from 'react'
-import { newGame } from 'pokerpocket'
+import { newGame, betting } from 'pokerpocket'
 
 function PokerGame() {
   const [gameState, setGameState] = useState(null)
-  const [winners, setWinners] = useState([])
+  const [chipStacks, setChipStacks] = useState([])
+  const [pot, setPot] = useState(0)
 
   const startNewGame = () => {
     const game = newGame({ players: 4 })
+    let bettingState = betting.initBettingWithDefaults(4, 0, 10000)
+
+    // Deal and post blinds
     game.deal()
+    bettingState = betting.postBlinds(bettingState, {
+      smallBlind: 50, bigBlind: 100
+    })
+
+    // Play through streets
     game.flop()
     game.turn()
     game.river()
 
+    // Get results and distribute pot
     const result = game.showdown()
+    const distribution = betting.distributePots(bettingState, result.winners)
+
+    // Update final stacks
+    const finalStacks = bettingState.players.map((p, i) => {
+      const winnings = distribution.find(d => d.player === i)?.amount || 0
+      return p.stack + winnings
+    })
+
     setGameState(game.status())
-    setWinners(result.winners)
+    setChipStacks(finalStacks)
+    setPot(betting.getTotalPot(bettingState))
   }
 
   return (
@@ -445,7 +489,8 @@ function PokerGame() {
       {gameState && (
         &lt;div&gt;
           &lt;p&gt;Board: {gameState.boardAscii}&lt;/p&gt;
-          &lt;p&gt;Winners: {winners.map(w => `P${w + 1}`).join(', ')}&lt;/p&gt;
+          &lt;p&gt;Pot: {pot} chips&lt;/p&gt;
+          &lt;p&gt;Chip Stacks: {chipStacks.join(', ')}&lt;/p&gt;
         &lt;/div&gt;
       )}
     &lt;/div&gt;
@@ -463,28 +508,46 @@ function PokerGame() {
                     </button>
                   </div>
                   <pre class="code-content"><code>import express from 'express'
-import { newGame } from 'pokerpocket'
+import { newGame, betting } from 'pokerpocket'
 
 const app = express()
 app.use(express.json())
 
-// Tournament endpoint
+// Tournament endpoint with betting
 app.post('/api/poker/simulate', (req, res) => {
-  const { players = 6, rounds = 100 } = req.body
+  const { players = 6, rounds = 100, buyIn = 10000 } = req.body
   const results = []
+  const chipCounts = new Array(players).fill(buyIn)
 
   for (let i = 0; i &lt; rounds; i++) {
     const game = newGame({ players, seed: Date.now() + i })
+    let bettingState = betting.initBetting(players, chipCounts, i % players)
+
+    // Deal and post blinds
     game.deal()
+    bettingState = betting.postBlinds(bettingState, {
+      smallBlind: 50, bigBlind: 100
+    })
+
+    // Simulate betting (simplified)
     game.flop()
     game.turn()
     game.river()
 
+    // Distribute winnings
     const result = game.showdown()
+    const distribution = betting.distributePots(bettingState, result.winners)
+
+    // Update chip counts
+    distribution.forEach(({ player, amount }) => {
+      chipCounts[player] += amount
+    })
+
     results.push({
       round: i + 1,
       winners: result.winners,
-      board: game.status().boardAscii
+      pot: betting.getTotalPot(bettingState),
+      chipCounts: [...chipCounts]
     })
   }
 
@@ -492,7 +555,7 @@ app.post('/api/poker/simulate', (req, res) => {
 })
 
 app.listen(3000, () => {
-  console.log('Poker server running on port 3000')
+  console.log('Poker tournament server with betting on port 3000')
 })</code></pre>
                 </div>
               </div>
@@ -510,62 +573,89 @@ app.listen(3000, () => {
                   </div>
                   <pre class="code-content"><code>import {
   newGame,
-  evaluate7,
+  betting,
   type GameResult,
-  type Card,
-  type HandRank
+  type BettingState,
+  type Action
 } from 'pokerpocket'
 
 interface PokerSession {
   id: string
   players: number
-  results: GameResult[]
+  chipStacks: number[]
+  handsPlayed: number
 }
 
-class PokerAnalyzer {
+class PokerTournament {
   private sessions: Map&lt;string, PokerSession&gt; = new Map()
+  private readonly defaultBuyIn = 10000
+  private readonly blinds = { smallBlind: 50, bigBlind: 100 }
 
-  createSession(players: number): string {
+  createTournament(players: number): string {
     const id = crypto.randomUUID()
     this.sessions.set(id, {
       id,
       players,
-      results: []
+      chipStacks: new Array(players).fill(this.defaultBuyIn),
+      handsPlayed: 0
     })
     return id
   }
 
-  simulateHand(sessionId: string, seed?: number): GameResult {
+  playHand(sessionId: string): {
+    winners: number[]
+    pot: number
+    chipStacks: number[]
+  } {
     const session = this.sessions.get(sessionId)
     if (!session) throw new Error('Session not found')
 
+    // Create game and betting state
     const game = newGame({
       players: session.players,
-      seed: seed ?? Date.now()
+      seed: Date.now() + session.handsPlayed
     })
 
+    let bettingState = betting.initBetting(
+      session.players,
+      session.chipStacks,
+      session.handsPlayed % session.players
+    )
+
+    // Deal and post blinds
     game.deal()
+    bettingState = betting.postBlinds(bettingState, this.blinds)
+
+    // Simulate simple betting
     game.flop()
     game.turn()
     game.river()
 
+    // Showdown and distribute
     const result = game.showdown()
-    session.results.push(result)
+    const distribution = betting.distributePots(bettingState, result.winners)
+    const pot = betting.getTotalPot(bettingState)
 
-    return result
+    // Update chip stacks
+    distribution.forEach(({ player, amount }) => {
+      session.chipStacks[player] += amount
+    })
+
+    session.handsPlayed++
+
+    return {
+      winners: result.winners,
+      pot,
+      chipStacks: [...session.chipStacks]
+    }
   }
 
-  getWinRate(sessionId: string, player: number): number {
+  getChipLeader(sessionId: string): number | null {
     const session = this.sessions.get(sessionId)
-    if (!session) return 0
+    if (!session) return null
 
-    const wins = session.results.filter(r =>
-      r.winners.includes(player)
-    ).length
-
-    return session.results.length > 0
-      ? wins / session.results.length
-      : 0
+    const maxChips = Math.max(...session.chipStacks)
+    return session.chipStacks.indexOf(maxChips)
   }
 }</code></pre>
                 </div>
@@ -663,7 +753,7 @@ console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
             <div class="commands-grid">
               <div class="command-item">
                 <code>deal</code>
-                <span>Deal new hand (2 cards per player)</span>
+                <span>Deal new hand with blinds posted</span>
               </div>
               <div class="command-item">
                 <code>flop</code>
@@ -679,7 +769,47 @@ console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
               </div>
               <div class="command-item">
                 <code>showdown</code>
-                <span>Evaluate hands and determine winner</span>
+                <span>Evaluate hands and distribute pot</span>
+              </div>
+              <div class="command-item">
+                <code>check</code>
+                <span>Check (when no bet to call)</span>
+              </div>
+              <div class="command-item">
+                <code>call</code>
+                <span>Call the current bet</span>
+              </div>
+              <div class="command-item">
+                <code>bet &lt;amount&gt;</code>
+                <span>Bet specified amount</span>
+              </div>
+              <div class="command-item">
+                <code>raise &lt;amount&gt;</code>
+                <span>Raise by specified amount</span>
+              </div>
+              <div class="command-item">
+                <code>fold</code>
+                <span>Fold your hand</span>
+              </div>
+              <div class="command-item">
+                <code>allin</code>
+                <span>Go all-in with remaining chips</span>
+              </div>
+              <div class="command-item">
+                <code>blinds &lt;sb&gt; &lt;bb&gt;</code>
+                <span>Set small and big blind amounts</span>
+              </div>
+              <div class="command-item">
+                <code>ante &lt;amount&gt;</code>
+                <span>Set ante amount (0 for none)</span>
+              </div>
+              <div class="command-item">
+                <code>stacks &lt;amount&gt;</code>
+                <span>Set default starting stack size</span>
+              </div>
+              <div class="command-item">
+                <code>button &lt;player&gt;</code>
+                <span>Set dealer button position (0-based)</span>
               </div>
               <div class="command-item">
                 <code>players &lt;n&gt;</code>
@@ -688,6 +818,14 @@ console.log('Winner:', result.winners.map(w => `P${w + 1}`));</code></pre>
               <div class="command-item">
                 <code>seed &lt;n&gt;</code>
                 <span>Set RNG seed for reproducible games</span>
+              </div>
+              <div class="command-item">
+                <code>skipbet</code>
+                <span>Auto-complete betting round (testing)</span>
+              </div>
+              <div class="command-item">
+                <code>status</code>
+                <span>Show current game state</span>
               </div>
               <div class="command-item">
                 <code>help</code>
@@ -847,6 +985,183 @@ console.log(result.rank) // 'FULL_HOUSE'</code></pre>
               </div>
             </div>
 
+            <!-- Betting Methods -->
+            <div class="api-section">
+              <h3>Betting Methods</h3>
+              <div class="methods-grid">
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.initBetting(playerCount: number, stacks:
+                      number[], buttonIndex: number): BettingState</code
+                    >
+                  </div>
+                  <p>
+                    Initialize betting state with custom stack sizes for each
+                    player.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const state = betting.initBetting(3, [1000, 1500, 800], 0)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.initBettingWithDefaults(playerCount: number,
+                      buttonIndex: number, defaultStack?: number):
+                      BettingState</code
+                    >
+                  </div>
+                  <p>
+                    Initialize betting state with equal stacks for all players
+                    (default 10000).
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const state = betting.initBettingWithDefaults(4, 1, 5000)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.postBlinds(state: BettingState, config:
+                      TableConfig): BettingState</code
+                    >
+                  </div>
+                  <p>
+                    Post blinds and antes according to table configuration.
+                    Returns updated state.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>state = betting.postBlinds(state, { smallBlind: 25, bigBlind: 50 })</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.legalActions(state: BettingState, player:
+                      number): ActionInfo[]</code
+                    >
+                  </div>
+                  <p>
+                    Get all legal actions for a player with min/max amounts
+                    where applicable.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const actions = betting.legalActions(state, 2)
+// [{ type: 'fold' }, { type: 'call' }, { type: 'raise', min: 100, max: 500 }]</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.applyAction(state: BettingState, action: Action):
+                      BettingState</code
+                    >
+                  </div>
+                  <p>
+                    Apply a betting action and return the updated state.
+                    Validates action legality.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>state = betting.applyAction(state, { player: 1, type: 'raise', amount: 200 })</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.isRoundComplete(state: BettingState):
+                      boolean</code
+                    >
+                  </div>
+                  <p>
+                    Check if the current betting round is complete (all players
+                    acted or folded).
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>if (betting.isRoundComplete(state)) {
+  // Advance to next street
+}</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.startNewRound(state: BettingState):
+                      BettingState</code
+                    >
+                  </div>
+                  <p>
+                    Start a new betting round (flop/turn/river). Builds pots and
+                    resets for new round.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>game.flop()
+state = betting.startNewRound(state)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.distributePots(state: BettingState, winners:
+                      number[]): Distribution[]</code
+                    >
+                  </div>
+                  <p>
+                    Distribute all pots to winners, handling side pots
+                    automatically.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const { winners } = game.showdown()
+const winnings = betting.distributePots(state, winners)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.getTotalPot(state: BettingState): number</code
+                    >
+                  </div>
+                  <p>
+                    Get the total amount of chips in play (all committed chips).
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const pot = betting.getTotalPot(state) // 450</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >betting.getActivePlayers(state: BettingState):
+                      number[]</code
+                    >
+                  </div>
+                  <p>Get array of player indices who haven't folded.</p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const active = betting.getActivePlayers(state) // [0, 2, 3]</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Utility Methods -->
             <div class="api-section">
               <h3>Utility Methods</h3>
@@ -864,6 +1179,109 @@ console.log(result.rank) // 'FULL_HOUSE'</code></pre>
                   <div class="method-example">
                     <strong>Example:</strong>
                     <pre><code>const randomHand = drawRandom(7, 42)</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>cardToAscii(card: Card): string</code>
+                  </div>
+                  <p>
+                    Convert a card object to ASCII representation with Unicode
+                    suit symbols.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>import { cardToAscii } from 'pokerpocket'
+const card = { rank: 'A', suit: 's' }
+console.log(cardToAscii(card)) // 'A♠'</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Types & Interfaces -->
+            <div class="api-section">
+              <h3>Types & Interfaces</h3>
+              <div class="methods-grid">
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code>Card = { rank: Rank; suit: Suit }</code>
+                  </div>
+                  <p>
+                    Basic card representation with rank ('2'-'9', 'T', 'J', 'Q',
+                    'K', 'A') and suit ('s', 'h', 'd', 'c').
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const aceOfSpades: Card = { rank: 'A', suit: 's' }</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >EvalResult = { rank: HandRank; tiebreak: number[]; score:
+                      bigint; best5: Card[] }</code
+                    >
+                  </div>
+                  <p>
+                    Hand evaluation result with ranking, tiebreaker values,
+                    numeric score, and best 5 cards.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>// result.rank = 'FULL_HOUSE'
+// result.best5 = [A♠, A♥, K♠, K♥, K♦]</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >BettingState = { players: PlayerState[]; currentBet:
+                      number; actingIndex: number; ... }</code
+                    >
+                  </div>
+                  <p>
+                    Complete betting state including player stacks, bets, pot,
+                    and action tracking.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>// state.currentBet = 100
+// state.players[0].stack = 950</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >Action = { player: number; type: BetType; amount?: number
+                      }</code
+                    >
+                  </div>
+                  <p>
+                    Betting action with player index, action type, and optional
+                    amount for bets/raises.
+                  </p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const action: Action = { player: 1, type: 'raise', amount: 200 }</code></pre>
+                  </div>
+                </div>
+
+                <div class="method-card">
+                  <div class="method-signature">
+                    <code
+                      >TableConfig = { smallBlind: number; bigBlind: number;
+                      ante?: number }</code
+                    >
+                  </div>
+                  <p>Table configuration for blinds and antes.</p>
+                  <div class="method-example">
+                    <strong>Example:</strong>
+                    <pre><code>const config: TableConfig = { smallBlind: 25, bigBlind: 50 }</code></pre>
                   </div>
                 </div>
               </div>

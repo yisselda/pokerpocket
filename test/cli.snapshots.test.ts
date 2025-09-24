@@ -225,7 +225,7 @@ describe('CLI Snapshot Tests', () => {
 describe('CLI Unicode vs ASCII Tests', () => {
   it('unicode mode output', async () => {
     const result = await runCliCommand(
-      ['players 2', 'seed 42', 'deal', 'flop'],
+      ['players 2', 'seed 42', 'deal', 'skipbet', 'flop'],
       { ascii: false }
     )
     expect(result.exitCode).toBe(0)
@@ -238,7 +238,7 @@ describe('CLI Unicode vs ASCII Tests', () => {
 
   it('ascii mode output', async () => {
     const result = await runCliCommand(
-      ['players 2', 'seed 42', 'deal', 'flop'],
+      ['players 2', 'seed 42', 'deal', 'skipbet', 'flop'],
       { ascii: true }
     )
     expect(result.exitCode).toBe(0)

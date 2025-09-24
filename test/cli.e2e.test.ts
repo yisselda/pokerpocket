@@ -7,9 +7,13 @@ describe('CLI E2E', () => {
       'players 3',
       'seed 12345',
       'deal',
+      'skipbet',
       'flop',
+      'skipbet',
       'turn',
+      'skipbet',
       'river',
+      'skipbet',
       'showdown',
       'q',
     ].join('\n')
@@ -22,6 +26,7 @@ describe('CLI E2E', () => {
     expect(result.stdout).toMatchInlineSnapshot(`
       "🃏 Poker Pocket CLI
       Type "help" for commands
+      Betting: ON | Blinds: 50/100 | Default stack: 10000
       Players: 2, Phase: IDLE
       Available: deal, players <n>
 
@@ -30,29 +35,53 @@ describe('CLI E2E', () => {
       Available: deal, players <n>
 
       > Seed set to 12345 for next deal
-      > Cards dealt!
+      > Cards dealt! Blinds posted.
       Players: 3, Phase: PREFLOP
-      Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
-      Available: flop, fold <player>
 
+      💰 Pot: 150 | Current bet: 100
+      Players:
+        P1 (D): 10000 chips ← TO ACT
+        P2: 9950 chips [50 in pot]
+        P3: 9900 chips [100 in pot]
+      P1 actions: fold, call, raise <amount> (200-10000), allin
+
+      > Betting round auto-completed
       > Flop dealt!
       Players: 3, Phase: FLOP
       Board: 5♦ 7❤ A❤
-      Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+
+      💰 Pot: 300
+      Players:
+        P1 (D): 9900 chips
+        P2: 9900 chips
+        P3: 9900 chips
       Available: turn, showdown, fold <player>
 
+      > No active betting round
       > Turn dealt!
       Players: 3, Phase: TURN
       Board: 5♦ 7❤ A❤ 4♦
-      Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+
+      💰 Pot: 300
+      Players:
+        P1 (D): 9900 chips
+        P2: 9900 chips
+        P3: 9900 chips
       Available: river, showdown, fold <player>
 
+      > No active betting round
       > River dealt!
       Players: 3, Phase: RIVER
       Board: 5♦ 7❤ A❤ 4♦ 6♠
-      Hole: P1: 2 cards, P2: 2 cards, P3: 2 cards
+
+      💰 Pot: 300
+      Players:
+        P1 (D): 9900 chips
+        P2: 9900 chips
+        P3: 9900 chips
       Available: showdown, fold <player>
 
+      > No active betting round
       > 
       P1: 9♠ 4❤  ⇒  ONE PAIR (9♠,4❤,7❤,A❤,4♦)
       P2: Q❤ 8♣  ⇒  STRAIGHT (8♣,5♦,7❤,4♦,6♠)
@@ -60,6 +89,14 @@ describe('CLI E2E', () => {
 
       Winner(s): P2
 
+
+      💰 Pot Distribution:
+        P2 wins 300 chips
+
+      Final Stacks:
+        P1: 9900 chips
+        P2: 10200 chips
+        P3: 9900 chips
       Hand complete!
 
       P1: 9♠ 4❤  ⇒  ONE PAIR (9♠,4❤,7❤,A❤,4♦)
@@ -76,7 +113,7 @@ describe('CLI E2E', () => {
   })
 
   it('should handle early showdown at flop', async () => {
-    const input = ['seed 54321', 'deal', 'flop', 'showdown', 'q'].join('\n')
+    const input = ['seed 54321', 'deal', 'skipbet', 'flop', 'skipbet', 'showdown', 'q'].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
@@ -98,9 +135,13 @@ describe('CLI E2E', () => {
       'players 3',
       'seed 12345',
       'deal',
+      'skipbet',
       'flop',
+      'skipbet',
       'turn',
+      'skipbet',
       'river',
+      'skipbet',
       'showdown',
       'q',
     ].join('\n')
@@ -123,9 +164,13 @@ describe('CLI E2E', () => {
     const input = [
       'players 2',
       'deal',
+      'skipbet',
       'flop',
+      'skipbet',
       'turn',
+      'skipbet',
       'river',
+      'skipbet',
       'showdown',
       'q',
     ].join('\n')
@@ -150,15 +195,15 @@ describe('CLI E2E', () => {
   })
 
   it('should handle fold win scenario', async () => {
-    const input = ['seed 99999', 'deal', 'fold 1', 'q'].join('\n')
+    const input = ['seed 99999', 'deal', 'fold', 'q'].join('\n')
 
     const result = await execa('node', ['dist/cli.js'], {
       input,
       timeout: 5000,
     })
 
-    expect(result.stdout).toContain('P1 folds')
-    expect(result.stdout).toContain('P2 wins! (All other players folded)')
+    expect(result.stdout).toContain('folds')
+    expect(result.stdout).toContain('wins the pot!')
     expect(result.stdout).toContain('Goodbye!')
   })
 })
