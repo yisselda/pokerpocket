@@ -1,3 +1,4 @@
+// Random Number Generator using Linear Congruential Generator (LCG) algorithm
 export interface RNG {
   seed(n: number): void
   next(): number
