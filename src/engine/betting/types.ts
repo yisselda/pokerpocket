@@ -59,6 +59,7 @@ export interface TableState {
   pots: Pot[]
   currentBet: number
   lastRaiseSize: number
+  bettingReopened: boolean  // Track if action can be reopened
   winners?: { seatId: string; amount: number }[]
   history: ActionEvent[]
 }

@@ -12,6 +12,7 @@ export function initHand(state: TableState): TableState {
     pots: [],
     currentBet: 0,
     lastRaiseSize: 0,
+    bettingReopened: true,
     street: 'PREFLOP',
     winners: undefined,
     history: [...state.history],

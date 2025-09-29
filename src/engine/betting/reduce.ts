@@ -72,6 +72,7 @@ export function reduce(state: TableState, action: Action): TableState {
     ...state,
     seats: [...state.seats],
     history: [...state.history],
+    bettingReopened: state.bettingReopened,
   }
 
   switch (action.type) {
@@ -250,6 +251,7 @@ export function reduce(state: TableState, action: Action): TableState {
       seatData.streetContributed += to
       newState.currentBet = to
       newState.lastRaiseSize = to
+      newState.bettingReopened = true  // Bet opens action
 
       if (seatData.stack === 0) {
         seatData.allIn = true
@@ -301,6 +303,7 @@ export function reduce(state: TableState, action: Action): TableState {
       const previousBet = newState.currentBet
       newState.currentBet = to
       newState.lastRaiseSize = to - previousBet
+      newState.bettingReopened = true  // Full raise reopens action
 
       if (seatData.stack === 0) {
         seatData.allIn = true
@@ -340,11 +343,24 @@ export function reduce(state: TableState, action: Action): TableState {
 
       const totalCommitted = seatData.streetContributed
 
-      // Update current bet if this is higher
+      // Handle all-in amounts
       if (totalCommitted > newState.currentBet) {
         const raise = totalCommitted - newState.currentBet
-        newState.lastRaiseSize = raise
-        newState.currentBet = totalCommitted
+        const minRaiseSize = state.lastRaiseSize || state.config.blinds.bb
+
+        // Check if this is a full raise that reopens action
+        if (raise >= minRaiseSize) {
+          newState.lastRaiseSize = raise
+          newState.bettingReopened = true
+          newState.currentBet = totalCommitted
+        } else {
+          // Partial all-in - doesn't reopen action
+          newState.bettingReopened = false
+          // Keep currentBet unchanged for tracking purposes
+        }
+      } else if (totalCommitted < newState.currentBet) {
+        // All-in for less than current bet
+        newState.bettingReopened = false
       }
 
       // Add event

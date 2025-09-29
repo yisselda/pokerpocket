@@ -92,6 +92,7 @@ export function advanceStreet(state: TableState): TableState {
   if (newState.street !== 'SHOWDOWN' && newState.street !== 'COMPLETE') {
     newState.currentBet = 0
     newState.lastRaiseSize = 0
+    newState.bettingReopened = true  // Reset for new street
 
     // Reset street contributions
     newState.seats = newState.seats.map(seat => ({

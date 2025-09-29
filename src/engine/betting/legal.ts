@@ -71,17 +71,19 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
       result.canCall = true
       result.callAmount = callCost
 
-      // Can raise if we have enough chips
-      const minRaiseAmount = state.lastRaiseSize || state.config.blinds.bb
-      const minRaiseTotal = state.currentBet + minRaiseAmount
+      // Can raise if we have enough chips and betting is open
+      if (state.bettingReopened) {
+        const minRaiseAmount = state.lastRaiseSize || state.config.blinds.bb
+        const minRaiseTotal = state.currentBet + minRaiseAmount
 
-      if (stack > toCall) {
-        // Have chips beyond the call
-        if (stack >= minRaiseTotal - seat.streetContributed) {
-          // Have enough for a legal raise
-          result.canRaise = true
-          result.minRaiseTo = minRaiseTotal
-          result.maxRaiseTo = seat.streetContributed + stack
+        if (stack > toCall) {
+          // Have chips beyond the call
+          if (stack >= minRaiseTotal - seat.streetContributed) {
+            // Have enough for a legal raise
+            result.canRaise = true
+            result.minRaiseTo = minRaiseTotal
+            result.maxRaiseTo = seat.streetContributed + stack
+          }
         }
       }
     }

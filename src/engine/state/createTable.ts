@@ -86,6 +86,7 @@ export function createTable(config: TableConfig): TableState {
     pots: [],
     currentBet: 0,
     lastRaiseSize: 0,
+    bettingReopened: true,
     history: [],
   }
 
