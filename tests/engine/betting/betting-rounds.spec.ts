@@ -78,15 +78,12 @@ describe('Betting rounds', () => {
       table = reduce(table, { type: 'CALL', seat: 1 })
       table = reduce(table, { type: 'CHECK', seat: 2 })
 
-      // Advance to flop (we'll implement this)
-      table.street = 'FLOP'
-      table.board = cards('As', 'Kh', '7d')
-      table.currentBet = 0
-      table.lastRaiseSize = 0
-      for (const seat of table.seats) {
-        seat.streetContributed = 0
-      }
-      table.actionOn = 1 // SB acts first postflop
+      // Should auto-advance to flop
+      expect(table.street).toBe('FLOP')
+      expect(table.board).toHaveLength(3)
+      expect(table.currentBet).toBe(0)
+      expect(table.lastRaiseSize).toBe(0)
+      expect(table.actionOn).toBe(1) // SB acts first postflop
 
       // SB can check or bet
       const sbFlop = getLegalActions(table, 1)
@@ -276,17 +273,12 @@ describe('Betting rounds', () => {
       table = reduce(table, { type: 'CALL', seat: 1 })
       table = reduce(table, { type: 'CHECK', seat: 2 })
 
-      // Round should be closed
+      // Round should be closed and auto-advance to FLOP
       expect(selectors.isRoundClosed(table)).toBe(true)
-
-      // Advance street manually for now
-      table.street = 'FLOP'
-      table.board = cards('As', 'Kh', '7d')
-      table.currentBet = 0
-      for (const seat of table.seats) {
-        seat.streetContributed = 0
-      }
-      table.actionOn = 1
+      expect(table.street).toBe('FLOP')
+      expect(table.board).toHaveLength(3)
+      expect(table.currentBet).toBe(0)
+      expect(table.actionOn).toBe(1)
 
       // Everyone checks on flop
       expect(selectors.isRoundClosed(table)).toBe(false)

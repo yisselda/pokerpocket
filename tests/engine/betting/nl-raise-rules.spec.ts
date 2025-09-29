@@ -92,14 +92,11 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'CALL', seat: 1 })
       table = reduce(table, { type: 'CHECK', seat: 2 })
 
-      // Manually advance to flop
-      table.street = 'FLOP'
-      table.currentBet = 0
-      table.lastRaiseSize = 0
-      for (const seat of table.seats) {
-        seat.streetContributed = 0
-      }
-      table.actionOn = 1
+      // Should have auto-advanced to FLOP
+      expect(table.street).toBe('FLOP')
+      expect(table.currentBet).toBe(0)
+      expect(table.lastRaiseSize).toBe(0)
+      expect(table.actionOn).toBe(1) // SB acts first postflop
 
       // SB bets 200 on flop
       table = reduce(table, { type: 'BET', seat: 1, to: 200 })
@@ -147,11 +144,14 @@ describe('No-Limit raise rules', () => {
 
       table = reduce(table, { type: 'CALL', seat: 2 })
 
-      // Action is back to UTG who already has 300 in
-      const utgActions2 = getLegalActions(table, 0)
-      expect(utgActions2.canCall).toBe(false) // Already matched the bet
-      expect(utgActions2.canCheck).toBe(true) // Nothing more to call
-      expect(utgActions2.canRaise).toBe(false) // Cannot re-raise after partial all-in
+      // After BB calls, round is complete and should advance to FLOP
+      // SB is all-in so only BB and UTG remain active
+      expect(table.street).toBe('FLOP')
+      expect(table.currentBet).toBe(0)
+      expect(table.bettingReopened).toBe(true) // Reset for new street
+
+      // On the flop, SB (seat 1) acts first in 3+ players
+      expect(table.actionOn).toBe(2) // BB is first active player left of button
     })
 
     it('should reopen action for full all-in raise', () => {
@@ -235,14 +235,11 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'CALL', seat: 1 })
       table = reduce(table, { type: 'CHECK', seat: 0 })
 
-      // Manually advance
-      table.street = 'FLOP'
-      table.currentBet = 0
-      table.lastRaiseSize = 0
-      for (const seat of table.seats) {
-        seat.streetContributed = 0
-      }
-      table.actionOn = 0
+      // Should auto-advance to FLOP
+      expect(table.street).toBe('FLOP')
+      expect(table.currentBet).toBe(0)
+      expect(table.lastRaiseSize).toBe(0)
+      expect(table.actionOn).toBe(0) // SB/button acts first postflop in HU
 
       // SB/button acts first postflop, min bet is BB
       const sbActions = getLegalActions(table, 0)
@@ -349,14 +346,11 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'CALL', seat: 1 })
       table = reduce(table, { type: 'CHECK', seat: 0 })
 
-      // Advance to flop
-      table.street = 'FLOP'
-      table.currentBet = 0
-      table.lastRaiseSize = 0
-      for (const seat of table.seats) {
-        seat.streetContributed = 0
-      }
-      table.actionOn = 0
+      // Should auto-advance to FLOP
+      expect(table.street).toBe('FLOP')
+      expect(table.currentBet).toBe(0)
+      expect(table.lastRaiseSize).toBe(0)
+      expect(table.actionOn).toBe(0) // SB/button acts first postflop in HU
 
       // Cannot use RAISE on unopened pot
       expect(() => {

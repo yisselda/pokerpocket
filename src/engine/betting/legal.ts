@@ -57,8 +57,8 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
       result.canRaise = true
       result.minRaiseTo = Math.min(state.config.blinds.bb, stack)
       result.maxRaiseTo = stack
-    } else if (state.currentBet > 0 && stack > 0) {
-      // Can raise even when caught up (option to raise)
+    } else if (state.currentBet > 0 && stack > 0 && state.bettingReopened) {
+      // Can raise even when caught up (option to raise) - but only if betting is open
       result.canRaise = true
       const minRaiseAmount = state.lastRaiseSize || state.config.blinds.bb
       result.minRaiseTo = Math.min(state.currentBet + minRaiseAmount, seat.streetContributed + stack)
