@@ -3,7 +3,6 @@
 import { createInterface } from 'node:readline'
 import { PokerEngine, cardToAscii } from './engine.js'
 import * as betting from './betting.js'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const argv = process.argv.slice(2)
 if (argv.includes('-h') || argv.includes('--help')) {
@@ -132,17 +131,6 @@ Betting Config:
 Advanced:
   seed <n>          - Set RNG seed for reproducible games
 `
-}
-
-function isRunDirectly(): boolean {
-  if (typeof import.meta !== 'undefined' && import.meta.url) {
-    const thisFile = fileURLToPath(import.meta.url)
-    const invoked = process.argv[1]
-      ? fileURLToPath(pathToFileURL(process.argv[1]).href)
-      : ''
-    return thisFile === invoked
-  }
-  return false
 }
 
 async function main() {
@@ -543,9 +531,7 @@ async function main() {
 
 export { main } // handy for tests: import { main } from '../dist/cli.js'
 
-if (isRunDirectly()) {
-  main().catch(err => {
-    console.error(err)
-    process.exit(1)
-  })
-}
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
