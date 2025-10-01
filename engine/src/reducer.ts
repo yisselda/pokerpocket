@@ -1,18 +1,15 @@
-import type { Action, GameState, BettingPhase } from './types'
-import { shuffleDeck } from './deck'
-import { dealCommunity, dealHole } from './deal'
-import { stat } from 'fs'
-import { firstToActPostflop, firstToActPreflop } from './positions'
-import { settleStreetBets } from './pots'
-import { on } from 'events'
+import type { Action, GameState, BettingPhase } from './types.js'
+import { shuffleDeck } from './deck.js'
+import { dealCommunity, dealHole } from './deal.js'
+import { firstToActPostflop, firstToActPreflop } from './positions.js'
+import { settleStreetBets } from './pots.js'
 import {
   nextActorIndex,
   noFurtherActionsPossible,
   onlyOneNonFolded,
   shouldCloseBetting,
-} from './rounds'
-import { resolve } from 'path'
-import { resolveShowdown } from './showdown'
+} from './rounds.js'
+import { resolveShowdown } from './showdown.js'
 
 const bettingPhases: BettingPhase[] = ['PREFLOP', 'FLOP', 'TURN', 'RIVER']
 
@@ -97,10 +94,17 @@ export function reduce(state: GameState, action: Action): GameState {
 
         let lastAggressor = state.lastAggressor
         let targetBet = state.targetBet
+        let roundStart = state.roundStart
 
         // super-minimal demo semantics:
         if (action.move === 'FOLD') {
           me.folded = true
+          if (roundStart === action.seat) {
+            roundStart = nextActorIndex(players, action.seat)
+          }
+          if (lastAggressor === action.seat) {
+            lastAggressor = undefined
+          }
         } else if (action.move === 'CHECK') {
           // no chips move
         } else if (action.move === 'CALL') {
@@ -189,9 +193,10 @@ export function reduce(state: GameState, action: Action): GameState {
           toAct,
           targetBet,
           lastAggressor,
+          roundStart,
         }
 
-        if (shouldCloseBetting(provisional)) {
+        if (shouldCloseBetting(provisional, state.toAct)) {
           // 1) settle street
           const settled = settleStreetBets(
             provisional.players,

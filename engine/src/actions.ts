@@ -1,4 +1,4 @@
-import type { Action, SeatId } from './types'
+import type { Action, SeatId } from './types.js'
 
 export const startHand = (): Action => ({ type: 'START' })
 export const dealCards = (): Action => ({ type: 'DEAL_CARDS' })

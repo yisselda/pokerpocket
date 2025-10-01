@@ -44,6 +44,7 @@
     "build:lib": "tsup src/index.ts --format esm,cjs --dts --out-dir dist --clean",
     "build:cli": "tsup src/cli.ts --format esm --out-dir dist",
     "dev": "npm run build && node dist/cli.js",
+    "play": "npm --prefix engine run play",
     "test": "vitest run",
     "bench": "vitest run test/bench.test.ts",
     "e2e": "vitest run test/cli.e2e.test.ts",

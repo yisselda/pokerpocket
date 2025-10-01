@@ -1,5 +1,5 @@
-import { evaluateSeven } from './evaluator'
-import type { Player, Pot } from './types'
+import { evaluateSeven } from './evaluator.js'
+import type { Player, Pot } from './types.js'
 
 // Determine the winners of the hand and their payouts
 // For each pot, find best eligible hand among not-folded players

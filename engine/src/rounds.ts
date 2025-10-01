@@ -1,4 +1,4 @@
-import type { GameState, Player } from './types'
+import type { GameState, Player } from './types.js'
 
 export function countActive(players: Player[]) {
   return players.filter(p => !p.folded && !p.allIn).length
@@ -26,14 +26,33 @@ export function nextActorIndex(players: Player[], start: number): number {
 // Has action returned to refSeat?
 // i.e. is it refSeat's turn to act again?
 // Note: this does NOT check if refSeat can actually act (they may be folded/all-in)
+function nextActiveSeat(players: Player[], start: number) {
+  for (let i = 0; i < players.length; i++) {
+    const idx = (start + i) % players.length
+    const p = players[idx]
+    if (!p.folded && !p.allIn) return idx
+  }
+  return start
+}
+
+function prevActiveSeat(players: Player[], start: number) {
+  for (let i = 1; i <= players.length; i++) {
+    const idx = (start - i + players.length) % players.length
+    const p = players[idx]
+    if (!p.folded && !p.allIn) return idx
+  }
+  return start
+}
+
 export function returnedTo(
   refSeat: number,
   toAct: number,
-  players: Player[]
+  players: Player[],
+  justActed: number
 ): boolean {
-  // In most engines, "returned" means the next to act is the aggressor (they have action),
-  // i.e., the previous player just acted and now it's refSeat's turn again.
-  return toAct === refSeat
+  const firstLive = nextActiveSeat(players, refSeat)
+  const lastLive = prevActiveSeat(players, firstLive)
+  return toAct === firstLive && justActed === lastLive
 }
 
 export function everyoneMatchedTarget(players: Player[], targetBet: number) {
@@ -45,7 +64,8 @@ export function everyoneMatchedTarget(players: Player[], targetBet: number) {
 // - only one player not folded (hand over)
 // - everyone has matched the target bet (or is all-in) AND action has returned to lastAggressor or roundStart
 export function shouldCloseBetting(
-  state: GameState & { tag: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' }
+  state: GameState & { tag: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' },
+  justActed: number
 ): boolean {
   const { players, targetBet, lastAggressor, roundStart, toAct } = state
   if (onlyOneNonFolded(players)) return true
@@ -53,7 +73,7 @@ export function shouldCloseBetting(
   if (!everyoneMatchedTarget(players, targetBet)) return false
 
   const ref = lastAggressor ?? roundStart
-  return returnedTo(ref, toAct, players)
+  return returnedTo(ref, toAct, players, justActed)
 }
 
 // Are all remaining players either folded or all-in

@@ -1,5 +1,5 @@
-import { shuffleDeck } from './deck'
-import type { Player, BettingPhase } from './types'
+import { shuffleDeck } from './deck.js'
+import type { Player, BettingPhase } from './types.js'
 
 // deal 2 hole cards per active player (no burn logic yet)
 export function dealHole(players: Player[], deck: string[]) {

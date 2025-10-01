@@ -1,4 +1,4 @@
-import type { GameState, LegalActions } from './types'
+import type { GameState, LegalActions } from './types.js'
 
 export function getPhase(state: GameState) {
   return state.tag

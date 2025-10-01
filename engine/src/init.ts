@@ -1,4 +1,4 @@
-import type { GameState, Player } from './types'
+import type { GameState, Player } from './types.js'
 
 export function createPlayers(n: number, chips: number): Player[] {
   return Array.from({ length: n }, (_, i) => ({

@@ -1,4 +1,4 @@
-import type { Player } from './types'
+import type { Player } from './types.js'
 
 /** Ranks: 2..A => 0..12 (A=12) */
 const RANK_CHARS = '23456789TJQKA'

@@ -1,4 +1,4 @@
-import type { Player, Pot } from './types'
+import type { Player, Pot } from './types.js'
 
 /**
  * Move current street bets into pots, creating/expanding side pots.

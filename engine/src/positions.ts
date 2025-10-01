@@ -5,7 +5,7 @@
 // UTG: under the gun (first to act preflop in 3+ handed)
 // MP: middle position
 
-import { Player } from './types'
+import { Player } from './types.js'
 
 // CO: cutoff (seat before dealer)
 export type Position = 'BTN' | 'SB' | 'BB' | 'UTG' | 'MP' | 'CO'

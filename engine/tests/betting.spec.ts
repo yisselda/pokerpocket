@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { createTable } from '../src/init'
 import { reduce } from '../src/reducer'
-import { startHand, dealCards, call, raiseTo } from '../src/actions'
+import {
+  startHand,
+  dealCards,
+  call,
+  raiseTo,
+  fold,
+  check,
+} from '../src/actions'
 import { expectState } from './helpers/state'
 
 describe('betting flow minimal', () => {
@@ -18,5 +25,54 @@ describe('betting flow minimal', () => {
     expect(flop.pots[0]?.amount).toBe(400)
     expect(flop.players[0].bet).toBe(0)
     expect(flop.players[1].bet).toBe(0)
+  })
+
+  it('advances after heads-up flop checks', () => {
+    let table = createTable(2, 1000, 100)
+    table = reduce(table, startHand())
+    table = reduce(table, dealCards())
+
+    table = reduce(table, call(0))
+    table = reduce(table, check(1))
+
+    const flop = expectState(table, 'FLOP')
+    expect(flop.toAct).toBe(1)
+
+    table = reduce(table, check(1))
+    table = reduce(table, check(0))
+
+    const turnHU = expectState(table, 'TURN')
+    expect(turnHU.toAct).toBe(1)
+  })
+
+  it('closes the street when the starter folds mid-round', () => {
+    let table = createTable(6, 1000, 100)
+    table = reduce(table, startHand())
+    table = reduce(table, dealCards())
+
+    for (const action of [
+      call(3),
+      call(4),
+      call(5),
+      call(0),
+      call(1),
+      check(2),
+    ]) {
+      table = reduce(table, action)
+    }
+
+    const flop = expectState(table, 'FLOP')
+    expect(flop.toAct).toBe(1)
+
+    table = reduce(table, fold(1))
+    table = reduce(table, check(2))
+    table = reduce(table, fold(3))
+    table = reduce(table, fold(4))
+    table = reduce(table, fold(5))
+    table = reduce(table, check(0))
+
+    const turn = expectState(table, 'TURN')
+    expect(turn.board).toHaveLength(4)
+    expect(turn.toAct).toBe(2)
   })
 })

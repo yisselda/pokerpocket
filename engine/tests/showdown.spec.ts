@@ -10,14 +10,15 @@ describe('showdown', () => {
     table = reduce(table, startHand())
     table = reduce(table, dealCards())
     // force a pot for test:
-    table = expectState(table, 'PREFLOP')
-    table.players[0].bet = 200
-    table.players[0].stack -= 200
-    table.players[1].bet = 200
-    table.players[1].stack -= 200
+    const preflop = expectState(table, 'PREFLOP')
+    preflop.players[0].bet = 200
+    preflop.players[0].stack -= 200
+    preflop.players[1].bet = 200
+    preflop.players[1].stack -= 200
+    table = preflop
     table = reduce(table, endRound()) // settle bets to pots -> FLOP
-    table = expectState(table, 'FLOP')
-    const [mainPot] = table.pots
+    const flop = expectState(table, 'FLOP')
+    const [mainPot] = flop.pots
     expect(mainPot?.amount).toBe(400)
     table = reduce(table, endRound()) // -> TURN
     table = reduce(table, endRound()) // -> RIVER
