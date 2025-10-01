@@ -27,7 +27,9 @@ export function dealCommunity(
   const nextBoard = [...board]
   const nextDeck = [...deck]
 
-  // (Optional burn) // nextDeck.pop();
+  // burn card 🔥
+  if (!nextDeck.pop()) throw new Error('Deck underflow burning card')
+
   if (phase === 'PREFLOP') {
     // FLOP
     for (let i = 0; i < 3; i++) {
