@@ -3,6 +3,7 @@ import { shuffleDeck } from './deck'
 import { dealCommunity, dealHole } from './deal'
 import { stat } from 'fs'
 import { firstToActPreflop } from './positions'
+import { settleStreetBets } from './pots'
 
 const bettingPhases: BettingPhase[] = ['PREFLOP', 'FLOP', 'TURN', 'RIVER']
 
@@ -117,13 +118,17 @@ export function reduce(state: GameState, action: Action): GameState {
       }
 
       if (action.type === 'ROUND_COMPLETE') {
+        const settled = settleStreetBets(state.players, state.pots)
+        const players = settled.players
+        const pots = settled.pots
+
         const next = nextBettingPhase(state.tag)
         if (next === 'SHOWDOWN') {
           return {
             tag: 'SHOWDOWN',
-            players: state.players,
+            players,
             board: state.board,
-            pots: state.pots,
+            pots,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
           }
@@ -134,7 +139,7 @@ export function reduce(state: GameState, action: Action): GameState {
           state.deck,
           state.tag
         )
-        return { ...state, tag: next, board, deck }
+        return { ...state, tag: next, players, pots, board, deck, toAct: 0 }
       }
 
       return state
