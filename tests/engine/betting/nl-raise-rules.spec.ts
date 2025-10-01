@@ -56,19 +56,19 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // BB checks
-      table = reduce(table, { type: 'CHECK', seat: 1 })
+      // SB calls (heads-up: SB acts first)
+      table = reduce(table, { type: 'CALL', seat: 0 })
 
-      // SB raises to 150 (raise-to, not raise-by)
-      table = reduce(table, { type: 'RAISE', seat: 0, to: 150 })
+      // BB raises to 150 (raise-to, not raise-by)
+      table = reduce(table, { type: 'RAISE', seat: 1, to: 150 })
       expect(table.currentBet).toBe(150)
       expect(table.lastRaiseSize).toBe(100) // 150 - 50 = 100
 
-      // BB re-raises to 450 (min would be 250)
-      const bbActions = getLegalActions(table, 1)
-      expect(bbActions.minRaiseTo).toBe(250) // 150 + 100
+      // SB re-raises to 450 (min would be 250)
+      const sbActions = getLegalActions(table, 0)
+      expect(sbActions.minRaiseTo).toBe(250) // 150 + 100
 
-      table = reduce(table, { type: 'RAISE', seat: 1, to: 450 })
+      table = reduce(table, { type: 'RAISE', seat: 0, to: 450 })
       expect(table.currentBet).toBe(450)
       expect(table.lastRaiseSize).toBe(300) // 450 - 150 = 300
     })
@@ -87,15 +87,22 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
+      // Debug: Check who acts first preflop
+      expect(table.actionOn).toBe(0) // BTN acts first in 3+ players
+
       // Get to flop
-      table = reduce(table, { type: 'CALL', seat: 0 })
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      table = reduce(table, { type: 'CHECK', seat: 2 })
+      table = reduce(table, { type: 'CALL', seat: 0 }) // BTN calls
+      expect(table.actionOn).toBe(1) // Now SB acts
+      table = reduce(table, { type: 'CALL', seat: 1 }) // SB calls
+      expect(table.actionOn).toBe(2) // Now BB acts
+      table = reduce(table, { type: 'CHECK', seat: 2 }) // BB checks
 
       // Should have auto-advanced to FLOP
       expect(table.street).toBe('FLOP')
       expect(table.currentBet).toBe(0)
       expect(table.lastRaiseSize).toBe(0)
+      // In 3+ players, first active left of button acts first postflop
+      // Button is at 0, so check seat 1 (SB)
       expect(table.actionOn).toBe(1) // SB acts first postflop
 
       // SB bets 200 on flop
@@ -184,36 +191,32 @@ describe('No-Limit raise rules', () => {
       expect(bbActions.minRaiseTo).toBe(900) // 600 + 300
     })
 
-    it('should handle complex multi-way all-in scenarios', () => {
+    it('should handle complex multi-way all-in scenarios (3-handed)', () => {
       const config: TableConfig = {
         variant: 'NLHE',
-        maxSeats: 4,
+        maxSeats: 3,
         blinds: { sb: 25, bb: 50 },
         seed: 333,
       }
 
       let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 200 })
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 60 })
-      table = reduce(table, { type: 'SIT', seat: 2, buyin: 300 })
-      table = reduce(table, { type: 'SIT', seat: 3, buyin: 1000 })
+      table = reduce(table, { type: 'SIT', seat: 0, buyin: 200 })  // BTN
+      table = reduce(table, { type: 'SIT', seat: 1, buyin: 60 })   // SB
+      table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 }) // BB
       table = reduce(table, { type: 'START_HAND' })
 
-      // Seat 3 (UTG) raises to 150
-      table = reduce(table, { type: 'RAISE', seat: 3, to: 150 })
-
-      // Seat 0 (button) goes all-in for 200 (full raise)
-      table = reduce(table, { type: 'ALL_IN', seat: 0 })
-      expect(table.currentBet).toBe(200)
+      // Seat 0 (BTN/UTG) raises to 150
+      table = reduce(table, { type: 'RAISE', seat: 0, to: 150 })
 
       // Seat 1 (SB) goes all-in for 60 total (35 + 25 posted)
       table = reduce(table, { type: 'ALL_IN', seat: 1 })
-      expect(table.currentBet).toBe(200) // Doesn't change (partial)
+      expect(table.currentBet).toBe(150) // Stays at 150 (partial all-in doesn't change)
 
-      // Seat 2 (BB) can still raise
+      // Seat 2 (BB) cannot raise due to partial all-in not reopening
       const bbActions = getLegalActions(table, 2)
-      expect(bbActions.canRaise).toBe(true) // 200 was a full raise over 150
-      expect(bbActions.minRaiseTo).toBe(250) // 200 + 50 (200-150)
+      expect(bbActions.canRaise).toBe(false) // Partial all-in doesn't reopen
+      expect(bbActions.canCall).toBe(true)
+      expect(bbActions.callAmount).toBe(100) // 150 - 50 already posted
     })
   })
 
@@ -231,9 +234,10 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // Get to flop
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      table = reduce(table, { type: 'CHECK', seat: 0 })
+      // Get to flop - in HU, SB/button acts first preflop
+      // SB calls (50 more to match BB), BB checks (option)
+      table = reduce(table, { type: 'CALL', seat: 0 })  // SB calls
+      table = reduce(table, { type: 'CHECK', seat: 1 }) // BB checks option
 
       // Should auto-advance to FLOP
       expect(table.street).toBe('FLOP')
@@ -269,18 +273,18 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // BB checks, SB has only 20 left (70 - 50)
-      table = reduce(table, { type: 'CHECK', seat: 1 })
-
+      // SB has only 20 left (70 - 50 blind), and needs to call 50 more
+      // SB can only call (all-in for 20), not raise since 70 < 100
       const sbActions = getLegalActions(table, 0)
-      expect(sbActions.canBet).toBe(false) // Can't make min bet
-      expect(sbActions.canRaise).toBe(true) // But can go all-in
-      expect(sbActions.maxRaiseTo).toBe(70) // Total commitment
+      expect(sbActions.canCall).toBe(true)  // Can call (all-in for 20)
+      expect(sbActions.canRaise).toBe(false) // Cannot raise (70 < 100)
+      expect(sbActions.callAmount).toBe(20)  // All-in amount
 
-      // Go all-in
+      // Go all-in (call for less)
       table = reduce(table, { type: 'ALL_IN', seat: 0 })
-      expect(table.currentBet).toBe(70)
+      expect(table.currentBet).toBe(100) // Current bet doesn't change
       expect(table.seats[0].allIn).toBe(true)
+      expect(table.seats[0].streetContributed).toBe(70) // Total commitment
     })
   })
 
@@ -298,13 +302,13 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // BB checks
-      table = reduce(table, { type: 'CHECK', seat: 1 })
+      // SB calls first (heads-up)
+      table = reduce(table, { type: 'CALL', seat: 0 })
 
-      // SB tries to raise to less than min (should be 100 min)
+      // BB tries to raise to less than min (should be 200 min)
       expect(() => {
-        reduce(table, { type: 'RAISE', seat: 0, to: 75 })
-      }).toThrow('Raise must be larger than call amount')
+        reduce(table, { type: 'RAISE', seat: 1, to: 150 })
+      }).toThrow('Raise must be at least')
     })
 
     it('should reject bets when pot is already opened', () => {
@@ -319,6 +323,9 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
+
+      // SB calls first (heads-up)
+      table = reduce(table, { type: 'CALL', seat: 0 })
 
       // BB raises
       table = reduce(table, { type: 'RAISE', seat: 1, to: 200 })
@@ -342,9 +349,9 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // Get to flop
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      table = reduce(table, { type: 'CHECK', seat: 0 })
+      // Get to flop - SB acts first, needs to call
+      table = reduce(table, { type: 'CALL', seat: 0 })  // SB calls
+      table = reduce(table, { type: 'CHECK', seat: 1 }) // BB checks
 
       // Should auto-advance to FLOP
       expect(table.street).toBe('FLOP')

@@ -41,8 +41,14 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
   const toCall = Math.max(0, state.currentBet - seat.streetContributed)
   const stack = seat.stack
 
-  // Always can fold (unless nothing to fold to)
-  result.canFold = true
+  // Special case: BB with option when everyone limps (preflop, no raise)
+  const isBBWithOption = state.street === 'PREFLOP' &&
+                         seatIndex === state.bbIndex &&
+                         state.currentBet === state.config.blinds.bb &&
+                         toCall === 0
+
+  // Can fold unless BB with option (no one raised)
+  result.canFold = !isBBWithOption && toCall > 0
 
   if (toCall === 0) {
     // No bet to call - can check
@@ -53,10 +59,8 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
       result.canBet = true
       // Min bet is BB size (or all stack if less)
       result.minBet = Math.min(state.config.blinds.bb, stack)
-      // Can also raise even though no bet (opening raise)
-      result.canRaise = true
-      result.minRaiseTo = Math.min(state.config.blinds.bb, stack)
-      result.maxRaiseTo = stack
+      // Don't set canRaise when there's no bet - use BET instead
+      result.canRaise = false
     } else if (state.currentBet > 0 && stack > 0 && state.bettingReopened) {
       // Can raise even when caught up (option to raise) - but only if betting is open
       result.canRaise = true
@@ -65,7 +69,9 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
       result.maxRaiseTo = seat.streetContributed + stack
     }
   } else {
-    // There's a bet to call
+    // There's a bet to call - always can fold
+    result.canFold = true
+
     if (stack > 0) {
       const callCost = Math.min(toCall, stack)
       result.canCall = true
@@ -77,13 +83,16 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
         const minRaiseTotal = state.currentBet + minRaiseAmount
 
         if (stack > toCall) {
-          // Have chips beyond the call
+          // Have chips beyond the call - can always raise (all-in if needed)
+          result.canRaise = true
           if (stack >= minRaiseTotal - seat.streetContributed) {
             // Have enough for a legal raise
-            result.canRaise = true
             result.minRaiseTo = minRaiseTotal
-            result.maxRaiseTo = seat.streetContributed + stack
+          } else {
+            // Can only go all-in for less
+            result.minRaiseTo = seat.streetContributed + stack
           }
+          result.maxRaiseTo = seat.streetContributed + stack
         }
       }
     }

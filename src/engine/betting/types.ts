@@ -60,6 +60,7 @@ export interface TableState {
   currentBet: number
   lastRaiseSize: number
   bettingReopened: boolean  // Track if action can be reopened
+  hasActedThisRound: Set<number>  // Track who has acted this betting round
   winners?: { seatId: string; amount: number }[]
   history: ActionEvent[]
 }

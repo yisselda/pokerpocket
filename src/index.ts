@@ -12,6 +12,8 @@ export type { Card, Rank, Suit, EvalResult, HandRank } from './types.js'
 export { createTable } from './engine/state/createTable.js'
 export { getLegalActions } from './engine/betting/legal.js'
 export { reduce } from './engine/betting/reduce.js'
+export { computePots } from './engine/betting/pots.js'
+export { advanceStreet } from './engine/betting/order.js'
 export { viewFor } from './engine/view.js'
 export { selectors } from './engine/betting/selectors.js'
 

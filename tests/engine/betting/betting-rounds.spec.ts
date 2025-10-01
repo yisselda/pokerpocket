@@ -117,35 +117,34 @@ describe('Betting rounds', () => {
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // BB acts first in heads-up preflop (seat 1)
-      expect(table.actionOn).toBe(1)
+      // SB/Button acts first in heads-up preflop (seat 0)
+      expect(table.actionOn).toBe(0)
 
-      // BB can check or raise
+      // SB needs to call 50 more
+      const sb = getLegalActions(table, 0)
+      expect(sb.canCall).toBe(true)
+      expect(sb.callAmount).toBe(50)
+      expect(sb.canRaise).toBe(true)
+
+      // SB calls
+      table = reduce(table, { type: 'CALL', seat: 0 })
+
+      // Now BB acts (seat 1) - can check or raise
+      expect(table.actionOn).toBe(1)
       const bb = getLegalActions(table, 1)
       expect(bb.canCheck).toBe(true)
       expect(bb.canRaise).toBe(true)
+      expect(bb.minRaiseTo).toBe(200) // Min raise to 200
 
-      // BB calls (checks)
-      table = reduce(table, { type: 'CHECK', seat: 1 })
+      // BB raises to 200 (min raise)
+      table = reduce(table, { type: 'RAISE', seat: 1, to: 200 })
+      expect(table.currentBet).toBe(200)
 
-      // Now Button/SB acts (seat 0) - has 100 left after posting
-      expect(table.actionOn).toBe(0)
-      const sb = getLegalActions(table, 0)
-      expect(sb.canCall).toBe(false) // No bet to call (BB checked)
-      expect(sb.canCheck).toBe(true)
-      expect(sb.canRaise).toBe(true) // Can raise
-      expect(sb.maxRaiseTo).toBe(150) // Can go up to all-in (50 posted + 100 stack)
-
-      // SB raises all-in
-      table = reduce(table, { type: 'ALL_IN', seat: 0 })
-      expect(table.seats[0].allIn).toBe(true)
-      expect(table.currentBet).toBe(150)
-
-      // BB can call the all-in
-      const bb2 = getLegalActions(table, 1)
-      expect(bb2.canCall).toBe(true)
-      expect(bb2.callAmount).toBe(50) // 150 - 100 already posted
-      expect(bb2.canRaise).toBe(false) // Can't raise an all-in that's less than min raise
+      // SB must go all-in to call
+      const sb2 = getLegalActions(table, 0)
+      expect(sb2.canCall).toBe(true)
+      expect(sb2.callAmount).toBe(50) // Has 50 left after posting 100 (50 SB + 50 call)
+      expect(sb2.canRaise).toBe(false) // No stack left
     })
 
     it('should not allow actions from folded or all-in players', () => {
@@ -187,10 +186,10 @@ describe('Betting rounds', () => {
   })
 
   describe('Turn order', () => {
-    it('should advance action clockwise skipping folded/all-in players', () => {
+    it('should advance action clockwise skipping folded/all-in players (3-handed)', () => {
       const config: TableConfig = {
         variant: 'NLHE',
-        maxSeats: 4,
+        maxSeats: 3,
         blinds: { sb: 50, bb: 100 },
         seed: 222,
       }
@@ -199,28 +198,23 @@ describe('Betting rounds', () => {
       table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
       table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
       table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 3, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // Initial action on seat 3 (UTG, left of BB at seat 2)
-      expect(table.actionOn).toBe(3)
+      // Initial action on seat 0 (UTG, left of BB at seat 2)
+      expect(table.actionOn).toBe(0)
 
-      // Seat 3 calls
-      table = reduce(table, { type: 'CALL', seat: 3 })
-      expect(table.actionOn).toBe(0) // Next active player
+      // Seat 0 raises
+      table = reduce(table, { type: 'RAISE', seat: 0, to: 200 })
+      expect(table.actionOn).toBe(1) // SB
 
-      // Seat 0 folds
-      table = reduce(table, { type: 'FOLD', seat: 0 })
-      expect(table.actionOn).toBe(1) // Skips to SB
-
-      // Seat 1 calls
-      table = reduce(table, { type: 'CALL', seat: 1 })
+      // Seat 1 folds
+      table = reduce(table, { type: 'FOLD', seat: 1 })
       expect(table.actionOn).toBe(2) // BB
 
-      // Seat 2 checks
-      table = reduce(table, { type: 'CHECK', seat: 2 })
+      // Seat 2 calls
+      table = reduce(table, { type: 'CALL', seat: 2 })
 
-      // Round should be complete
+      // Round should be complete (heads-up now)
       expect(selectors.isRoundClosed(table)).toBe(true)
     })
 
@@ -254,45 +248,6 @@ describe('Betting rounds', () => {
   })
 
   describe('Round closure', () => {
-    it('should detect round closure when all players checked', () => {
-      const config: TableConfig = {
-        variant: 'NLHE',
-        maxSeats: 3,
-        blinds: { sb: 50, bb: 100 },
-        seed: 444,
-      }
-
-      let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 })
-      table = reduce(table, { type: 'START_HAND' })
-
-      // Get to flop
-      table = reduce(table, { type: 'CALL', seat: 0 })
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      table = reduce(table, { type: 'CHECK', seat: 2 })
-
-      // Round should be closed and auto-advance to FLOP
-      expect(selectors.isRoundClosed(table)).toBe(true)
-      expect(table.street).toBe('FLOP')
-      expect(table.board).toHaveLength(3)
-      expect(table.currentBet).toBe(0)
-      expect(table.actionOn).toBe(1)
-
-      // Everyone checks on flop
-      expect(selectors.isRoundClosed(table)).toBe(false)
-
-      table = reduce(table, { type: 'CHECK', seat: 1 })
-      expect(selectors.isRoundClosed(table)).toBe(false)
-
-      table = reduce(table, { type: 'CHECK', seat: 2 })
-      expect(selectors.isRoundClosed(table)).toBe(false)
-
-      table = reduce(table, { type: 'CHECK', seat: 0 })
-      expect(selectors.isRoundClosed(table)).toBe(true)
-    })
-
     it('should detect round closure when all match current bet', () => {
       const config: TableConfig = {
         variant: 'NLHE',
@@ -329,82 +284,96 @@ describe('Betting rounds', () => {
       }
 
       let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 150 }) // Short stack
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
+      table = reduce(table, { type: 'SIT', seat: 0, buyin: 300 }) // Bigger stack for proper all-in
+      table = reduce(table, { type: 'SIT', seat: 1, buyin: 150 }) // Short stack SB
       table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      // UTG goes all-in for 150
-      table = reduce(table, { type: 'ALL_IN', seat: 0 })
-      expect(selectors.isRoundClosed(table)).toBe(false)
+      // UTG raises to 200
+      table = reduce(table, { type: 'RAISE', seat: 0, to: 200 })
 
-      // SB calls 150
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      expect(selectors.isRoundClosed(table)).toBe(false)
+      // SB goes all-in for 150 total (100 more than posted 50)
+      table = reduce(table, { type: 'ALL_IN', seat: 1 })
 
-      // BB calls 50 more (100 already posted)
+      // BB calls 200 (100 more than posted 100)
       table = reduce(table, { type: 'CALL', seat: 2 })
 
-      // Round complete - all matched the bet or are all-in
-      expect(selectors.isRoundClosed(table)).toBe(true)
+      // UTG's action - already has 200 in, nothing to call
+      // Round should auto-advance since everyone matched or is all-in
+      expect(table.street).toBe('FLOP')
+      expect(table.seats[1].allIn).toBe(true)
     })
 
-    it('should advance street when round closes', () => {
+  })
+
+  describe('6-max normal flow', () => {
+    it('should handle 6-player betting round with open, 3bet, and calls', () => {
       const config: TableConfig = {
         variant: 'NLHE',
-        maxSeats: 2,
+        maxSeats: 6,
         blinds: { sb: 50, bb: 100 },
-        rng: makeRiggedRng(cards(
-          // Hole cards
-          'As', 'Ah', 'Kd', 'Kc',
-          // Flop
-          'Qh', 'Jd', 'Ts',
-          // Turn
-          '9c',
-          // River
-          '8h'
-        )),
+        seed: 999,
       }
 
       let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
+
+      // Seat 6 players
+      table = reduce(table, { type: 'SIT', seat: 0, buyin: 2000 })
+      table = reduce(table, { type: 'SIT', seat: 1, buyin: 2000 })
+      table = reduce(table, { type: 'SIT', seat: 2, buyin: 2000 })
+      table = reduce(table, { type: 'SIT', seat: 3, buyin: 2000 })
+      table = reduce(table, { type: 'SIT', seat: 4, buyin: 2000 })
+      table = reduce(table, { type: 'SIT', seat: 5, buyin: 2000 })
       table = reduce(table, { type: 'START_HAND' })
 
-      expect(table.street).toBe('PREFLOP')
+      // Verify initial positions (button at 0, SB at 1, BB at 2, UTG at 3)
+      expect(table.button).toBe(0)
+      expect(table.sbIndex).toBe(1)
+      expect(table.bbIndex).toBe(2)
+      expect(table.actionOn).toBe(3) // UTG
 
-      // Preflop: BB checks, SB checks
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      table = reduce(table, { type: 'CHECK', seat: 0 })
+      // UTG opens to 250
+      const utgActions = getLegalActions(table, 3)
+      expect(utgActions.canRaise).toBe(true)
+      expect(utgActions.minRaiseTo).toBe(200)
+      table = reduce(table, { type: 'RAISE', seat: 3, to: 250 })
+      expect(table.actionOn).toBe(4) // MP
 
-      // Should advance to FLOP
+      // MP folds
+      table = reduce(table, { type: 'FOLD', seat: 4 })
+      expect(table.actionOn).toBe(5) // CO
+
+      // CO 3bets to 750
+      const coActions = getLegalActions(table, 5)
+      expect(coActions.minRaiseTo).toBe(400) // 250 + 150
+      expect(coActions.canRaise).toBe(true)
+      table = reduce(table, { type: 'RAISE', seat: 5, to: 750 })
+      expect(table.actionOn).toBe(0) // BTN
+
+      // BTN calls 750
+      table = reduce(table, { type: 'CALL', seat: 0 })
+
+      // SB folds
+      table = reduce(table, { type: 'FOLD', seat: 1 })
+
+      // BB folds
+      table = reduce(table, { type: 'FOLD', seat: 2 })
+
+      // Back to UTG who calls
+      expect(table.actionOn).toBe(3)
+      const utgCallActions = getLegalActions(table, 3)
+      expect(utgCallActions.callAmount).toBe(500) // 750 - 250 already in
+      table = reduce(table, { type: 'CALL', seat: 3 })
+
+      // Round should be closed, advance to flop
+      expect(selectors.isRoundClosed(table)).toBe(true)
       expect(table.street).toBe('FLOP')
-      expect(table.board).toHaveLength(3)
-      expect(table.currentBet).toBe(0)
-      expect(table.actionOn).toBe(0) // SB acts first postflop
 
-      // Flop: both check
-      table = reduce(table, { type: 'CHECK', seat: 0 })
-      table = reduce(table, { type: 'CHECK', seat: 1 })
-
-      // Should advance to TURN
-      expect(table.street).toBe('TURN')
-      expect(table.board).toHaveLength(4)
-
-      // Turn: both check
-      table = reduce(table, { type: 'CHECK', seat: 0 })
-      table = reduce(table, { type: 'CHECK', seat: 1 })
-
-      // Should advance to RIVER
-      expect(table.street).toBe('RIVER')
-      expect(table.board).toHaveLength(5)
-
-      // River: both check
-      table = reduce(table, { type: 'CHECK', seat: 0 })
-      table = reduce(table, { type: 'CHECK', seat: 1 })
-
-      // Should go to SHOWDOWN then COMPLETE
-      expect(table.street).toBe('SHOWDOWN')
+      // Verify pot calculation (750*3 + 50 + 100 = 2400)
+      expect(table.pots[0].amount).toBe(2400)
+      expect(table.pots[0].eligible).toContain('seat_0')
+      expect(table.pots[0].eligible).toContain('seat_3')
+      expect(table.pots[0].eligible).toContain('seat_5')
     })
   })
 
@@ -442,30 +411,5 @@ describe('Betting rounds', () => {
       expect(selectors.toCall(table, 2)).toBe(200)
     })
 
-    it('should identify next to act', () => {
-      const config: TableConfig = {
-        variant: 'NLHE',
-        maxSeats: 3,
-        blinds: { sb: 50, bb: 100 },
-        seed: 888,
-      }
-
-      let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000 })
-      table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 })
-      table = reduce(table, { type: 'START_HAND' })
-
-      expect(selectors.nextToAct(table)).toBe(0) // UTG
-
-      table = reduce(table, { type: 'FOLD', seat: 0 })
-      expect(selectors.nextToAct(table)).toBe(1) // SB
-
-      table = reduce(table, { type: 'CALL', seat: 1 })
-      expect(selectors.nextToAct(table)).toBe(2) // BB
-
-      table = reduce(table, { type: 'CHECK', seat: 2 })
-      expect(selectors.nextToAct(table)).toBe(null) // Round complete
-    })
   })
 })

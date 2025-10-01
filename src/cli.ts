@@ -1,8 +1,19 @@
 #!/usr/bin/env node
 
-import { createInterface } from 'node:readline'
-import { PokerEngine, cardToAscii } from './engine.js'
-import * as betting from './betting.js'
+import { createInterface, Interface as ReadlineInterface } from 'node:readline'
+import { cardToAscii } from './engine.js'
+import { evaluateSeven } from './evaluator.js'
+import type { Card, EvalResult } from './types.js'
+import {
+  createTable,
+  reduce,
+  getLegalActions,
+  computePots,
+  type TableState,
+  type TableConfig,
+  type Action,
+  type LegalActions,
+} from './index.js'
 
 const argv = process.argv.slice(2)
 if (argv.includes('-h') || argv.includes('--help')) {
@@ -10,528 +21,557 @@ if (argv.includes('-h') || argv.includes('--help')) {
   process.exit(0)
 }
 
-function formatStoredShowdownResult(engine: PokerEngine) {
-  const status = engine.status()
-
-  if (status.lastShowdown) {
-    return `\n${status.lastShowdown.results}\n\n${status.lastShowdown.winners}\n`
-  }
-
-  return '\nNo showdown results available\n'
-}
-
-function formatStatus(
-  engine: PokerEngine,
-  bettingState: betting.BettingState,
-  defaultStack: number = 10000
-): string {
-  const status = engine.status()
-  let output = ''
-
-  if (status.phase === 'HAND_COMPLETE') {
-    output += `Hand complete!\n`
-
-    if (status.lastShowdown) {
-      output += `\n${status.lastShowdown.results}\n\n`
-      output += `${status.lastShowdown.winners}\n\n`
-    }
-
-    if (status.boardAscii) {
-      output += `Board: ${status.boardAscii}\n`
-    }
-  } else if (status.phase !== 'IDLE') {
-    output += `Players: ${status.players}, Phase: ${status.phase}\n`
-
-    if (status.boardAscii) {
-      output += `Board: ${status.boardAscii}\n`
-    }
-
-    // Show betting information
-    output += `\n💰 Pot: ${betting.getTotalPot(bettingState)}`
-    if (bettingState.currentBet > 0) {
-      output += ` | Current bet: ${bettingState.currentBet}`
-    }
-    output += '\n'
-
-    // Show player stacks and status
-    output += 'Players:\n'
-    for (let i = 0; i < status.players; i++) {
-      const p = bettingState.players[i] || {
-        stack: defaultStack,
-        committed: 0,
-        hasFolded: false,
-        isAllIn: false,
-      }
-      const isButton = i === bettingState.buttonIndex
-      const isActing =
-        i === bettingState.actingIndex && !betting.isRoundComplete(bettingState)
-      const folded = p.hasFolded || status.foldedPlayers.includes(i + 1)
-
-      let playerStr = `  P${i + 1}`
-      if (isButton) playerStr += ' (D)'
-      playerStr += `: ${p.stack} chips`
-
-      if (p.committed > 0) playerStr += ` [${p.committed} in pot]`
-      if (folded) playerStr += ' FOLDED'
-      if (p.isAllIn) playerStr += ' ALL-IN'
-      if (isActing) playerStr += ' ← TO ACT'
-
-      output += playerStr + '\n'
-    }
-  } else {
-    output += `Players: ${status.players}, Phase: ${status.phase}\n`
-  }
-
-  // Show available commands based on betting state
-  if (status.phase !== 'IDLE' && !betting.isRoundComplete(bettingState)) {
-    const actingPlayer = bettingState.actingIndex
-    const legalActions = betting.legalActions(bettingState, actingPlayer)
-    const actionStrings = legalActions.map(a => {
-      if (a.type === 'bet' || a.type === 'raise') {
-        return `${a.type} <amount> (${a.min}-${a.max})`
-      }
-      return a.type
-    })
-    output += `P${actingPlayer + 1} actions: ${actionStrings.join(', ')}\n`
-  } else {
-    output += `Available: ${status.nextCmdHints.join(', ')}\n`
-  }
-
-  return output
-}
-
+// Helper functions
 function showHelp(): string {
   return `
-Commands:
-  deal              - Deal new hand (with betting if enabled)
-  flop              - Deal flop (3 community cards)
-  turn              - Deal turn (4th community card)
-  river             - Deal river (5th community card)
-  showdown          - Evaluate hands and determine winner(s)
-  players <n>       - Set number of players (2-9, IDLE only)
-  hole <player>     - Show hole cards for player (1-based, e.g. hole 1)
-  status            - Show current game state
-  help              - Show this help
-  q                 - Quit
+Poker Pocket CLI - Interactive Texas Hold'em
 
-Betting Commands:
-  check             - Check (when no bet to call)
-  call              - Call the current bet
-  bet <amount>      - Bet specified amount (when no current bet)
-  raise <amount>    - Raise by specified amount
-  fold              - Fold your hand
-  allin             - Go all-in with remaining chips
+Usage:
+  pokerpocket         Start interactive game
+  pokerpocket -h      Show this help
 
-Betting Config:
-  blinds <sb> <bb>  - Set small and big blind amounts
-  ante <amount>     - Set ante amount (0 for none)
-  stacks <amount>   - Set default starting stack
-  button <player>   - Set dealer button position (0-based)
+During gameplay:
+  - Each player takes turns making decisions
+  - You can choose to see hole cards or play blind
+  - Actions: check, call, bet <amount>, raise <amount>, fold, allin
+  - Type 'quit' to exit the game
 
-Advanced:
-  seed <n>          - Set RNG seed for reproducible games
+The game will prompt you for:
+  - Number of players (2-9)
+  - Starting stack size
+  - Big blind amount
 `
 }
 
-async function main() {
-  const engine = new PokerEngine()
-  let bettingState: betting.BettingState
-  const bettingConfig: betting.TableConfig = {
-    smallBlind: 50,
-    bigBlind: 100,
-    ante: 0,
-  }
-  let defaultStack = 10000
-  let buttonIndex = 0
-
-  // Initialize with default empty state
-  bettingState = betting.initBettingWithDefaults(2, buttonIndex, defaultStack)
-
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: '> ',
-  })
-
-  let hasQuit = false
-  const quit = () => {
-    if (hasQuit) return
-    hasQuit = true
-    console.log('Goodbye!')
-    rl.close() // ends the async iterator, triggers 'close'
-  }
-  rl.on('SIGINT', quit) // Ctrl-C inside readline
-  rl.on('close', () => {
-    // EOF / Ctrl-D OR after quit()
-    if (!hasQuit) {
-      // No 'q' processed (e.g. last line had no trailing \n) → still say goodbye
-      console.log('Goodbye!')
-    }
-    process.exit(0)
-  })
-
-  console.log('🃏 Poker Pocket CLI')
-  console.log('Type "help" for commands')
-  console.log('Betting: ON | Blinds: 50/100 | Default stack: 10000')
-  console.log(formatStatus(engine, bettingState, defaultStack))
-
-  rl.prompt()
-
-  for await (const line of rl) {
-    const input = line.trim()
-
-    if (!input) {
-      rl.prompt()
-      continue
-    }
-
-    // Handle extremely long input gracefully
-    if (input.length > 10000) {
-      console.log('Input too long. Type "help" for available commands')
-      rl.prompt()
-      continue
-    }
-
-    const [cmd, ...args] = input.toLowerCase().split(/\s+/)
-
-    try {
-      switch (cmd) {
-        case 'deal': {
-          engine.deal()
-
-          // Initialize betting for this hand
-          const playerCount = engine.status().players
-          bettingState = betting.initBettingWithDefaults(
-            playerCount,
-            buttonIndex,
-            defaultStack
-          )
-          bettingState = betting.postBlinds(bettingState, bettingConfig)
-
-          console.log('Cards dealt! Blinds posted.')
-          console.log(formatStatus(engine, bettingState, defaultStack))
-
-          // Move button for next hand
-          buttonIndex = (buttonIndex + 1) % playerCount
-          break
-        }
-
-        case 'flop':
-          // Check if betting round is complete
-          if (!betting.isRoundComplete(bettingState)) {
-            console.log('Complete the betting round first!')
-            break
-          }
-
-          engine.flop()
-          bettingState = betting.startNewRound(bettingState)
-
-          console.log('Flop dealt!')
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-
-        case 'turn':
-          // Check if betting round is complete
-          if (!betting.isRoundComplete(bettingState)) {
-            console.log('Complete the betting round first!')
-            break
-          }
-
-          engine.turn()
-          bettingState = betting.startNewRound(bettingState)
-
-          console.log('Turn dealt!')
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-
-        case 'river':
-          // Check if betting round is complete
-          if (!betting.isRoundComplete(bettingState)) {
-            console.log('Complete the betting round first!')
-            break
-          }
-
-          engine.river()
-          bettingState = betting.startNewRound(bettingState)
-
-          console.log('River dealt!')
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-
-        case 'showdown': {
-          // Check if betting round is complete
-          if (!betting.isRoundComplete(bettingState)) {
-            console.log('Complete the betting round first!')
-            break
-          }
-
-          // Call showdown once and use the result for both display and distribution
-          const showdownResult = engine.showdown()
-          console.log(formatStoredShowdownResult(engine))
-
-          // Handle pot distribution
-          const distribution = betting.distributePots(
-            bettingState,
-            showdownResult.winners
-          )
-
-          console.log('\n💰 Pot Distribution:')
-          for (const dist of distribution) {
-            console.log(`  P${dist.player + 1} wins ${dist.amount} chips`)
-          }
-
-          // Update stacks with winnings
-          for (const dist of distribution) {
-            bettingState.players[dist.player].stack += dist.amount
-          }
-
-          console.log('\nFinal Stacks:')
-          for (let i = 0; i < bettingState.players.length; i++) {
-            console.log(`  P${i + 1}: ${bettingState.players[i].stack} chips`)
-          }
-
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-        }
-
-        case 'players': {
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: players <number>')
-            break
-          }
-          engine.setPlayers(Number(args[0]))
-
-          // Reinitialize betting state for new player count
-          const newPlayerCount = Number(args[0])
-          bettingState = betting.initBettingWithDefaults(
-            newPlayerCount,
-            buttonIndex,
-            defaultStack
-          )
-
-          console.log(`Players set to ${args[0]}`)
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-        }
-
-        case 'hole': {
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: hole <player> (e.g. hole 1)')
-            break
-          }
-          const playerNum = Number(args[0])
-          if (playerNum < 1 || playerNum > 9) {
-            console.log('Player must be 1-9')
-            break
-          }
-          try {
-            const holeCards = engine.getHoleCards(playerNum - 1)
-            if (holeCards.length === 0) {
-              console.log(`P${playerNum}: No cards dealt yet`)
-            } else if (engine.isFolded(playerNum - 1)) {
-              console.log(`P${playerNum}: FOLDED`)
-            } else {
-              const cardsStr = holeCards.map(cardToAscii).join(' ')
-              console.log(`P${playerNum}: ${cardsStr}`)
-            }
-          } catch (error) {
-            console.log(`Error: ${(error as Error).message}`)
-          }
-          break
-        }
-
-        case 'check':
-        case 'call':
-        case 'fold':
-        case 'allin': {
-          if (!betting.isRoundComplete(bettingState)) {
-            const actingPlayer = bettingState.actingIndex
-            try {
-              bettingState = betting.applyAction(bettingState, {
-                player: actingPlayer,
-                type: cmd as betting.BetType,
-              })
-
-              if (cmd === 'fold') {
-                engine.fold(actingPlayer)
-              }
-
-              console.log(`P${actingPlayer + 1} ${cmd}s`)
-
-              // Check if someone wins by fold
-              if (cmd === 'fold') {
-                const activePlayers = betting.getActivePlayers(bettingState)
-                if (activePlayers.length === 1) {
-                  console.log(`\nP${activePlayers[0] + 1} wins the pot!\n`)
-
-                  // Award pot to winner
-                  const pots = betting.buildPots(bettingState.players)
-                  const totalPot = pots.reduce(
-                    (sum, pot) => sum + pot.amount,
-                    0
-                  )
-                  bettingState.players[activePlayers[0]].stack += totalPot
-                }
-              }
-
-              console.log(formatStatus(engine, bettingState, defaultStack))
-            } catch (error) {
-              console.log(`Error: ${(error as Error).message}`)
-            }
-          } else {
-            console.log('No active betting round')
-          }
-          break
-        }
-
-        case 'bet':
-        case 'raise': {
-          if (!betting.isRoundComplete(bettingState)) {
-            if (args.length !== 1 || isNaN(Number(args[0]))) {
-              console.log(`Usage: ${cmd} <amount>`)
-              break
-            }
-
-            const actingPlayer = bettingState.actingIndex
-            const amount = Number(args[0])
-
-            try {
-              bettingState = betting.applyAction(bettingState, {
-                player: actingPlayer,
-                type: cmd as betting.BetType,
-                amount: amount,
-              })
-
-              console.log(`P${actingPlayer + 1} ${cmd}s ${amount}`)
-              console.log(formatStatus(engine, bettingState, defaultStack))
-            } catch (error) {
-              console.log(`Error: ${(error as Error).message}`)
-            }
-          } else {
-            console.log('No active betting round')
-          }
-          break
-        }
-
-        case 'blinds':
-          if (
-            args.length !== 2 ||
-            isNaN(Number(args[0])) ||
-            isNaN(Number(args[1]))
-          ) {
-            console.log('Usage: blinds <small> <big>')
-            break
-          }
-          bettingConfig.smallBlind = Number(args[0])
-          bettingConfig.bigBlind = Number(args[1])
-          console.log(`Blinds set to ${args[0]}/${args[1]}`)
-          break
-
-        case 'ante':
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: ante <amount>')
-            break
-          }
-          bettingConfig.ante = Number(args[0])
-          console.log(`Ante set to ${args[0]}`)
-          break
-
-        case 'stacks':
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: stacks <amount>')
-            break
-          }
-          defaultStack = Number(args[0])
-          console.log(`Default stack set to ${args[0]}`)
-          break
-
-        case 'button': {
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: button <player> (0-based)')
-            break
-          }
-          const buttonPlayer = Number(args[0])
-          if (buttonPlayer < 0 || buttonPlayer >= engine.status().players) {
-            console.log(`Button must be 0-${engine.status().players - 1}`)
-            break
-          }
-          buttonIndex = buttonPlayer
-          console.log(`Button set to P${buttonPlayer + 1}`)
-          break
-        }
-
-        case 'seed':
-          if (args.length !== 1 || isNaN(Number(args[0]))) {
-            console.log('Usage: seed <number>')
-            break
-          }
-          engine.setSeed(Number(args[0]))
-          console.log(`Seed set to ${args[0]} for next deal`)
-          break
-
-        case 'skipbet':
-          // Auto-complete betting round for testing purposes
-          if (!betting.isRoundComplete(bettingState)) {
-            // Make all players check/call to complete the round
-            while (!betting.isRoundComplete(bettingState)) {
-              const actingPlayer = bettingState.actingIndex
-              const legalActions = betting.legalActions(
-                bettingState,
-                actingPlayer
-              )
-
-              // Choose the safest action (check if possible, otherwise call)
-              let action: betting.Action
-              if (legalActions.some(a => a.type === 'check')) {
-                action = { player: actingPlayer, type: 'check' }
-              } else if (legalActions.some(a => a.type === 'call')) {
-                action = { player: actingPlayer, type: 'call' }
-              } else {
-                // Default to fold if can't check or call
-                action = { player: actingPlayer, type: 'fold' }
-                engine.fold(actingPlayer)
-              }
-
-              bettingState = betting.applyAction(bettingState, action)
-            }
-            console.log('Betting round auto-completed')
-          } else {
-            console.log('No active betting round')
-          }
-          break
-
-        case 'status':
-          console.log(formatStatus(engine, bettingState, defaultStack))
-          break
-
-        case 'help':
-          console.log(showHelp())
-          break
-
-        case 'q':
-        case 'quit':
-        case 'exit':
-          quit()
-          break
-
-        default:
-          console.log(`Unknown command: ${cmd}`)
-          console.log('Type "help" for available commands')
-          console.log(
-            '\nQuick commands: deal, flop, turn, river, showdown, status, players <n>'
-          )
+async function askQuestion(
+  rl: ReadlineInterface,
+  question: string,
+  validator?: (value: number) => boolean,
+  errorMsg?: string,
+  defaultValue?: number
+): Promise<number> {
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      if (!answer && defaultValue !== undefined) {
+        resolve(defaultValue)
+        return
       }
-    } catch (error) {
-      console.log(`Error: ${(error as Error).message}`)
+
+      const value = parseInt(answer)
+      if (isNaN(value)) {
+        console.log(errorMsg || 'Please enter a valid number')
+        resolve(askQuestion(rl, question, validator, errorMsg, defaultValue))
+        return
+      }
+
+      if (validator && !validator(value)) {
+        console.log(errorMsg || 'Invalid value')
+        resolve(askQuestion(rl, question, validator, errorMsg, defaultValue))
+        return
+      }
+
+      resolve(value)
+    })
+  })
+}
+
+async function askYesNo(rl: ReadlineInterface, question: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      const normalized = answer.toLowerCase().trim()
+      resolve(normalized === 'y' || normalized === 'yes')
+    })
+  })
+}
+
+async function askString(rl: ReadlineInterface, question: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      resolve(answer.trim())
+    })
+  })
+}
+
+function formatCard(card: Card): string {
+  return cardToAscii(card)
+}
+
+function formatCards(cards: Card[]): string {
+  return cards.map(formatCard).join(', ')
+}
+
+function getTotalPot(table: TableState): number {
+  // Sum all contributions from players
+  return table.seats.reduce((sum, seat) => sum + seat.contributed, 0)
+}
+
+function getPositionString(table: TableState, seatIndex: number): string {
+  const positions: string[] = []
+
+  if (seatIndex === table.button) positions.push('Dealer')
+  if (seatIndex === table.sbIndex) positions.push('SB')
+  if (seatIndex === table.bbIndex) positions.push('BB')
+
+  // UTG position (first to act preflop after blinds)
+  const activePlayers = table.seats.filter(s => s.id !== '' && s.stack > 0).length
+  if (activePlayers > 2 && table.street === 'PREFLOP') {
+    const utgIndex = (table.bbIndex + 1) % table.config.maxSeats
+    if (seatIndex === utgIndex) positions.push('UTG')
+  }
+
+  return positions.length > 0 ? ` - ${positions.join(', ')}` : ''
+}
+
+function getPostedInfo(seat: any): string {
+  if (seat.streetContributed > 0) {
+    return `, ${seat.streetContributed} posted`
+  }
+  return ''
+}
+
+function formatActions(actions: LegalActions, stack: number): string {
+  const parts: string[] = []
+
+  if (actions.canCheck) {
+    parts.push('Check')
+  }
+  if (actions.canCall) {
+    parts.push(`Call ${actions.callAmount}`)
+  }
+  if (actions.canBet) {
+    parts.push(`Bet (min ${actions.minBet}, max ${stack})`)
+  }
+  if (actions.canRaise) {
+    parts.push(`Raise (min ${actions.minRaiseTo}, max ${actions.maxRaiseTo})`)
+  }
+  if (actions.canFold) {
+    parts.push('Fold')
+  }
+
+  return parts.join(', ')
+}
+
+
+function displayGameState(table: TableState) {
+  // Show pot
+  console.log(`Pot: ${getTotalPot(table)}`)
+
+  // Show board if any
+  if (table.board.length > 0) {
+    console.log(`Board: [${table.board.map(formatCard).join(', ')}]`)
+  }
+
+  // Show player summaries
+  console.log('Players:')
+  table.seats.forEach((seat, i) => {
+    if (seat.id === '') return
+
+    // Format folded players differently
+    if (seat.folded) {
+      console.log(`  P${i + 1}: FOLDED`)
+      return
     }
 
-    rl.prompt()
+    let status = `  P${i + 1}: ${seat.stack} chips`
+
+    // Show amount in pot this street if any
+    if (seat.streetContributed > 0) {
+      status += ` (${seat.streetContributed} in pot)`
+    }
+
+    // Show special statuses
+    if (seat.allIn) status += ' [ALL-IN]'
+    if (i === table.button) status += ' (D)'
+
+    // Highlight next to act
+    if (i === table.actionOn && table.street !== 'COMPLETE') {
+      status += ' ← Next'
+    }
+
+    console.log(status)
+  })
+}
+
+function isRoundComplete(table: TableState): boolean {
+  // Check if all non-folded, non-allin players have acted
+  const activePlayers = table.seats.filter((s, i) =>
+    s.id !== '' && !s.folded && !s.allIn
+  )
+
+  if (activePlayers.length === 0) return true
+
+  // Check if everyone has had a chance to act and amounts are equal
+  for (const player of activePlayers) {
+    if (player.streetContributed < table.currentBet) {
+      return false
+    }
+  }
+
+  // Make sure everyone has acted at least once
+  return table.hasActedThisRound.size >= activePlayers.length
+}
+
+async function setupGame(rl: ReadlineInterface): Promise<TableState> {
+  console.log('Welcome to Poker Pocket CLI!')
+
+  const players = await askQuestion(
+    rl,
+    'How many players? ',
+    (n) => n >= 2 && n <= 9,
+    'Please enter 2-9'
+  )
+
+  const stack = await askQuestion(
+    rl,
+    'Starting stack (default 10,000)? ',
+    (n) => n > 0,
+    'Stack must be positive',
+    10000
+  )
+
+  const bb = await askQuestion(
+    rl,
+    'Big blind amount (default 100)? ',
+    (n) => n > 0,
+    'Blind must be positive',
+    100
+  )
+
+  console.log('\nShuffling deck... dealing hole cards...\n')
+
+  // Create table
+  let table = createTable({
+    variant: 'NLHE',
+    maxSeats: players,
+    blinds: { sb: Math.floor(bb / 2), bb: bb }
+  })
+
+  // Add players
+  for (let i = 0; i < players; i++) {
+    table = reduce(table, {
+      type: 'SIT',
+      seat: i,
+      buyin: stack,
+      name: `Player ${i + 1}`
+    })
+  }
+
+  return table
+}
+
+async function getPlayerAction(
+  rl: ReadlineInterface,
+  table: TableState,
+  actions: LegalActions
+): Promise<Action> {
+  while (true) {
+    const input = await askString(rl, 'Your move: ')
+
+    if (input === 'quit') {
+      console.log('\nThanks for playing!')
+      process.exit(0)
+    }
+
+    const [cmd, amountStr] = input.toLowerCase().split(/\s+/)
+
+    switch (cmd) {
+      case 'check':
+        if (!actions.canCheck) {
+          console.log('Cannot check - there is a bet to call')
+          continue
+        }
+        return { type: 'CHECK', seat: table.actionOn }
+
+      case 'call':
+        if (!actions.canCall) {
+          console.log('No bet to call')
+          continue
+        }
+        return { type: 'CALL', seat: table.actionOn }
+
+      case 'bet': {
+        if (!actions.canBet) {
+          console.log('Cannot bet - use raise instead')
+          continue
+        }
+        const betAmount = parseInt(amountStr)
+        if (isNaN(betAmount)) {
+          console.log('Please specify amount: bet <amount>')
+          continue
+        }
+        if (betAmount < actions.minBet) {
+          console.log(`Minimum bet is ${actions.minBet}`)
+          continue
+        }
+        const seat = table.seats[table.actionOn]
+        if (betAmount > seat.stack) {
+          console.log(`You only have ${seat.stack} chips`)
+          continue
+        }
+        return { type: 'BET', seat: table.actionOn, to: betAmount }
+      }
+
+      case 'raise': {
+        if (!actions.canRaise) {
+          console.log('Cannot raise')
+          continue
+        }
+        const raiseAmount = parseInt(amountStr)
+        if (isNaN(raiseAmount)) {
+          console.log('Please specify amount: raise <amount>')
+          continue
+        }
+        if (raiseAmount < actions.minRaiseTo) {
+          console.log(`Minimum raise is ${actions.minRaiseTo}`)
+          continue
+        }
+        if (raiseAmount > actions.maxRaiseTo) {
+          console.log(`Maximum raise is ${actions.maxRaiseTo}`)
+          continue
+        }
+        return { type: 'RAISE', seat: table.actionOn, to: raiseAmount }
+      }
+
+      case 'fold':
+        if (!actions.canFold) {
+          console.log('Cannot fold')
+          continue
+        }
+        return { type: 'FOLD', seat: table.actionOn }
+
+      case 'allin':
+      case 'all-in':
+        return { type: 'ALL_IN', seat: table.actionOn }
+
+      default:
+        console.log('Invalid action. Try: check, call, bet <amount>, raise <amount>, fold, allin')
+    }
   }
 }
 
-export { main } // handy for tests: import { main } from '../dist/cli.js'
+async function playerTurn(
+  table: TableState,
+  rl: ReadlineInterface
+): Promise<TableState> {
+  const seat = table.seats[table.actionOn]
+  const seatNum = table.actionOn + 1
+
+  // Show position info
+  const position = getPositionString(table, table.actionOn)
+  console.log(`\n(Player ${seatNum}${position}, Stack: ${seat.stack}${getPostedInfo(seat)})`)
+
+  // Optional card reveal
+  const showCards = await askYesNo(rl, 'See your hole cards? (y/n): ')
+  if (showCards && seat.hole) {
+    console.log(`→ Hole cards: [${formatCard(seat.hole[0])}, ${formatCard(seat.hole[1])}]`)
+  }
+
+  // Show legal actions
+  const actions = getLegalActions(table, table.actionOn)
+  const actionStr = formatActions(actions, seat.stack)
+  console.log(`Actions: ${actionStr}`)
+
+  // Get and validate action
+  const move = await getPlayerAction(rl, table, actions)
+
+  // Calculate call amount BEFORE applying action
+  let actionDescription = ''
+  switch (move.type) {
+    case 'CHECK':
+      actionDescription = 'checks'
+      break
+    case 'CALL':
+      const callAmount = table.currentBet - seat.streetContributed
+      actionDescription = `calls ${callAmount}`
+      break
+    case 'BET':
+      actionDescription = `bets ${move.to}`
+      break
+    case 'RAISE':
+      actionDescription = `raises to ${move.to}`
+      break
+    case 'FOLD':
+      actionDescription = 'folds'
+      break
+    case 'ALL_IN':
+      actionDescription = `goes all-in (${seat.stack})`
+      break
+    default:
+      actionDescription = move.type.toLowerCase()
+  }
+
+  // Apply the action
+  const newTable = reduce(table, move)
+
+  // Confirm the action and show result
+  console.log(`\n✓ Player ${seatNum} ${actionDescription}`)
+
+  // Show updated game state after action
+  displayGameState(newTable)
+
+  return newTable
+}
+
+function displayHandStart(table: TableState) {
+  const dealerNum = table.button + 1
+  const sbNum = table.sbIndex + 1
+  const bbNum = table.bbIndex + 1
+
+  const sbSeat = table.seats[table.sbIndex]
+  const bbSeat = table.seats[table.bbIndex]
+
+  console.log(`Dealer: Player ${dealerNum}  |  Small Blind: Player ${sbNum} (${sbSeat.streetContributed})  |  Big Blind: Player ${bbNum} (${bbSeat.streetContributed})`)
+  console.log(`Pot: ${getTotalPot(table)}`)
+}
+
+function displayStreetTransition(table: TableState) {
+  const streetNames: Record<string, string> = {
+    'FLOP': '--- Flop ---',
+    'TURN': '--- Turn ---',
+    'RIVER': '--- River ---',
+    'SHOWDOWN': '--- Showdown ---'
+  }
+
+  console.log(`\n${streetNames[table.street] || table.street}`)
+
+  // Display full game state for the new street
+  displayGameState(table)
+}
+
+function evaluateHand(hole: [Card, Card], board: Card[]): { rank: string; description: string } {
+  const allCards = [...hole, ...board]
+  const result = evaluateSeven(allCards)
+
+  const rankDescriptions: Record<string, string> = {
+    'STRAIGHT_FLUSH': 'Straight Flush',
+    'FOUR_OF_A_KIND': 'Four of a Kind',
+    'FULL_HOUSE': 'Full House',
+    'FLUSH': 'Flush',
+    'STRAIGHT': 'Straight',
+    'THREE_OF_A_KIND': 'Three of a Kind',
+    'TWO_PAIR': 'Two Pair',
+    'ONE_PAIR': 'Pair',
+    'HIGH_CARD': 'High Card'
+  }
+
+  return {
+    rank: result.rank,
+    description: rankDescriptions[result.rank] || result.rank
+  }
+}
+
+function displayShowdown(table: TableState) {
+  console.log('\n--- Showdown ---')
+
+  // Show all remaining players' cards
+  table.seats.forEach((seat, i) => {
+    if (seat.id && !seat.folded && seat.hole) {
+      const handEval = evaluateHand(seat.hole, table.board)
+      console.log(`Player ${i + 1}: ${formatCard(seat.hole[0])} ${formatCard(seat.hole[1])} → ${handEval.description}`)
+    }
+  })
+
+  // Show winners - calculate total pot from winners if contributions are cleared
+  let totalPot = 0
+  if (table.winners && table.winners.length > 0) {
+    totalPot = table.winners.reduce((sum, w) => sum + w.amount, 0)
+    console.log('')
+    table.winners.forEach(w => {
+      const seatIdx = table.seats.findIndex(s => s.id === w.seatId)
+      console.log(`Winner: Player ${seatIdx + 1} (+${w.amount})`)
+    })
+  }
+
+  // Show final stacks
+  console.log('\n--- Hand Result ---')
+  const stacks = table.seats
+    .filter(s => s.id !== '')
+    .map((s, i) => `P${i + 1}:${s.stack}`)
+    .join('  ')
+  console.log(`Stacks: ${stacks}`)
+}
+
+async function main() {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  // Setup game
+  let table = await setupGame(rl)
+
+  // Game loop
+  let handNum = 1
+  let continuePlaying = true
+
+  while (continuePlaying) {
+    // Start hand
+    console.log(`\n--- New Hand #${handNum} ---`)
+    table = reduce(table, { type: 'START_HAND' })
+    displayHandStart(table)
+
+    // Play hand
+    let lastStreet = table.street
+    while (table.street !== 'COMPLETE') {
+      // Play current street
+      const prevStreet = table.street
+
+      // Check if anyone can still act
+      const activePlayersCanAct = table.seats.some(
+        s => s.id !== '' && !s.folded && !s.allIn
+      )
+
+      if (!activePlayersCanAct && isRoundComplete(table)) {
+        // All players are all-in and round is complete
+        // The last action should have triggered street advancement via handleActionComplete
+        // If we're still on the same street, something is wrong
+        if (table.street === lastStreet) {
+          console.log('\nAll players all-in! Running out remaining streets...')
+
+          // Manually compute pots and advance street since no more actions are possible
+          const { computePots, advanceStreet } = await import('./index.js')
+          table = { ...table, pots: computePots(table) }
+          table = advanceStreet(table)
+
+          if (table.street !== 'COMPLETE' && table.street !== lastStreet) {
+            displayStreetTransition(table)
+          }
+          lastStreet = table.street
+        }
+      } else {
+        // Normal play - there are players who can act
+        while (!isRoundComplete(table) && table.street === prevStreet && table.street !== 'COMPLETE') {
+          table = await playerTurn(table, rl)
+
+          // Check if hand ended early (everyone folded)
+          if (table.street === 'COMPLETE') {
+            break
+          }
+        }
+
+        // Show street transition if not complete
+        if (table.street !== 'COMPLETE' && table.street !== prevStreet) {
+          displayStreetTransition(table)
+          lastStreet = table.street
+        }
+      }
+    }
+
+    // Show results
+    displayShowdown(table)
+
+    // Continue?
+    continuePlaying = await askYesNo(rl, '\nContinue? (y/n): ')
+    handNum++
+  }
+
+  console.log('\nThanks for playing!')
+  rl.close()
+}
+
+export { main } // for testing
 
 main().catch(err => {
-  console.error(err)
+  console.error('Error:', err)
   process.exit(1)
 })

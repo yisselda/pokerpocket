@@ -1,6 +1,7 @@
 import { TableState, Action, ActionEvent } from './types.js'
 import { initHand } from '../state/initHand.js'
 import { getNextActor, isRoundComplete, advanceStreet } from './order.js'
+import { computePots } from './pots.js'
 
 /**
  * Helper to handle post-action state updates
@@ -46,15 +47,17 @@ function handleActionComplete(state: TableState, lastActor: number): TableState 
       return newState
     }
 
-    // Advance to next street
-    return advanceStreet(state)
+    // Update pots and advance to next street
+    const stateWithPots = { ...state, pots: computePots(state) }
+    return advanceStreet(stateWithPots)
   }
 
   // Find next actor
   const nextActor = getNextActor(state, lastActor)
   if (nextActor === null) {
-    // No more actors, advance street
-    return advanceStreet(state)
+    // No more actors, update pots and advance street
+    const stateWithPots = { ...state, pots: computePots(state) }
+    return advanceStreet(stateWithPots)
   }
 
   return {
@@ -167,6 +170,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded || seatData.allIn) {
         throw new Error('Cannot act when folded or all-in')
@@ -184,6 +191,9 @@ export function reduce(state: TableState, action: Action): TableState {
       }
       newState.history.push(event)
 
+      // Mark player as having acted this round
+      newState.hasActedThisRound.add(seat)
+
       // Advance action or street
       return handleActionComplete(newState, seat)
     }
@@ -195,6 +205,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded || seatData.allIn) {
         throw new Error('Cannot act when folded or all-in')
@@ -223,6 +237,9 @@ export function reduce(state: TableState, action: Action): TableState {
       }
       newState.history.push(event)
 
+      // Mark player as having acted this round
+      newState.hasActedThisRound.add(seat)
+
       // Advance action or street
       return handleActionComplete(newState, seat)
     }
@@ -234,6 +251,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded || seatData.allIn) {
         throw new Error('Cannot act when folded or all-in')
@@ -245,6 +266,12 @@ export function reduce(state: TableState, action: Action): TableState {
         throw new Error('Invalid bet amount')
       }
 
+      // Enforce minimum bet (BB) unless going all-in
+      const minBet = state.config.blinds?.bb || 0
+      if (to < minBet && to < seatData.stack) {
+        throw new Error(`Minimum bet is ${minBet}`)
+      }
+
       // Process bet
       seatData.stack -= to
       seatData.contributed += to
@@ -252,6 +279,9 @@ export function reduce(state: TableState, action: Action): TableState {
       newState.currentBet = to
       newState.lastRaiseSize = to
       newState.bettingReopened = true  // Bet opens action
+
+      // Reset hasActedThisRound since bet reopens action
+      newState.hasActedThisRound = new Set<number>([seat])
 
       if (seatData.stack === 0) {
         seatData.allIn = true
@@ -277,6 +307,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded || seatData.allIn) {
         throw new Error('Cannot act when folded or all-in')
@@ -295,6 +329,13 @@ export function reduce(state: TableState, action: Action): TableState {
         throw new Error('Insufficient stack for raise')
       }
 
+      // Check minimum raise (unless going all-in)
+      const minRaiseAmount = state.lastRaiseSize || state.config.blinds?.bb || 0
+      const minRaiseTotal = state.currentBet + minRaiseAmount
+      if (to < minRaiseTotal && raiseAmount < seatData.stack) {
+        throw new Error(`Raise must be at least ${minRaiseTotal}`)
+      }
+
       // Process raise
       seatData.stack -= raiseAmount
       seatData.contributed += raiseAmount
@@ -304,6 +345,9 @@ export function reduce(state: TableState, action: Action): TableState {
       newState.currentBet = to
       newState.lastRaiseSize = to - previousBet
       newState.bettingReopened = true  // Full raise reopens action
+
+      // Reset hasActedThisRound since raise reopens action
+      newState.hasActedThisRound = new Set<number>([seat])
 
       if (seatData.stack === 0) {
         seatData.allIn = true
@@ -329,6 +373,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded || seatData.allIn) {
         throw new Error('Cannot act when folded or already all-in')
@@ -353,6 +401,8 @@ export function reduce(state: TableState, action: Action): TableState {
           newState.lastRaiseSize = raise
           newState.bettingReopened = true
           newState.currentBet = totalCommitted
+          // Reset hasActedThisRound since this reopens action
+          newState.hasActedThisRound = new Set<number>([seat])
         } else {
           // Partial all-in - doesn't reopen action
           newState.bettingReopened = false
@@ -383,6 +433,10 @@ export function reduce(state: TableState, action: Action): TableState {
       if (seat !== state.actionOn) {
         throw new Error('Not your turn to act')
       }
+
+      // Clone hasActedThisRound for immutability
+      newState.hasActedThisRound = new Set(state.hasActedThisRound)
+
       const seatData = newState.seats[seat]
       if (seatData.folded) {
         throw new Error('Already folded')

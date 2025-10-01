@@ -18,11 +18,19 @@ class RngAdapter implements Rng {
     }
   }
 
+  reset(): void {
+    // Force a new deck to be created on next draw
+    this.deck = null
+  }
+
   draw(count: number): Card[] {
-    // Create and shuffle a new deck for each draw call
-    // This ensures deterministic behavior
-    this.deck = createDeck()
-    shuffle(this.deck, this.rng)
+    // Create and shuffle a new deck if needed
+    if (this.deck === null) {
+      this.deck = createDeck()
+      shuffle(this.deck, this.rng)
+    }
+
+    // Draw cards from the existing deck
     return draw(this.deck, count)
   }
 }
@@ -87,6 +95,7 @@ export function createTable(config: TableConfig): TableState {
     currentBet: 0,
     lastRaiseSize: 0,
     bettingReopened: true,
+    hasActedThisRound: new Set<number>(),
     history: [],
   }
 
