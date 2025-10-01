@@ -64,13 +64,25 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
   if (!me || me.folded || me.allIn)
     return { canFold: false, canCheck: false, canCall: false }
 
-  const toCall = getToCall(state, seat)
+  const bets = state.players.map(p => p.bet).sort((a, b) => a - b)
+  const maxBet = bets[bets.length - 1]
+  const second = bets[bets.length - 2] ?? 0
+  const lastRaise = Math.max(state.bigBlind, maxBet - second)
+  const toCall = Math.max(0, maxBet - me.bet)
+
   const canCheck = toCall === 0
   const canCall = toCall > 0 && me.stack >= toCall
 
-  // Minimal raise logic placeholder; wire to big blind/min-raise rule later
-  const minRaise = toCall === 0 ? state.bigBlind : toCall * 2
-  const maxRaise = me.stack
+  let minRaise: number | undefined
+  if (toCall === 0) {
+    // opening bet must be at least big blind
+    minRaise = Math.min(me.stack, me.bet + state.bigBlind)
+  } else {
+    // raise must be at least last raise size
+    minRaise = Math.min(me.stack + me.bet, maxBet + lastRaise)
+  }
+
+  const maxRaise = me.stack + me.bet // all-in cap
 
   return { canFold: true, canCheck, canCall, minRaise, maxRaise }
 }

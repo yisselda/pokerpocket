@@ -4,16 +4,16 @@ import { dealCommunity, dealHole } from './deal'
 import { stat } from 'fs'
 import { firstToActPreflop } from './positions'
 import { settleStreetBets } from './pots'
+import { on } from 'events'
+import { nextActorIndex, onlyOneNonFolded } from './rounds'
+import { resolve } from 'path'
+import { resolveShowdown } from './showdown'
 
 const bettingPhases: BettingPhase[] = ['PREFLOP', 'FLOP', 'TURN', 'RIVER']
 
 function nextBettingPhase(cur: BettingPhase): BettingPhase | 'SHOWDOWN' {
   const i = bettingPhases.indexOf(cur)
   return bettingPhases[i + 1] ?? 'SHOWDOWN'
-}
-
-function advanceToNextActor(playersLen: number, current: number): number {
-  return (current + 1) % playersLen
 }
 
 export function reduce(state: GameState, action: Action): GameState {
@@ -113,7 +113,20 @@ export function reduce(state: GameState, action: Action): GameState {
           if (me.stack === 0) me.allIn = true
         }
 
-        const toAct = advanceToNextActor(players.length, state.toAct)
+        if (onlyOneNonFolded(players)) {
+          const alivePlayer = players.find(p => !p.folded)
+          // TODO: settleStreetBets -> then convert all pots to single payout for `alive`
+          // For now just jump to COMPLETE stub:
+          return {
+            tag: 'COMPLETE',
+            winners: [{ seatId: alivePlayer?.id ?? 0, amount: 0 }],
+            players: state.players,
+            bigBlind: state.bigBlind ?? 100,
+            dealer: state.dealer,
+          }
+        }
+
+        const toAct = nextActorIndex(players, state.toAct)
         return { ...state, players, toAct }
       }
 
@@ -146,10 +159,11 @@ export function reduce(state: GameState, action: Action): GameState {
 
     case 'SHOWDOWN':
       if (action.type === 'SHOWDOWN') {
-        // (evaluate hands later—stub)
+        const payouts = resolveShowdown(state.players, state.board, state.pots)
+
         return {
           tag: 'COMPLETE',
-          winners: [],
+          winners: payouts,
           players: state.players,
           bigBlind: state.bigBlind ?? 100,
           dealer: state.dealer,
