@@ -2,10 +2,10 @@ import type { Action, GameState, BettingPhase } from './types'
 import { shuffleDeck } from './deck'
 import { dealCommunity, dealHole } from './deal'
 import { stat } from 'fs'
-import { firstToActPreflop } from './positions'
+import { firstToActPostflop, firstToActPreflop } from './positions'
 import { settleStreetBets } from './pots'
 import { on } from 'events'
-import { nextActorIndex, onlyOneNonFolded } from './rounds'
+import { nextActorIndex, onlyOneNonFolded, shouldCloseBetting } from './rounds'
 import { resolve } from 'path'
 import { resolveShowdown } from './showdown'
 
@@ -62,16 +62,20 @@ export function reduce(state: GameState, action: Action): GameState {
         }
 
         const toAct = firstToActPreflop(n, dealer)
+        const targetBet = Math.max(...players.map(p => p.bet))
 
         return {
           tag: 'PREFLOP',
           players: players,
           board: [],
           pots: [],
-          toAct: toAct,
+          toAct,
           bigBlind: state.bigBlind,
           deck: dealt.deck,
           dealer: dealer,
+          roundStart: toAct,
+          lastAggressor: undefined,
+          targetBet,
         }
       }
       return state
@@ -86,48 +90,112 @@ export function reduce(state: GameState, action: Action): GameState {
         const players = state.players.map(p => ({ ...p }))
         const me = players[action.seat]
 
+        let lastAggressor = state.lastAggressor
+        let targetBet = state.targetBet
+
         // super-minimal demo semantics:
         if (action.move === 'FOLD') {
           me.folded = true
+        } else if (action.move === 'CHECK') {
+          // no chips move
         } else if (action.move === 'CALL') {
-          const maxBet = Math.max(...players.map(p => p.bet))
-          const toCall = Math.max(0, maxBet - me.bet)
+          const toCall = Math.max(0, targetBet - me.bet)
           const pay = Math.min(toCall, me.stack)
           me.stack -= pay
           me.bet += pay
           me.contributed += pay
           if (me.stack === 0) me.allIn = true
-        } else if (action.move === 'CHECK') {
-          // allowed only if no one beat you; selector guards UI
         } else if (
           action.move === 'RAISE' &&
           typeof action.amount === 'number'
         ) {
-          const maxBet = Math.max(...players.map(p => p.bet))
-          const toCall = Math.max(0, maxBet - me.bet)
-          const raiseMore = Math.max(0, action.amount - (me.bet + toCall))
-          const pay = Math.min(me.stack, toCall + raiseMore)
+          const toCall = Math.max(0, targetBet - me.bet)
+          // action.amount is a "raise to" amount (final bet), not "raise by".
+          const raiseTo = Math.max(action.amount, targetBet)
+          const need = Math.max(0, raiseTo - me.bet)
+          const pay = Math.min(me.stack, need)
           me.stack -= pay
           me.bet += pay
           me.contributed += pay
           if (me.stack === 0) me.allIn = true
+
+          targetBet = Math.max(targetBet, me.bet)
+          lastAggressor = action.seat
         }
 
         if (onlyOneNonFolded(players)) {
-          const alivePlayer = players.find(p => !p.folded)
-          // TODO: settleStreetBets -> then convert all pots to single payout for `alive`
-          // For now just jump to COMPLETE stub:
+          const { players: settledPlayers, pots } = settleStreetBets(
+            players,
+            state.pots
+          )
+          //error if no winner found
+          const winner = settledPlayers.find(p => !p.folded)
           return {
             tag: 'COMPLETE',
-            winners: [{ seatId: alivePlayer?.id ?? 0, amount: 0 }],
-            players: state.players,
+            winners: [
+              {
+                seatId: winner?.id ?? 0,
+                amount: pots.reduce((a, b) => a + b.amount, 0),
+              },
+            ],
+            players: settledPlayers,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
           }
         }
 
+        // Advance turn
         const toAct = nextActorIndex(players, state.toAct)
-        return { ...state, players, toAct }
+
+        let provisional = {
+          ...state,
+          players,
+          toAct,
+          targetBet,
+          lastAggressor,
+        }
+
+        if (shouldCloseBetting(provisional)) {
+          // 1) settle street
+          const settled = settleStreetBets(
+            provisional.players,
+            provisional.pots
+          )
+          const players2 = settled.players
+          const pots2 = settled.pots
+
+          // 2) next street (or showdown)
+          const next = nextBettingPhase(state.tag)
+          if (next === 'SHOWDOWN') {
+            return {
+              tag: 'SHOWDOWN',
+              players: players2,
+              board: state.board,
+              pots: pots2,
+              bigBlind: state.bigBlind ?? 100,
+              dealer: state.dealer,
+            }
+          }
+
+          // deal next community card(s)
+          const dealt = dealCommunity(state.board, state.deck, state.tag)
+          const toActNext = firstToActPostflop(players2, state.dealer)
+          return {
+            tag: next,
+            players: players2,
+            pots: pots2,
+            board: dealt.board,
+            toAct: toActNext,
+            bigBlind: state.bigBlind,
+            dealer: state.dealer,
+            roundStart: toActNext,
+            deck: dealt.deck,
+            lastAggressor: undefined,
+            targetBet: 0,
+          }
+        }
+
+        return provisional
       }
 
       if (action.type === 'ROUND_COMPLETE') {
@@ -152,7 +220,19 @@ export function reduce(state: GameState, action: Action): GameState {
           state.deck,
           state.tag
         )
-        return { ...state, tag: next, players, pots, board, deck, toAct: 0 }
+        const toActNext = firstToActPostflop(players, state.dealer)
+        return {
+          ...state,
+          tag: next,
+          players,
+          pots,
+          board,
+          deck,
+          toAct: toActNext,
+          targetBet: 0,
+          roundStart: toActNext,
+          lastAggressor: undefined,
+        }
       }
 
       return state

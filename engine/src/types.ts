@@ -50,6 +50,9 @@ export type GameState =
       bigBlind: number
       deck: string[]
       dealer: SeatId
+      roundStart: SeatId
+      lastAggressor?: SeatId
+      targetBet: number
     }
   | {
       tag: 'SHOWDOWN'
