@@ -42,6 +42,7 @@ export type GameState =
       pots: Pot[]
       toAct: SeatId
       bigBlind: number
+      deck: string[]
     }
   | {
       tag: 'SHOWDOWN'

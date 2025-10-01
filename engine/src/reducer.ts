@@ -1,5 +1,6 @@
 import type { Action, GameState, BettingPhase } from './types'
 import { shuffleDeck } from './deck'
+import { dealCommunity, dealHole } from './deal'
 
 const bettingPhases: BettingPhase[] = ['PREFLOP', 'FLOP', 'TURN', 'RIVER']
 
@@ -16,10 +17,11 @@ export function reduce(state: GameState, action: Action): GameState {
   switch (state.tag) {
     case 'INIT':
       if (action.type === 'START') {
+        const deck = shuffleDeck()
         return {
           tag: 'DEAL',
           players: state.players,
-          deck: shuffleDeck(),
+          deck,
           bigBlind: state.bigBlind,
         }
       }
@@ -27,14 +29,15 @@ export function reduce(state: GameState, action: Action): GameState {
 
     case 'DEAL':
       if (action.type === 'DEAL_CARDS') {
-        // (deal hole cards later—stub for now)
+        const dealt = dealHole(state.players, state.deck)
         return {
           tag: 'PREFLOP',
-          players: state.players,
+          players: dealt.players,
           board: [],
           pots: [],
           toAct: 0,
           bigBlind: state.bigBlind,
+          deck: dealt.deck,
         }
       }
       return state
@@ -91,7 +94,13 @@ export function reduce(state: GameState, action: Action): GameState {
             bigBlind: state.bigBlind ?? 100,
           }
         }
-        return { ...state, tag: next }
+
+        const { board, deck } = dealCommunity(
+          state.board,
+          state.deck,
+          state.tag
+        )
+        return { ...state, tag: next, board, deck }
       }
 
       return state
