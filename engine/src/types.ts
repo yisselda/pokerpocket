@@ -43,11 +43,18 @@ export type GameState =
       toAct: SeatId
       bigBlind: number
     }
-  | { tag: 'SHOWDOWN'; players: Player[]; board: string[]; pots: Pot[] }
+  | {
+      tag: 'SHOWDOWN'
+      players: Player[]
+      board: string[]
+      pots: Pot[]
+      bigBlind: number
+    }
   | {
       tag: 'COMPLETE'
       winners: { seatId: SeatId; amount: number }[]
       players: Player[]
+      bigBlind: number
     }
 
 export type Action =
