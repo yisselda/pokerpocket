@@ -1,6 +1,8 @@
 import type { Action, GameState, BettingPhase } from './types'
 import { shuffleDeck } from './deck'
 import { dealCommunity, dealHole } from './deal'
+import { stat } from 'fs'
+import { firstToActPreflop } from './positions'
 
 const bettingPhases: BettingPhase[] = ['PREFLOP', 'FLOP', 'TURN', 'RIVER']
 
@@ -23,6 +25,7 @@ export function reduce(state: GameState, action: Action): GameState {
           players: state.players,
           deck,
           bigBlind: state.bigBlind,
+          dealer: state.dealer,
         }
       }
       return state
@@ -30,14 +33,44 @@ export function reduce(state: GameState, action: Action): GameState {
     case 'DEAL':
       if (action.type === 'DEAL_CARDS') {
         const dealt = dealHole(state.players, state.deck)
+
+        const players = dealt.players.map(p => ({ ...p }))
+        const n = players.length
+        const dealer = state.dealer
+
+        if (n === 2) {
+          // heads-up: SB is dealer, BB is other
+          const sb = dealer
+          const bb = (dealer + 1) % n
+          players[sb].stack -= state.bigBlind / 2
+          players[sb].bet = state.bigBlind / 2
+          players[bb].stack -= state.bigBlind
+          players[bb].bet = state.bigBlind
+          players[sb].contributed = state.bigBlind / 2
+          players[bb].contributed = state.bigBlind
+        } else {
+          // normal: dealer, SB, BB
+          const sb = (dealer + 1) % n
+          const bb = (dealer + 2) % n
+          players[sb].stack -= state.bigBlind / 2
+          players[sb].bet = state.bigBlind / 2
+          players[bb].stack -= state.bigBlind
+          players[bb].bet = state.bigBlind
+          players[sb].contributed = state.bigBlind / 2
+          players[bb].contributed = state.bigBlind
+        }
+
+        const toAct = firstToActPreflop(n, dealer)
+
         return {
           tag: 'PREFLOP',
-          players: dealt.players,
+          players: players,
           board: [],
           pots: [],
-          toAct: 0,
+          toAct: toAct,
           bigBlind: state.bigBlind,
           deck: dealt.deck,
+          dealer: dealer,
         }
       }
       return state
@@ -92,6 +125,7 @@ export function reduce(state: GameState, action: Action): GameState {
             board: state.board,
             pots: state.pots,
             bigBlind: state.bigBlind ?? 100,
+            dealer: state.dealer,
           }
         }
 
@@ -113,6 +147,7 @@ export function reduce(state: GameState, action: Action): GameState {
           winners: [],
           players: state.players,
           bigBlind: state.bigBlind ?? 100,
+          dealer: state.dealer,
         }
       }
       return state
@@ -124,6 +159,7 @@ export function reduce(state: GameState, action: Action): GameState {
           players: state.players,
           deck: shuffleDeck(),
           bigBlind: state.bigBlind ?? 100,
+          dealer: (state.dealer + 1) % state.players.length,
         }
       }
       return state

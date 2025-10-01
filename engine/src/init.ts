@@ -17,5 +17,10 @@ export function createTable(
   chips: number,
   bigBlind: number
 ): GameState {
-  return { tag: 'INIT', players: createPlayers(nbPlayers, chips), bigBlind }
+  return {
+    tag: 'INIT',
+    players: createPlayers(nbPlayers, chips),
+    bigBlind,
+    dealer: 0,
+  }
 }

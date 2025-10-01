@@ -33,8 +33,14 @@ export type BettingPhase = 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER'
 // This prevents invalid states (e.g. board cards in INIT) and makes
 // the reducer + selectors type-safe and easy to test.
 export type GameState =
-  | { tag: 'INIT'; players: Player[]; bigBlind: number }
-  | { tag: 'DEAL'; players: Player[]; deck: string[]; bigBlind: number }
+  | { tag: 'INIT'; players: Player[]; bigBlind: number; dealer: SeatId }
+  | {
+      tag: 'DEAL'
+      players: Player[]
+      deck: string[]
+      bigBlind: number
+      dealer: SeatId
+    }
   | {
       tag: BettingPhase
       players: Player[]
@@ -43,6 +49,7 @@ export type GameState =
       toAct: SeatId
       bigBlind: number
       deck: string[]
+      dealer: SeatId
     }
   | {
       tag: 'SHOWDOWN'
@@ -50,12 +57,14 @@ export type GameState =
       board: string[]
       pots: Pot[]
       bigBlind: number
+      dealer: SeatId
     }
   | {
       tag: 'COMPLETE'
       winners: { seatId: SeatId; amount: number }[]
       players: Player[]
       bigBlind: number
+      dealer: SeatId
     }
 
 export type Action =
