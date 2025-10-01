@@ -24,15 +24,15 @@ function determineWinners(
 
       // Convert to numeric value (higher is better)
       const handRankValues: Record<string, number> = {
-        'STRAIGHT_FLUSH': 8,
-        'FOUR_OF_A_KIND': 7,
-        'FULL_HOUSE': 6,
-        'FLUSH': 5,
-        'STRAIGHT': 4,
-        'THREE_OF_A_KIND': 3,
-        'TWO_PAIR': 2,
-        'ONE_PAIR': 1,
-        'HIGH_CARD': 0,
+        STRAIGHT_FLUSH: 8,
+        FOUR_OF_A_KIND: 7,
+        FULL_HOUSE: 6,
+        FLUSH: 5,
+        STRAIGHT: 4,
+        THREE_OF_A_KIND: 3,
+        TWO_PAIR: 2,
+        ONE_PAIR: 1,
+        HIGH_CARD: 0,
       }
 
       // Create a comparable value (higher = better)
@@ -97,8 +97,10 @@ function distributePot(
       const bIdx = state.seats.findIndex(s => s.id === b.seatId)
 
       // Calculate distance from button
-      const aDistance = (aIdx - state.button + state.config.maxSeats) % state.config.maxSeats
-      const bDistance = (bIdx - state.button + state.config.maxSeats) % state.config.maxSeats
+      const aDistance =
+        (aIdx - state.button + state.config.maxSeats) % state.config.maxSeats
+      const bDistance =
+        (bIdx - state.button + state.config.maxSeats) % state.config.maxSeats
 
       return aDistance - bDistance
     })
@@ -194,9 +196,7 @@ export function shouldShowdown(state: TableState): boolean {
   }
 
   // Count non-folded players
-  const nonFoldedPlayers = state.seats.filter(
-    s => s.id !== '' && !s.folded
-  )
+  const nonFoldedPlayers = state.seats.filter(s => s.id !== '' && !s.folded)
 
   // Need at least 2 players for showdown
   return nonFoldedPlayers.length >= 2

@@ -43,7 +43,12 @@ describe('START_HAND', () => {
     // Seat 3 players
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000, name: 'Alice' })
     table = reduce(table, { type: 'SIT', seat: 1, buyin: 1500, name: 'Bob' })
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 2000, name: 'Charlie' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 2,
+      buyin: 2000,
+      name: 'Charlie',
+    })
 
     // Start hand
     table = reduce(table, { type: 'START_HAND' })
@@ -129,9 +134,19 @@ describe('START_HAND', () => {
     let table = createTable(config)
 
     // Seat players with short stacks
-    table = reduce(table, { type: 'SIT', seat: 0, buyin: 30, name: 'ShortStack' }) // Less than SB
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 0,
+      buyin: 30,
+      name: 'ShortStack',
+    }) // Less than SB
     table = reduce(table, { type: 'SIT', seat: 1, buyin: 75, name: 'MidStack' }) // Between SB and BB
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000, name: 'BigStack' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 2,
+      buyin: 1000,
+      name: 'BigStack',
+    })
 
     // Start hand
     table = reduce(table, { type: 'START_HAND' })
@@ -165,8 +180,18 @@ describe('START_HAND', () => {
 
     // Seat players
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000, name: 'Normal' })
-    table = reduce(table, { type: 'SIT', seat: 1, buyin: 40, name: 'TinyStack' }) // Less than SB
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 80, name: 'SmallStack' }) // Less than BB
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 1,
+      buyin: 40,
+      name: 'TinyStack',
+    }) // Less than SB
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 2,
+      buyin: 80,
+      name: 'SmallStack',
+    }) // Less than BB
 
     // Start hand
     table = reduce(table, { type: 'START_HAND' })
@@ -191,9 +216,11 @@ describe('START_HAND', () => {
   it('should use injected RNG for deterministic dealing', () => {
     const riggedCards = cards(
       // Player 0 hole cards
-      'As', 'Kh',
+      'As',
+      'Kh',
       // Player 1 hole cards
-      'Qd', 'Qc',
+      'Qd',
+      'Qc'
     )
 
     const config: TableConfig = {
@@ -237,7 +264,12 @@ describe('START_HAND', () => {
     // Seat players
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000, name: 'Alice' })
     table = reduce(table, { type: 'SIT', seat: 1, buyin: 1000, name: 'Bob' })
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000, name: 'Charlie' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 2,
+      buyin: 1000,
+      name: 'Charlie',
+    })
 
     // Clear history from seating
     table.history = []
@@ -309,10 +341,20 @@ describe('START_HAND', () => {
     let table = createTable(config)
 
     // Seat 4 players
-    table = reduce(table, { type: 'SIT', seat: 0, buyin: 200, name: 'ShortStack' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 0,
+      buyin: 200,
+      name: 'ShortStack',
+    })
     table = reduce(table, { type: 'SIT', seat: 1, buyin: 5000, name: 'Alice' })
     table = reduce(table, { type: 'SIT', seat: 2, buyin: 5000, name: 'Bob' })
-    table = reduce(table, { type: 'SIT', seat: 3, buyin: 5000, name: 'Charlie' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 3,
+      buyin: 5000,
+      name: 'Charlie',
+    })
 
     // Hand 1 - all 4 players
     table = reduce(table, { type: 'START_HAND' })
@@ -323,19 +365,19 @@ describe('START_HAND', () => {
     // Simulate seat 0 (BTN) going all-in and losing (elimination)
     // With 4 players: BTN=0, SB=1, BB=2, UTG=3
     // Action starts with UTG (seat 3)
-    table = reduce(table, { type: 'FOLD', seat: 3 })  // UTG folds
+    table = reduce(table, { type: 'FOLD', seat: 3 }) // UTG folds
     table = reduce(table, { type: 'ALL_IN', seat: 0 }) // BTN all-in
-    table = reduce(table, { type: 'FOLD', seat: 1 })   // SB folds
-    table = reduce(table, { type: 'CALL', seat: 2 })   // BB calls
+    table = reduce(table, { type: 'FOLD', seat: 1 }) // SB folds
+    table = reduce(table, { type: 'CALL', seat: 2 }) // BB calls
 
     // Simulate showdown where seat 2 wins, seat 0 eliminated
     table.street = 'COMPLETE'
-    table.seats[0].stack = 0  // Eliminated
-    table.seats[0].buyin = 0  // Mark as busted
+    table.seats[0].stack = 0 // Eliminated
+    table.seats[0].buyin = 0 // Mark as busted
 
     // Hand 2 - button should skip eliminated player
     table = reduce(table, { type: 'START_HAND' })
-    expect(table.button).toBe(1)  // Button moves to next active player
+    expect(table.button).toBe(1) // Button moves to next active player
     expect(table.sbIndex).toBe(2)
     expect(table.bbIndex).toBe(3)
 
@@ -357,7 +399,12 @@ describe('START_HAND', () => {
     // Seat 3 players
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 5000, name: 'Alice' })
     table = reduce(table, { type: 'SIT', seat: 1, buyin: 5000, name: 'Bob' })
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 5000, name: 'Charlie' })
+    table = reduce(table, {
+      type: 'SIT',
+      seat: 2,
+      buyin: 5000,
+      name: 'Charlie',
+    })
 
     // Hand 1
     table = reduce(table, { type: 'START_HAND' })

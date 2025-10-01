@@ -26,7 +26,8 @@ table = initHand(table)
 console.log(`Hand started. Street: ${table.street}`)
 
 // Get action order
-const getActingPlayer = () => table.seats.findIndex((s, i) => i === table.actionOn)
+const getActingPlayer = () =>
+  table.seats.findIndex((s, i) => i === table.actionOn)
 
 // P4 (UTG) goes all-in
 if (getActingPlayer() === 3) {
@@ -76,7 +77,11 @@ if (isRoundComplete(table)) {
   console.log('Round is complete, advancing streets...')
 
   let streetCount = 0
-  while (table.street !== 'COMPLETE' && table.street !== 'SHOWDOWN' && streetCount < 10) {
+  while (
+    table.street !== 'COMPLETE' &&
+    table.street !== 'SHOWDOWN' &&
+    streetCount < 10
+  ) {
     table = advanceStreet(table)
     console.log(`Advanced to: ${table.street}`)
     streetCount++

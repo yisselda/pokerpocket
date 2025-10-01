@@ -6,30 +6,30 @@ import { computePots } from './pots.js'
 /**
  * Helper to handle post-action state updates
  */
-function handleActionComplete(state: TableState, lastActor: number): TableState {
+function handleActionComplete(
+  state: TableState,
+  lastActor: number
+): TableState {
   // Check if round is complete
   if (isRoundComplete(state)) {
     // Check if only one non-folded player remains
-    const nonFoldedPlayers = state.seats.filter(
-      s => s.id !== '' && !s.folded
-    )
+    const nonFoldedPlayers = state.seats.filter(s => s.id !== '' && !s.folded)
 
     if (nonFoldedPlayers.length === 1) {
       // Award pot to last player
       const winner = nonFoldedPlayers[0]
-      const totalPot = state.seats.reduce(
-        (sum, s) => sum + s.contributed,
-        0
-      )
+      const totalPot = state.seats.reduce((sum, s) => sum + s.contributed, 0)
 
       winner.stack += totalPot
 
       const newState = {
         ...state,
-        winners: [{
-          seatId: winner.id,
-          amount: totalPot,
-        }],
+        winners: [
+          {
+            seatId: winner.id,
+            amount: totalPot,
+          },
+        ],
         street: 'COMPLETE' as const,
       }
 
@@ -278,7 +278,7 @@ export function reduce(state: TableState, action: Action): TableState {
       seatData.streetContributed += to
       newState.currentBet = to
       newState.lastRaiseSize = to
-      newState.bettingReopened = true  // Bet opens action
+      newState.bettingReopened = true // Bet opens action
 
       // Reset hasActedThisRound since bet reopens action
       newState.hasActedThisRound = new Set<number>([seat])
@@ -344,7 +344,7 @@ export function reduce(state: TableState, action: Action): TableState {
       const previousBet = newState.currentBet
       newState.currentBet = to
       newState.lastRaiseSize = to - previousBet
-      newState.bettingReopened = true  // Full raise reopens action
+      newState.bettingReopened = true // Full raise reopens action
 
       // Reset hasActedThisRound since raise reopens action
       newState.hasActedThisRound = new Set<number>([seat])
@@ -469,10 +469,12 @@ export function reduce(state: TableState, action: Action): TableState {
 
         winner.stack += totalPot
 
-        newState.winners = [{
-          seatId: winner.id,
-          amount: totalPot,
-        }]
+        newState.winners = [
+          {
+            seatId: winner.id,
+            amount: totalPot,
+          },
+        ]
 
         newState.street = 'COMPLETE'
 

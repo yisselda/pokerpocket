@@ -50,8 +50,8 @@ async function askQuestion(
   errorMsg?: string,
   defaultValue?: number
 ): Promise<number> {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+  return new Promise(resolve => {
+    rl.question(question, answer => {
       if (!answer && defaultValue !== undefined) {
         resolve(defaultValue)
         return
@@ -75,18 +75,24 @@ async function askQuestion(
   })
 }
 
-async function askYesNo(rl: ReadlineInterface, question: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+async function askYesNo(
+  rl: ReadlineInterface,
+  question: string
+): Promise<boolean> {
+  return new Promise(resolve => {
+    rl.question(question, answer => {
       const normalized = answer.toLowerCase().trim()
       resolve(normalized === 'y' || normalized === 'yes')
     })
   })
 }
 
-async function askString(rl: ReadlineInterface, question: string): Promise<string> {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+async function askString(
+  rl: ReadlineInterface,
+  question: string
+): Promise<string> {
+  return new Promise(resolve => {
+    rl.question(question, answer => {
       resolve(answer.trim())
     })
   })
@@ -113,7 +119,9 @@ function getPositionString(table: TableState, seatIndex: number): string {
   if (seatIndex === table.bbIndex) positions.push('BB')
 
   // UTG position (first to act preflop after blinds)
-  const activePlayers = table.seats.filter(s => s.id !== '' && s.stack > 0).length
+  const activePlayers = table.seats.filter(
+    s => s.id !== '' && s.stack > 0
+  ).length
   if (activePlayers > 2 && table.street === 'PREFLOP') {
     const utgIndex = (table.bbIndex + 1) % table.config.maxSeats
     if (seatIndex === utgIndex) positions.push('UTG')
@@ -150,7 +158,6 @@ function formatActions(actions: LegalActions, stack: number): string {
 
   return parts.join(', ')
 }
-
 
 function displayGameState(table: TableState) {
   // Show pot
@@ -194,8 +201,8 @@ function displayGameState(table: TableState) {
 
 function isRoundComplete(table: TableState): boolean {
   // Check if all non-folded, non-allin players have acted
-  const activePlayers = table.seats.filter((s, i) =>
-    s.id !== '' && !s.folded && !s.allIn
+  const activePlayers = table.seats.filter(
+    (s, i) => s.id !== '' && !s.folded && !s.allIn
   )
 
   if (activePlayers.length === 0) return true
@@ -217,14 +224,14 @@ async function setupGame(rl: ReadlineInterface): Promise<TableState> {
   const players = await askQuestion(
     rl,
     'How many players? ',
-    (n) => n >= 2 && n <= 9,
+    n => n >= 2 && n <= 9,
     'Please enter 2-9'
   )
 
   const stack = await askQuestion(
     rl,
     'Starting stack (default 10,000)? ',
-    (n) => n > 0,
+    n => n > 0,
     'Stack must be positive',
     10000
   )
@@ -232,7 +239,7 @@ async function setupGame(rl: ReadlineInterface): Promise<TableState> {
   const bb = await askQuestion(
     rl,
     'Big blind amount (default 100)? ',
-    (n) => n > 0,
+    n => n > 0,
     'Blind must be positive',
     100
   )
@@ -243,7 +250,7 @@ async function setupGame(rl: ReadlineInterface): Promise<TableState> {
   let table = createTable({
     variant: 'NLHE',
     maxSeats: players,
-    blinds: { sb: Math.floor(bb / 2), bb: bb }
+    blinds: { sb: Math.floor(bb / 2), bb: bb },
   })
 
   // Add players
@@ -252,7 +259,7 @@ async function setupGame(rl: ReadlineInterface): Promise<TableState> {
       type: 'SIT',
       seat: i,
       buyin: stack,
-      name: `Player ${i + 1}`
+      name: `Player ${i + 1}`,
     })
   }
 
@@ -344,7 +351,9 @@ async function getPlayerAction(
         return { type: 'ALL_IN', seat: table.actionOn }
 
       default:
-        console.log('Invalid action. Try: check, call, bet <amount>, raise <amount>, fold, allin')
+        console.log(
+          'Invalid action. Try: check, call, bet <amount>, raise <amount>, fold, allin'
+        )
     }
   }
 }
@@ -358,12 +367,16 @@ async function playerTurn(
 
   // Show position info
   const position = getPositionString(table, table.actionOn)
-  console.log(`\n(Player ${seatNum}${position}, Stack: ${seat.stack}${getPostedInfo(seat)})`)
+  console.log(
+    `\n(Player ${seatNum}${position}, Stack: ${seat.stack}${getPostedInfo(seat)})`
+  )
 
   // Optional card reveal
   const showCards = await askYesNo(rl, 'See your hole cards? (y/n): ')
   if (showCards && seat.hole) {
-    console.log(`→ Hole cards: [${formatCard(seat.hole[0])}, ${formatCard(seat.hole[1])}]`)
+    console.log(
+      `→ Hole cards: [${formatCard(seat.hole[0])}, ${formatCard(seat.hole[1])}]`
+    )
   }
 
   // Show legal actions
@@ -420,16 +433,18 @@ function displayHandStart(table: TableState) {
   const sbSeat = table.seats[table.sbIndex]
   const bbSeat = table.seats[table.bbIndex]
 
-  console.log(`Dealer: Player ${dealerNum}  |  Small Blind: Player ${sbNum} (${sbSeat.streetContributed})  |  Big Blind: Player ${bbNum} (${bbSeat.streetContributed})`)
+  console.log(
+    `Dealer: Player ${dealerNum}  |  Small Blind: Player ${sbNum} (${sbSeat.streetContributed})  |  Big Blind: Player ${bbNum} (${bbSeat.streetContributed})`
+  )
   console.log(`Pot: ${getTotalPot(table)}`)
 }
 
 function displayStreetTransition(table: TableState) {
   const streetNames: Record<string, string> = {
-    'FLOP': '--- Flop ---',
-    'TURN': '--- Turn ---',
-    'RIVER': '--- River ---',
-    'SHOWDOWN': '--- Showdown ---'
+    FLOP: '--- Flop ---',
+    TURN: '--- Turn ---',
+    RIVER: '--- River ---',
+    SHOWDOWN: '--- Showdown ---',
   }
 
   console.log(`\n${streetNames[table.street] || table.street}`)
@@ -438,25 +453,28 @@ function displayStreetTransition(table: TableState) {
   displayGameState(table)
 }
 
-function evaluateHand(hole: [Card, Card], board: Card[]): { rank: string; description: string } {
+function evaluateHand(
+  hole: [Card, Card],
+  board: Card[]
+): { rank: string; description: string } {
   const allCards = [...hole, ...board]
   const result = evaluateSeven(allCards)
 
   const rankDescriptions: Record<string, string> = {
-    'STRAIGHT_FLUSH': 'Straight Flush',
-    'FOUR_OF_A_KIND': 'Four of a Kind',
-    'FULL_HOUSE': 'Full House',
-    'FLUSH': 'Flush',
-    'STRAIGHT': 'Straight',
-    'THREE_OF_A_KIND': 'Three of a Kind',
-    'TWO_PAIR': 'Two Pair',
-    'ONE_PAIR': 'Pair',
-    'HIGH_CARD': 'High Card'
+    STRAIGHT_FLUSH: 'Straight Flush',
+    FOUR_OF_A_KIND: 'Four of a Kind',
+    FULL_HOUSE: 'Full House',
+    FLUSH: 'Flush',
+    STRAIGHT: 'Straight',
+    THREE_OF_A_KIND: 'Three of a Kind',
+    TWO_PAIR: 'Two Pair',
+    ONE_PAIR: 'Pair',
+    HIGH_CARD: 'High Card',
   }
 
   return {
     rank: result.rank,
-    description: rankDescriptions[result.rank] || result.rank
+    description: rankDescriptions[result.rank] || result.rank,
   }
 }
 
@@ -467,7 +485,9 @@ function displayShowdown(table: TableState) {
   table.seats.forEach((seat, i) => {
     if (seat.id && !seat.folded && seat.hole) {
       const handEval = evaluateHand(seat.hole, table.board)
-      console.log(`Player ${i + 1}: ${formatCard(seat.hole[0])} ${formatCard(seat.hole[1])} → ${handEval.description}`)
+      console.log(
+        `Player ${i + 1}: ${formatCard(seat.hole[0])} ${formatCard(seat.hole[1])} → ${handEval.description}`
+      )
     }
   })
 
@@ -494,7 +514,7 @@ function displayShowdown(table: TableState) {
 async function main() {
   const rl = createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   })
 
   // Setup game
@@ -540,7 +560,11 @@ async function main() {
         }
       } else {
         // Normal play - there are players who can act
-        while (!isRoundComplete(table) && table.street === prevStreet && table.street !== 'COMPLETE') {
+        while (
+          !isRoundComplete(table) &&
+          table.street === prevStreet &&
+          table.street !== 'COMPLETE'
+        ) {
           table = await playerTurn(table, rl)
 
           // Check if hand ended early (everyone folded)

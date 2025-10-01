@@ -15,15 +15,15 @@ describe('Pot calculation integration', () => {
 
     // Three players with different stacks
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
-    table = reduce(table, { type: 'SIT', seat: 1, buyin: 300 })  // Short stack
+    table = reduce(table, { type: 'SIT', seat: 1, buyin: 300 }) // Short stack
     table = reduce(table, { type: 'SIT', seat: 2, buyin: 2000 })
     table = reduce(table, { type: 'START_HAND' })
 
     // Preflop: BTN raises, SB goes all-in, BB calls
-    table = reduce(table, { type: 'RAISE', seat: 0, to: 200 })   // BTN raises
-    table = reduce(table, { type: 'ALL_IN', seat: 1 })            // SB all-in for 300 total
-    table = reduce(table, { type: 'RAISE', seat: 2, to: 500 })   // BB re-raises
-    table = reduce(table, { type: 'CALL', seat: 0 })             // BTN calls 500
+    table = reduce(table, { type: 'RAISE', seat: 0, to: 200 }) // BTN raises
+    table = reduce(table, { type: 'ALL_IN', seat: 1 }) // SB all-in for 300 total
+    table = reduce(table, { type: 'RAISE', seat: 2, to: 500 }) // BB re-raises
+    table = reduce(table, { type: 'CALL', seat: 0 }) // BTN calls 500
 
     // Check that street advanced and pots are calculated
     expect(table.street).toBe('FLOP')
@@ -53,17 +53,17 @@ describe('Pot calculation integration', () => {
     let table = createTable(config)
 
     // Four players with escalating stacks
-    table = reduce(table, { type: 'SIT', seat: 0, buyin: 50 })   // Button - tiny stack
-    table = reduce(table, { type: 'SIT', seat: 1, buyin: 100 })  // SB - small stack
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 200 })  // BB - medium stack
-    table = reduce(table, { type: 'SIT', seat: 3, buyin: 500 })  // UTG - big stack
+    table = reduce(table, { type: 'SIT', seat: 0, buyin: 50 }) // Button - tiny stack
+    table = reduce(table, { type: 'SIT', seat: 1, buyin: 100 }) // SB - small stack
+    table = reduce(table, { type: 'SIT', seat: 2, buyin: 200 }) // BB - medium stack
+    table = reduce(table, { type: 'SIT', seat: 3, buyin: 500 }) // UTG - big stack
     table = reduce(table, { type: 'START_HAND' })
 
     // In 4-player, action is UTG (3), BTN (0), SB (1), BB (2)
-    table = reduce(table, { type: 'ALL_IN', seat: 3 })  // UTG all-in for 500
-    table = reduce(table, { type: 'ALL_IN', seat: 0 })  // BTN all-in for 50
-    table = reduce(table, { type: 'ALL_IN', seat: 1 })  // SB all-in for 100
-    table = reduce(table, { type: 'CALL', seat: 2 })    // BB calls 200 (all-in)
+    table = reduce(table, { type: 'ALL_IN', seat: 3 }) // UTG all-in for 500
+    table = reduce(table, { type: 'ALL_IN', seat: 0 }) // BTN all-in for 50
+    table = reduce(table, { type: 'ALL_IN', seat: 1 }) // SB all-in for 100
+    table = reduce(table, { type: 'CALL', seat: 2 }) // BB calls 200 (all-in)
 
     expect(table.street).toBe('FLOP')
     expect(table.pots).toHaveLength(4)
@@ -96,21 +96,21 @@ describe('Pot calculation integration', () => {
     let table = createTable(config)
 
     // Six players with staggered stacks
-    table = reduce(table, { type: 'SIT', seat: 0, buyin: 100 })  // BTN
-    table = reduce(table, { type: 'SIT', seat: 1, buyin: 250 })  // SB
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 400 })  // BB
-    table = reduce(table, { type: 'SIT', seat: 3, buyin: 600 })  // UTG
-    table = reduce(table, { type: 'SIT', seat: 4, buyin: 800 })  // MP
+    table = reduce(table, { type: 'SIT', seat: 0, buyin: 100 }) // BTN
+    table = reduce(table, { type: 'SIT', seat: 1, buyin: 250 }) // SB
+    table = reduce(table, { type: 'SIT', seat: 2, buyin: 400 }) // BB
+    table = reduce(table, { type: 'SIT', seat: 3, buyin: 600 }) // UTG
+    table = reduce(table, { type: 'SIT', seat: 4, buyin: 800 }) // MP
     table = reduce(table, { type: 'SIT', seat: 5, buyin: 1000 }) // CO
     table = reduce(table, { type: 'START_HAND' })
 
     // All players go all-in in sequence
-    table = reduce(table, { type: 'ALL_IN', seat: 3 })  // UTG all-in 600
-    table = reduce(table, { type: 'ALL_IN', seat: 4 })  // MP all-in 800
-    table = reduce(table, { type: 'ALL_IN', seat: 5 })  // CO all-in 1000
-    table = reduce(table, { type: 'ALL_IN', seat: 0 })  // BTN all-in 100
-    table = reduce(table, { type: 'ALL_IN', seat: 1 })  // SB all-in 250 (245 + 5)
-    table = reduce(table, { type: 'ALL_IN', seat: 2 })  // BB all-in 400 (390 + 10)
+    table = reduce(table, { type: 'ALL_IN', seat: 3 }) // UTG all-in 600
+    table = reduce(table, { type: 'ALL_IN', seat: 4 }) // MP all-in 800
+    table = reduce(table, { type: 'ALL_IN', seat: 5 }) // CO all-in 1000
+    table = reduce(table, { type: 'ALL_IN', seat: 0 }) // BTN all-in 100
+    table = reduce(table, { type: 'ALL_IN', seat: 1 }) // SB all-in 250 (245 + 5)
+    table = reduce(table, { type: 'ALL_IN', seat: 2 }) // BB all-in 400 (390 + 10)
 
     // Should advance to flop with multiple pots
     expect(table.street).toBe('FLOP')
@@ -154,15 +154,15 @@ describe('Pot calculation integration', () => {
     let table = createTable(config)
 
     table = reduce(table, { type: 'SIT', seat: 0, buyin: 1000 })
-    table = reduce(table, { type: 'SIT', seat: 1, buyin: 200 })   // Will fold
-    table = reduce(table, { type: 'SIT', seat: 2, buyin: 500 })   // Will go all-in
+    table = reduce(table, { type: 'SIT', seat: 1, buyin: 200 }) // Will fold
+    table = reduce(table, { type: 'SIT', seat: 2, buyin: 500 }) // Will go all-in
     table = reduce(table, { type: 'START_HAND' })
 
     // Preflop action
-    table = reduce(table, { type: 'RAISE', seat: 0, to: 200 })    // BTN raises
-    table = reduce(table, { type: 'CALL', seat: 1 })               // SB calls 200 (all-in)
-    table = reduce(table, { type: 'ALL_IN', seat: 2 })            // BB goes all-in for 500
-    table = reduce(table, { type: 'FOLD', seat: 0 })              // BTN folds
+    table = reduce(table, { type: 'RAISE', seat: 0, to: 200 }) // BTN raises
+    table = reduce(table, { type: 'CALL', seat: 1 }) // SB calls 200 (all-in)
+    table = reduce(table, { type: 'ALL_IN', seat: 2 }) // BB goes all-in for 500
+    table = reduce(table, { type: 'FOLD', seat: 0 }) // BTN folds
 
     // SB is all-in, BB is all-in, BTN folded after contributing 200
     expect(table.street).toBe('FLOP')
@@ -170,11 +170,11 @@ describe('Pot calculation integration', () => {
 
     // Main pot includes folded player's money: 200 * 3 = 600
     expect(table.pots[0].amount).toBe(600)
-    expect(table.pots[0].eligible).toHaveLength(2)  // Only SB and BB eligible
-    expect(table.pots[0].eligible).not.toContain('seat_0')  // BTN folded
+    expect(table.pots[0].eligible).toHaveLength(2) // Only SB and BB eligible
+    expect(table.pots[0].eligible).not.toContain('seat_0') // BTN folded
 
     // Side pot: BB's extra 300
     expect(table.pots[1].amount).toBe(300)
-    expect(table.pots[1].eligible).toHaveLength(1)  // Only BB
+    expect(table.pots[1].eligible).toHaveLength(1) // Only BB
   })
 })

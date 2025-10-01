@@ -28,7 +28,7 @@ describe('Showdown and payouts', () => {
           id: 'p1',
           stack: 900,
           hole: [
-            { rank: 'T', suit: 'spades' },  // Royal flush
+            { rank: 'T', suit: 'spades' }, // Royal flush
             { rank: '9', suit: 'spades' },
           ] as [Card, Card],
           contributed: 100,
@@ -40,7 +40,7 @@ describe('Showdown and payouts', () => {
           id: 'p2',
           stack: 900,
           hole: [
-            { rank: '2', suit: 'clubs' },   // Pair of twos
+            { rank: '2', suit: 'clubs' }, // Pair of twos
             { rank: '3', suit: 'clubs' },
           ] as [Card, Card],
           contributed: 100,
@@ -67,8 +67,8 @@ describe('Showdown and payouts', () => {
     expect(result.winners).toHaveLength(1)
     expect(result.winners![0].seatId).toBe('p1')
     expect(result.winners![0].amount).toBe(200)
-    expect(result.seats[0].stack).toBe(1100)  // 900 + 200 won
-    expect(result.seats[1].stack).toBe(900)   // No change
+    expect(result.seats[0].stack).toBe(1100) // 900 + 200 won
+    expect(result.seats[1].stack).toBe(900) // No change
   })
 
   it('should split pot between tied winners (heads-up)', () => {
@@ -93,7 +93,7 @@ describe('Showdown and payouts', () => {
           id: 'p1',
           stack: 900,
           hole: [
-            { rank: '2', suit: 'clubs' },   // Two pair AA KK Q kicker
+            { rank: '2', suit: 'clubs' }, // Two pair AA KK Q kicker
             { rank: '3', suit: 'clubs' },
           ] as [Card, Card],
           contributed: 100,
@@ -129,8 +129,8 @@ describe('Showdown and payouts', () => {
     const result = processShowdown(state)
 
     expect(result.winners).toHaveLength(2)
-    expect(result.seats[0].stack).toBe(1000)  // 900 + 100 (half pot)
-    expect(result.seats[1].stack).toBe(1000)  // 900 + 100 (half pot)
+    expect(result.seats[0].stack).toBe(1000) // 900 + 100 (half pot)
+    expect(result.seats[1].stack).toBe(1000) // 900 + 100 (half pot)
   })
 
   it('should handle odd chips correctly (3-handed)', () => {
@@ -155,7 +155,7 @@ describe('Showdown and payouts', () => {
           id: 'p1',
           stack: 900,
           hole: [
-            { rank: '2', suit: 'clubs' },   // Straight flush on board
+            { rank: '2', suit: 'clubs' }, // Straight flush on board
             { rank: '3', suit: 'clubs' },
           ] as [Card, Card],
           contributed: 101,
@@ -179,7 +179,7 @@ describe('Showdown and payouts', () => {
           id: 'p3',
           stack: 900,
           hole: [
-            { rank: '6', suit: 'hearts' },   // Same straight flush on board
+            { rank: '6', suit: 'hearts' }, // Same straight flush on board
             { rank: '7', suit: 'hearts' },
           ] as [Card, Card],
           contributed: 101,
@@ -188,8 +188,8 @@ describe('Showdown and payouts', () => {
           allIn: false,
         },
       ],
-      pots: [{ amount: 303, eligible: ['p1', 'p2', 'p3'] }],  // 303 / 3 = 101
-      button: 0,  // Button at seat 0
+      pots: [{ amount: 303, eligible: ['p1', 'p2', 'p3'] }], // 303 / 3 = 101
+      button: 0, // Button at seat 0
       sbIndex: 1,
       bbIndex: 2,
       actionOn: 0,
@@ -205,9 +205,9 @@ describe('Showdown and payouts', () => {
     expect(result.winners).toHaveLength(3)
     // 303 / 3 = 101 each
     // But we're splitting 303, so each gets 101
-    expect(result.seats[0].stack).toBe(1001)  // Gets base amount
-    expect(result.seats[1].stack).toBe(1001)  // First left of button
-    expect(result.seats[2].stack).toBe(1001)  // Second left of button
+    expect(result.seats[0].stack).toBe(1001) // Gets base amount
+    expect(result.seats[1].stack).toBe(1001) // First left of button
+    expect(result.seats[2].stack).toBe(1001) // Second left of button
   })
 
   it('should handle multiple side pots correctly (3-handed)', () => {
@@ -232,7 +232,7 @@ describe('Showdown and payouts', () => {
           id: 'p1',
           stack: 0,
           hole: [
-            { rank: '7', suit: 'hearts' },   // Pair of 7s
+            { rank: '7', suit: 'hearts' }, // Pair of 7s
             { rank: '8', suit: 'hearts' },
           ] as [Card, Card],
           contributed: 100,
@@ -244,7 +244,7 @@ describe('Showdown and payouts', () => {
           id: 'p2',
           stack: 0,
           hole: [
-            { rank: 'A', suit: 'clubs' },   // Pair of Aces (best)
+            { rank: 'A', suit: 'clubs' }, // Pair of Aces (best)
             { rank: 'Q', suit: 'clubs' },
           ] as [Card, Card],
           contributed: 200,
@@ -266,9 +266,9 @@ describe('Showdown and payouts', () => {
         },
       ],
       pots: [
-        { amount: 300, eligible: ['p1', 'p2', 'p3'] },  // Main pot
-        { amount: 200, eligible: ['p2', 'p3'] },        // Side pot 1
-        { amount: 100, eligible: ['p3'] },              // Side pot 2
+        { amount: 300, eligible: ['p1', 'p2', 'p3'] }, // Main pot
+        { amount: 200, eligible: ['p2', 'p3'] }, // Side pot 1
+        { amount: 100, eligible: ['p3'] }, // Side pot 2
       ],
       button: 0,
       sbIndex: 1,
@@ -294,9 +294,9 @@ describe('Showdown and payouts', () => {
     expect(p3Winner?.amount).toBe(100)
 
     // Final stacks
-    expect(result.seats[0].stack).toBe(0)    // p1 lost
-    expect(result.seats[1].stack).toBe(500)  // p2 won 500
-    expect(result.seats[2].stack).toBe(200)  // p3 had 100 + won 100
+    expect(result.seats[0].stack).toBe(0) // p1 lost
+    expect(result.seats[1].stack).toBe(500) // p2 won 500
+    expect(result.seats[2].stack).toBe(200) // p3 had 100 + won 100
   })
 
   it('should handle folded players (heads-up)', () => {
@@ -326,7 +326,7 @@ describe('Showdown and payouts', () => {
           ] as [Card, Card],
           contributed: 100,
           streetContributed: 0,
-          folded: true,  // Folded
+          folded: true, // Folded
           allIn: false,
         },
         {
@@ -342,7 +342,7 @@ describe('Showdown and payouts', () => {
           allIn: false,
         },
       ],
-      pots: [{ amount: 200, eligible: ['p2'] }],  // Only p2 eligible
+      pots: [{ amount: 200, eligible: ['p2'] }], // Only p2 eligible
       button: 0,
       sbIndex: 0,
       bbIndex: 1,
@@ -359,7 +359,7 @@ describe('Showdown and payouts', () => {
     expect(result.winners).toHaveLength(1)
     expect(result.winners![0].seatId).toBe('p2')
     expect(result.winners![0].amount).toBe(200)
-    expect(result.seats[0].stack).toBe(900)   // p1 folded, no change
-    expect(result.seats[1].stack).toBe(1100)  // p2 wins pot
+    expect(result.seats[0].stack).toBe(900) // p1 folded, no change
+    expect(result.seats[1].stack).toBe(1100) // p2 wins pot
   })
 })

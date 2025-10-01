@@ -26,9 +26,7 @@ export const selectors = {
       return true
     }
 
-    const nonFoldedPlayers = state.seats.filter(
-      s => s.id !== '' && !s.folded
-    )
+    const nonFoldedPlayers = state.seats.filter(s => s.id !== '' && !s.folded)
     if (nonFoldedPlayers.length <= 1) {
       return true
     }

@@ -200,8 +200,8 @@ describe('No-Limit raise rules', () => {
       }
 
       let table = createTable(config)
-      table = reduce(table, { type: 'SIT', seat: 0, buyin: 200 })  // BTN
-      table = reduce(table, { type: 'SIT', seat: 1, buyin: 60 })   // SB
+      table = reduce(table, { type: 'SIT', seat: 0, buyin: 200 }) // BTN
+      table = reduce(table, { type: 'SIT', seat: 1, buyin: 60 }) // SB
       table = reduce(table, { type: 'SIT', seat: 2, buyin: 1000 }) // BB
       table = reduce(table, { type: 'START_HAND' })
 
@@ -236,7 +236,7 @@ describe('No-Limit raise rules', () => {
 
       // Get to flop - in HU, SB/button acts first preflop
       // SB calls (50 more to match BB), BB checks (option)
-      table = reduce(table, { type: 'CALL', seat: 0 })  // SB calls
+      table = reduce(table, { type: 'CALL', seat: 0 }) // SB calls
       table = reduce(table, { type: 'CHECK', seat: 1 }) // BB checks option
 
       // Should auto-advance to FLOP
@@ -276,9 +276,9 @@ describe('No-Limit raise rules', () => {
       // SB has only 20 left (70 - 50 blind), and needs to call 50 more
       // SB can only call (all-in for 20), not raise since 70 < 100
       const sbActions = getLegalActions(table, 0)
-      expect(sbActions.canCall).toBe(true)  // Can call (all-in for 20)
+      expect(sbActions.canCall).toBe(true) // Can call (all-in for 20)
       expect(sbActions.canRaise).toBe(false) // Cannot raise (70 < 100)
-      expect(sbActions.callAmount).toBe(20)  // All-in amount
+      expect(sbActions.callAmount).toBe(20) // All-in amount
 
       // Go all-in (call for less)
       table = reduce(table, { type: 'ALL_IN', seat: 0 })
@@ -350,7 +350,7 @@ describe('No-Limit raise rules', () => {
       table = reduce(table, { type: 'START_HAND' })
 
       // Get to flop - SB acts first, needs to call
-      table = reduce(table, { type: 'CALL', seat: 0 })  // SB calls
+      table = reduce(table, { type: 'CALL', seat: 0 }) // SB calls
       table = reduce(table, { type: 'CHECK', seat: 1 }) // BB checks
 
       // Should auto-advance to FLOP

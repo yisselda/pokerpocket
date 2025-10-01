@@ -60,8 +60,9 @@ export function computePots(state: TableState): Pot[] {
   const mergedPots: Pot[] = []
   for (const pot of pots) {
     const existingPot = mergedPots.find(
-      p => p.eligible.length === pot.eligible.length &&
-           p.eligible.every(id => pot.eligible.includes(id))
+      p =>
+        p.eligible.length === pot.eligible.length &&
+        p.eligible.every(id => pot.eligible.includes(id))
     )
 
     if (existingPot) {

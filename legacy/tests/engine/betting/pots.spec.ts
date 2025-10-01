@@ -6,9 +6,30 @@ describe('Side pot computation', () => {
   it('should create single pot when all players have equal contributions', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p2', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p3', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p2',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -21,9 +42,30 @@ describe('Side pot computation', () => {
   it('should create side pot when player is all-in for less', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 50, folded: false, allIn: true, stack: 0, streetContributed: 0 },  // All-in for 50
-        { id: 'p2', contributed: 200, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p3', contributed: 200, folded: false, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 50,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // All-in for 50
+        {
+          id: 'p2',
+          contributed: 200,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 200,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -42,25 +84,74 @@ describe('Side pot computation', () => {
   it('should exclude folded players from pot eligibility', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 100, folded: true, allIn: false, stack: 0, streetContributed: 0 },  // Folded
-        { id: 'p2', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p3', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 100,
+          folded: true,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        }, // Folded
+        {
+          id: 'p2',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
     const pots = computePots(state as TableState)
     expect(pots).toHaveLength(1)
     expect(pots[0].amount).toBe(300)
-    expect(pots[0].eligible).toEqual(['p2', 'p3'])  // p1 not eligible
+    expect(pots[0].eligible).toEqual(['p2', 'p3']) // p1 not eligible
   })
 
   it('should handle complex multi-way all-in scenario', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 20, folded: false, allIn: true, stack: 0, streetContributed: 0 },   // All-in 20
-        { id: 'p2', contributed: 50, folded: false, allIn: true, stack: 0, streetContributed: 0 },   // All-in 50
-        { id: 'p3', contributed: 100, folded: false, allIn: true, stack: 0, streetContributed: 0 },  // All-in 100
-        { id: 'p4', contributed: 200, folded: false, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 20,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // All-in 20
+        {
+          id: 'p2',
+          contributed: 50,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // All-in 50
+        {
+          id: 'p3',
+          contributed: 100,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // All-in 100
+        {
+          id: 'p4',
+          contributed: 200,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -87,10 +178,38 @@ describe('Side pot computation', () => {
   it('should handle all-in with folded players', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 50, folded: false, allIn: true, stack: 0, streetContributed: 0 },  // All-in 50
-        { id: 'p2', contributed: 100, folded: true, allIn: false, stack: 0, streetContributed: 0 },  // Folded
-        { id: 'p3', contributed: 150, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p4', contributed: 150, folded: false, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 50,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // All-in 50
+        {
+          id: 'p2',
+          contributed: 100,
+          folded: true,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        }, // Folded
+        {
+          id: 'p3',
+          contributed: 150,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p4',
+          contributed: 150,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -99,7 +218,7 @@ describe('Side pot computation', () => {
 
     // Main pot: 50 * 4 = 200 (includes folded player's money)
     expect(pots[0].amount).toBe(200)
-    expect(pots[0].eligible).toEqual(['p1', 'p3', 'p4'])  // Not p2
+    expect(pots[0].eligible).toEqual(['p1', 'p3', 'p4']) // Not p2
 
     // Side pot: 50 * 3 = 150 (p2's extra 50 + p3's 100 + p4's 100)
     expect(pots[1].amount).toBe(250)
@@ -109,8 +228,22 @@ describe('Side pot computation', () => {
   it('should return empty array when no contributions', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 0, folded: false, allIn: false, stack: 100, streetContributed: 0 },
-        { id: 'p2', contributed: 0, folded: false, allIn: false, stack: 100, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 0,
+          folded: false,
+          allIn: false,
+          stack: 100,
+          streetContributed: 0,
+        },
+        {
+          id: 'p2',
+          contributed: 0,
+          folded: false,
+          allIn: false,
+          stack: 100,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -121,9 +254,30 @@ describe('Side pot computation', () => {
   it('should handle single player contribution (everyone else folded)', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p2', contributed: 0, folded: true, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p3', contributed: 0, folded: true, allIn: false, stack: 0, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p2',
+          contributed: 0,
+          folded: true,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 0,
+          folded: true,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -136,9 +290,30 @@ describe('Side pot computation', () => {
   it('should handle 3-player exact side pot with short stack all-in', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 100, folded: false, allIn: true, stack: 0, streetContributed: 0 },  // Short stack all-in
-        { id: 'p2', contributed: 300, folded: false, allIn: false, stack: 200, streetContributed: 0 },
-        { id: 'p3', contributed: 300, folded: false, allIn: false, stack: 400, streetContributed: 0 },
+        {
+          id: 'p1',
+          contributed: 100,
+          folded: false,
+          allIn: true,
+          stack: 0,
+          streetContributed: 0,
+        }, // Short stack all-in
+        {
+          id: 'p2',
+          contributed: 300,
+          folded: false,
+          allIn: false,
+          stack: 200,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 300,
+          folded: false,
+          allIn: false,
+          stack: 400,
+          streetContributed: 0,
+        },
       ],
     }
 
@@ -163,9 +338,30 @@ describe('Side pot computation', () => {
   it('should merge pots with same eligible players', () => {
     const state: Partial<TableState> = {
       seats: [
-        { id: 'p1', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p2', contributed: 100, folded: false, allIn: false, stack: 0, streetContributed: 0 },
-        { id: 'p3', contributed: 100, folded: true, allIn: false, stack: 0, streetContributed: 0 },  // Folded
+        {
+          id: 'p1',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p2',
+          contributed: 100,
+          folded: false,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        },
+        {
+          id: 'p3',
+          contributed: 100,
+          folded: true,
+          allIn: false,
+          stack: 0,
+          streetContributed: 0,
+        }, // Folded
       ],
     }
 

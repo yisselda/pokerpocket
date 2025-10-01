@@ -4,7 +4,10 @@ import { initHand } from '../../../src/engine/state/initHand.js'
 import { processAction } from '../../../src/engine/betting/reduce.js'
 import { TableState } from '../../../src/engine/betting/types.js'
 import { createDeck } from '../../../src/deck.js'
-import { advanceStreet, getNextActor } from '../../../src/engine/betting/order.js'
+import {
+  advanceStreet,
+  getNextActor,
+} from '../../../src/engine/betting/order.js'
 
 describe('Player Elimination', () => {
   test('players with 0 chips should not be dealt into new hands', () => {
@@ -12,7 +15,7 @@ describe('Player Elimination', () => {
     let table = createTable({
       maxSeats: 6,
       players: [
-        { id: 'p1', stack: 10 },  // Will lose all in blinds
+        { id: 'p1', stack: 10 }, // Will lose all in blinds
         { id: 'p2', stack: 100 },
         { id: 'p3', stack: 100 },
       ],
@@ -29,9 +32,24 @@ describe('Player Elimination', () => {
     // Simulate end of hand where P1 loses remaining chips
     table.seats = table.seats.map(seat => {
       if (seat.id === 'p1') {
-        return { ...seat, stack: 0, hole: undefined, contributed: 0, streetContributed: 0, folded: false, allIn: false }
+        return {
+          ...seat,
+          stack: 0,
+          hole: undefined,
+          contributed: 0,
+          streetContributed: 0,
+          folded: false,
+          allIn: false,
+        }
       }
-      return { ...seat, hole: undefined, contributed: 0, streetContributed: 0, folded: false, allIn: false }
+      return {
+        ...seat,
+        hole: undefined,
+        contributed: 0,
+        streetContributed: 0,
+        folded: false,
+        allIn: false,
+      }
     })
 
     // Try to start a new hand
@@ -57,7 +75,7 @@ describe('Player Elimination', () => {
     let table = createTable({
       maxSeats: 6,
       players: [
-        { id: 'p1', stack: 0 },   // Already eliminated
+        { id: 'p1', stack: 0 }, // Already eliminated
         { id: 'p2', stack: 100 },
         { id: 'p3', stack: 100 },
         { id: 'p4', stack: 100 },
@@ -78,9 +96,9 @@ describe('Player Elimination', () => {
 
     // Verify only active players have hole cards
     expect(table.seats[0].hole).toBeUndefined() // p1 eliminated
-    expect(table.seats[1].hole).toBeDefined()    // p2 active
-    expect(table.seats[2].hole).toBeDefined()    // p3 active
-    expect(table.seats[3].hole).toBeDefined()    // p4 active
+    expect(table.seats[1].hole).toBeDefined() // p2 active
+    expect(table.seats[2].hole).toBeDefined() // p3 active
+    expect(table.seats[3].hole).toBeDefined() // p4 active
   })
 
   test('game should error when fewer than 2 players have chips', () => {
@@ -97,7 +115,9 @@ describe('Player Elimination', () => {
     })
 
     // Should throw error when trying to start hand
-    expect(() => initHand(table)).toThrow('Need at least 2 players with chips to start hand')
+    expect(() => initHand(table)).toThrow(
+      'Need at least 2 players with chips to start hand'
+    )
   })
 
   test('getNextActor should skip eliminated players', () => {
@@ -106,7 +126,7 @@ describe('Player Elimination', () => {
       maxSeats: 6,
       players: [
         { id: 'p1', stack: 100 },
-        { id: 'p2', stack: 100 },    // Will be eliminated mid-hand
+        { id: 'p2', stack: 100 }, // Will be eliminated mid-hand
         { id: 'p3', stack: 100 },
       ],
       blinds: { sb: 5, bb: 10 },

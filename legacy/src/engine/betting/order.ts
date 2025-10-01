@@ -5,7 +5,10 @@ import { processShowdown } from './showdown.js'
 /**
  * Turn order and round closure management
  */
-export function getNextActor(state: TableState, afterSeat: number): number | null {
+export function getNextActor(
+  state: TableState,
+  afterSeat: number
+): number | null {
   const maxSeats = state.config.maxSeats
   let nextSeat = (afterSeat + 1) % maxSeats
   let attempts = 0
@@ -34,15 +37,16 @@ export function isRoundComplete(state: TableState): boolean {
     return true
   }
 
-  const nonFoldedPlayers = state.seats.filter(
-    s => s.id !== '' && !s.folded
-  )
+  const nonFoldedPlayers = state.seats.filter(s => s.id !== '' && !s.folded)
   if (nonFoldedPlayers.length <= 1) {
     return true
   }
 
   // Special case for preflop: BB gets option even if all called
-  if (state.street === 'PREFLOP' && state.currentBet === state.config.blinds?.bb) {
+  if (
+    state.street === 'PREFLOP' &&
+    state.currentBet === state.config.blinds?.bb
+  ) {
     // BB hasn't acted yet if not in hasActedThisRound
     const bb = state.seats[state.bbIndex]
     if (bb && !bb.folded && !bb.allIn) {
@@ -56,7 +60,12 @@ export function isRoundComplete(state: TableState): boolean {
   if (state.currentBet === 0) {
     for (let i = 0; i < state.config.maxSeats; i++) {
       const s = state.seats[i]
-      if (s.id !== '' && !s.folded && !s.allIn && !state.hasActedThisRound.has(i)) {
+      if (
+        s.id !== '' &&
+        !s.folded &&
+        !s.allIn &&
+        !state.hasActedThisRound.has(i)
+      ) {
         return false
       }
     }
@@ -125,8 +134,8 @@ export function advanceStreet(state: TableState): TableState {
   if (newState.street !== 'SHOWDOWN' && newState.street !== 'COMPLETE') {
     newState.currentBet = 0
     newState.lastRaiseSize = 0
-    newState.bettingReopened = true  // Reset for new street
-    newState.hasActedThisRound = new Set<number>()  // Reset who has acted
+    newState.bettingReopened = true // Reset for new street
+    newState.hasActedThisRound = new Set<number>() // Reset who has acted
 
     // Reset street contributions
     newState.seats = newState.seats.map(seat => ({
@@ -142,16 +151,21 @@ export function advanceStreet(state: TableState): TableState {
     if (activePlayersCanAct) {
       // Set first to act (left of button for postflop)
       // Only count players with chips as active
-      const isHeadsUp = newState.seats.filter(s => s.id !== '' && !s.folded).length === 2
+      const isHeadsUp =
+        newState.seats.filter(s => s.id !== '' && !s.folded).length === 2
 
       if (isHeadsUp) {
         // Heads-up: SB (button) acts first postflop
-        let sbCanAct = !newState.seats[newState.sbIndex].folded && !newState.seats[newState.sbIndex].allIn
+        let sbCanAct =
+          !newState.seats[newState.sbIndex].folded &&
+          !newState.seats[newState.sbIndex].allIn
         if (sbCanAct) {
           newState.actionOn = newState.sbIndex
         } else {
           // Find other player who can act
-          let bbCanAct = !newState.seats[newState.bbIndex].folded && !newState.seats[newState.bbIndex].allIn
+          let bbCanAct =
+            !newState.seats[newState.bbIndex].folded &&
+            !newState.seats[newState.bbIndex].allIn
           if (bbCanAct) {
             newState.actionOn = newState.bbIndex
           }

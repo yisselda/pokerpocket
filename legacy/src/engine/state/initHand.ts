@@ -5,8 +5,12 @@ import { TableState, ActionEvent, Seat } from '../betting/types.js'
  */
 export function initHand(state: TableState): TableState {
   // Reset RNG deck if it has a reset method
-  if (state.config.rng && 'reset' in state.config.rng && typeof state.config.rng.reset === 'function') {
-    (state.config.rng as any).reset()
+  if (
+    state.config.rng &&
+    'reset' in state.config.rng &&
+    typeof state.config.rng.reset === 'function'
+  ) {
+    ;(state.config.rng as any).reset()
   }
 
   // Create a new state object (immutable)
@@ -33,7 +37,9 @@ export function initHand(state: TableState): TableState {
   }
 
   // Count active seats (occupied and with chips)
-  const activeSeats = newState.seats.filter(s => s.id !== '' && s.stack > 0).length
+  const activeSeats = newState.seats.filter(
+    s => s.id !== '' && s.stack > 0
+  ).length
   if (activeSeats < 2) {
     throw new Error('Need at least 2 players with chips to start hand')
   }
@@ -42,14 +48,20 @@ export function initHand(state: TableState): TableState {
   if (state.handId > 0) {
     // Find next active seat after current button
     let nextButton = (state.button + 1) % state.config.maxSeats
-    while (newState.seats[nextButton].id === '' || newState.seats[nextButton].stack === 0) {
+    while (
+      newState.seats[nextButton].id === '' ||
+      newState.seats[nextButton].stack === 0
+    ) {
       nextButton = (nextButton + 1) % state.config.maxSeats
     }
     newState.button = nextButton
   } else {
     // First hand - find first active seat
     let firstActive = 0
-    while (newState.seats[firstActive].id === '' || newState.seats[firstActive].stack === 0) {
+    while (
+      newState.seats[firstActive].id === '' ||
+      newState.seats[firstActive].stack === 0
+    ) {
       firstActive++
     }
     newState.button = firstActive
@@ -64,20 +76,29 @@ export function initHand(state: TableState): TableState {
 
     // Find the other active player for BB
     let bbIdx = (newState.button + 1) % state.config.maxSeats
-    while (newState.seats[bbIdx].id === '' || newState.seats[bbIdx].stack === 0) {
+    while (
+      newState.seats[bbIdx].id === '' ||
+      newState.seats[bbIdx].stack === 0
+    ) {
       bbIdx = (bbIdx + 1) % state.config.maxSeats
     }
     newState.bbIndex = bbIdx
   } else {
     // 3+ players: SB is left of button, BB is left of SB
     let sbIdx = (newState.button + 1) % state.config.maxSeats
-    while (newState.seats[sbIdx].id === '' || newState.seats[sbIdx].stack === 0) {
+    while (
+      newState.seats[sbIdx].id === '' ||
+      newState.seats[sbIdx].stack === 0
+    ) {
       sbIdx = (sbIdx + 1) % state.config.maxSeats
     }
     newState.sbIndex = sbIdx
 
     let bbIdx = (sbIdx + 1) % state.config.maxSeats
-    while (newState.seats[bbIdx].id === '' || newState.seats[bbIdx].stack === 0) {
+    while (
+      newState.seats[bbIdx].id === '' ||
+      newState.seats[bbIdx].stack === 0
+    ) {
       bbIdx = (bbIdx + 1) % state.config.maxSeats
     }
     newState.bbIndex = bbIdx
@@ -137,7 +158,10 @@ export function initHand(state: TableState): TableState {
   newState.history.push(bbPostEvent)
 
   // Set current bet to the highest blind contribution (not including antes)
-  newState.currentBet = Math.max(sbSeat.streetContributed, bbSeat.streetContributed)
+  newState.currentBet = Math.max(
+    sbSeat.streetContributed,
+    bbSeat.streetContributed
+  )
   newState.lastRaiseSize = state.config.blinds.bb
 
   // Deal hole cards to each active seat (only players with chips)

@@ -3,7 +3,13 @@ import { RNG } from '../../rng.js'
 
 // Public types exactly as specified
 export type Variant = 'NLHE'
-export type Street = 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'COMPLETE'
+export type Street =
+  | 'PREFLOP'
+  | 'FLOP'
+  | 'TURN'
+  | 'RIVER'
+  | 'SHOWDOWN'
+  | 'COMPLETE'
 
 export interface TableConfig {
   variant: Variant
@@ -39,9 +45,18 @@ export interface ActionEvent {
   at: number
   seat?: number
   kind:
-    | 'SIT' | 'LEAVE' | 'START_HAND'
-    | 'CHECK' | 'CALL' | 'BET' | 'RAISE' | 'ALL_IN' | 'FOLD'
-    | 'ADVANCE_STREET' | 'SHOWDOWN' | 'AWARD'
+    | 'SIT'
+    | 'LEAVE'
+    | 'START_HAND'
+    | 'CHECK'
+    | 'CALL'
+    | 'BET'
+    | 'RAISE'
+    | 'ALL_IN'
+    | 'FOLD'
+    | 'ADVANCE_STREET'
+    | 'SHOWDOWN'
+    | 'AWARD'
   data?: Record<string, unknown>
 }
 
@@ -59,8 +74,8 @@ export interface TableState {
   pots: Pot[]
   currentBet: number
   lastRaiseSize: number
-  bettingReopened: boolean  // Track if action can be reopened
-  hasActedThisRound: Set<number>  // Track who has acted this betting round
+  bettingReopened: boolean // Track if action can be reopened
+  hasActedThisRound: Set<number> // Track who has acted this betting round
   winners?: { seatId: string; amount: number }[]
   history: ActionEvent[]
 }

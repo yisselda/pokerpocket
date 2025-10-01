@@ -303,7 +303,6 @@ describe('Betting rounds', () => {
       expect(table.street).toBe('FLOP')
       expect(table.seats[1].allIn).toBe(true)
     })
-
   })
 
   describe('6-max normal flow', () => {
@@ -410,6 +409,5 @@ describe('Betting rounds', () => {
       // BB needs to call 200 more (100 posted)
       expect(selectors.toCall(table, 2)).toBe(200)
     })
-
   })
 })

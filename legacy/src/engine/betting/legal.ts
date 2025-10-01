@@ -3,7 +3,10 @@ import { TableState, LegalActions } from './types.js'
 /**
  * Computes legal actions for a seat at the current table state
  */
-export function getLegalActions(state: TableState, seatIndex: number): LegalActions {
+export function getLegalActions(
+  state: TableState,
+  seatIndex: number
+): LegalActions {
   const result: LegalActions = {
     canFold: false,
     canCheck: false,
@@ -42,10 +45,11 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
   const stack = seat.stack
 
   // Special case: BB with option when everyone limps (preflop, no raise)
-  const isBBWithOption = state.street === 'PREFLOP' &&
-                         seatIndex === state.bbIndex &&
-                         state.currentBet === state.config.blinds.bb &&
-                         toCall === 0
+  const isBBWithOption =
+    state.street === 'PREFLOP' &&
+    seatIndex === state.bbIndex &&
+    state.currentBet === state.config.blinds.bb &&
+    toCall === 0
 
   // Can fold unless BB with option (no one raised)
   result.canFold = !isBBWithOption && toCall > 0
@@ -65,7 +69,10 @@ export function getLegalActions(state: TableState, seatIndex: number): LegalActi
       // Can raise even when caught up (option to raise) - but only if betting is open
       result.canRaise = true
       const minRaiseAmount = state.lastRaiseSize || state.config.blinds.bb
-      result.minRaiseTo = Math.min(state.currentBet + minRaiseAmount, seat.streetContributed + stack)
+      result.minRaiseTo = Math.min(
+        state.currentBet + minRaiseAmount,
+        seat.streetContributed + stack
+      )
       result.maxRaiseTo = seat.streetContributed + stack
     }
   } else {

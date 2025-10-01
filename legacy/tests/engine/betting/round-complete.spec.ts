@@ -34,12 +34,18 @@ describe('Round completion logic', () => {
     expect(tableAfterFirstCheck.actionOn).toBe(2) // BB to act
 
     // Second player checks
-    const tableAfterSecondCheck = reduce(tableAfterFirstCheck, { type: 'CHECK', seat: 2 })
+    const tableAfterSecondCheck = reduce(tableAfterFirstCheck, {
+      type: 'CHECK',
+      seat: 2,
+    })
     expect(tableAfterSecondCheck.street).toBe('FLOP')
     expect(tableAfterSecondCheck.actionOn).toBe(0) // Button to act
 
     // Third player checks - NOW round is complete
-    const tableAfterThirdCheck = reduce(tableAfterSecondCheck, { type: 'CHECK', seat: 0 })
+    const tableAfterThirdCheck = reduce(tableAfterSecondCheck, {
+      type: 'CHECK',
+      seat: 0,
+    })
     expect(tableAfterThirdCheck.street).toBe('TURN')
   })
 
