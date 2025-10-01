@@ -45,6 +45,21 @@ describe('betting flow minimal', () => {
     expect(turnHU.toAct).toBe(1)
   })
 
+  it('closes after heads-up bet and call on the flop', () => {
+    let table = createTable(2, 1000, 100)
+    table = reduce(table, startHand())
+    table = reduce(table, dealCards())
+
+    table = reduce(table, call(0))
+    table = reduce(table, check(1))
+
+    table = reduce(table, raiseTo(1, 150))
+    table = reduce(table, call(0))
+
+    const turnHU = expectState(table, 'TURN')
+    expect(turnHU.toAct).toBe(1)
+  })
+
   it('closes the street when the starter folds mid-round', () => {
     let table = createTable(6, 1000, 100)
     table = reduce(table, startHand())
@@ -73,6 +88,25 @@ describe('betting flow minimal', () => {
 
     const turn = expectState(table, 'TURN')
     expect(turn.board).toHaveLength(4)
+    expect(turn.toAct).toBe(2)
+  })
+
+  it('respects new last aggressor after re-raise', () => {
+    let table = createTable(3, 2000, 100)
+    table = reduce(table, startHand())
+    table = reduce(table, dealCards())
+
+    table = reduce(table, call(0))
+    table = reduce(table, call(1))
+    table = reduce(table, check(2))
+
+    table = reduce(table, raiseTo(1, 200))
+    table = reduce(table, raiseTo(2, 400))
+    table = reduce(table, raiseTo(0, 800))
+    table = reduce(table, fold(1))
+    table = reduce(table, call(2))
+
+    const turn = expectState(table, 'TURN')
     expect(turn.toAct).toBe(2)
   })
 })

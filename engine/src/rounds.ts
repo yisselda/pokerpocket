@@ -27,7 +27,7 @@ export function nextActorIndex(players: Player[], start: number): number {
 // i.e. is it refSeat's turn to act again?
 // Note: this does NOT check if refSeat can actually act (they may be folded/all-in)
 function nextActiveSeat(players: Player[], start: number) {
-  for (let i = 0; i < players.length; i++) {
+  for (let i = 1; i <= players.length; i++) {
     const idx = (start + i) % players.length
     const p = players[idx]
     if (!p.folded && !p.allIn) return idx
@@ -50,9 +50,12 @@ export function returnedTo(
   players: Player[],
   justActed: number
 ): boolean {
-  const firstLive = nextActiveSeat(players, refSeat)
-  const lastLive = prevActiveSeat(players, firstLive)
-  return toAct === firstLive && justActed === lastLive
+  const refPlayer = players[refSeat]
+  const refCanAct = !!refPlayer && !refPlayer.folded && !refPlayer.allIn
+
+  const expected = refCanAct ? refSeat : nextActiveSeat(players, refSeat)
+  const previous = prevActiveSeat(players, expected)
+  return toAct === expected && justActed === previous
 }
 
 export function everyoneMatchedTarget(players: Player[], targetBet: number) {
