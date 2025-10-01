@@ -5,7 +5,12 @@ import { stat } from 'fs'
 import { firstToActPostflop, firstToActPreflop } from './positions'
 import { settleStreetBets } from './pots'
 import { on } from 'events'
-import { nextActorIndex, onlyOneNonFolded, shouldCloseBetting } from './rounds'
+import {
+  nextActorIndex,
+  noFurtherActionsPossible,
+  onlyOneNonFolded,
+  shouldCloseBetting,
+} from './rounds'
 import { resolve } from 'path'
 import { resolveShowdown } from './showdown'
 
@@ -139,6 +144,37 @@ export function reduce(state: GameState, action: Action): GameState {
               },
             ],
             players: settledPlayers,
+            bigBlind: state.bigBlind ?? 100,
+            dealer: state.dealer,
+          }
+        }
+
+        // All-in fast-forward
+        if (noFurtherActionsPossible(players)) {
+          // 1) settle this street
+          const settled = settleStreetBets(players, state.pots)
+          let ffPlayers = settled.players
+          let ffPots = settled.pots
+          let ffBoard = [...state.board]
+          let ffDeck = [...state.deck]
+          let phase: BettingPhase = state.tag
+
+          // 2) deal out remaining streets
+          while (true) {
+            const next = nextBettingPhase(phase)
+            if (next === 'SHOWDOWN') break
+            const dealt = dealCommunity(ffBoard, ffDeck, phase)
+            ffBoard = dealt.board
+            ffDeck = dealt.deck
+            phase = next
+          }
+
+          // 3) showdown now
+          const payouts = resolveShowdown(ffPlayers, ffBoard, ffPots)
+          return {
+            tag: 'COMPLETE',
+            winners: payouts,
+            players: ffPlayers,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
           }

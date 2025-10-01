@@ -55,3 +55,11 @@ export function shouldCloseBetting(
   const ref = lastAggressor ?? roundStart
   return returnedTo(ref, toAct, players)
 }
+
+// Are all remaining players either folded or all-in
+export function noFurtherActionsPossible(players: Player[]): boolean {
+  const alive = players.filter(p => !p.folded)
+  if (alive.length < 2) return false // hand ends via fold logic elsewhere
+  const canAct = alive.filter(p => !p.allIn)
+  return canAct.length === 0
+}

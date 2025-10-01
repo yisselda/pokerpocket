@@ -50,9 +50,9 @@ describe('closed action auto-advance', () => {
       raiseTo(shoveSeat, s.players[shoveSeat].stack + s.players[shoveSeat].bet)
     )
 
-    // BB calls all-in -> should close and go to FLOP (or directly to SHOWDOWN if you later add 'both all-in -> runout & showdown')
+    // BB calls all-in -> should close and go to FLOP/SHOWDOWN, or COMPLETE if the hand is resolved immediately
     const caller = expectState(s, 'PREFLOP').toAct
     s = reduce(s, call(caller))
-    expect(['FLOP', 'SHOWDOWN']).toContain(s.tag)
+    expect(['FLOP', 'SHOWDOWN', 'COMPLETE']).toContain(s.tag)
   })
 })
