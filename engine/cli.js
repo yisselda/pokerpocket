@@ -22,6 +22,86 @@ import {
   raiseTo,
 } from '@pokerpocket/engine'
 
+const KEYMAP = Object.freeze({
+  f: 'fold',
+  k: 'check',
+  c: 'call',
+  r: 'raise',
+  q: 'quit',
+})
+
+const log = (...args) => {
+  console.log(...args)
+}
+
+function needsInput(state) {
+  const phase = getPhase(state)
+  if (
+    !(
+      phase === 'PREFLOP' ||
+      phase === 'FLOP' ||
+      phase === 'TURN' ||
+      phase === 'RIVER'
+    )
+  ) {
+    return false
+  }
+
+  const player = getCurrentPlayer(state)
+  if (!player) return false
+
+  const seat = player.id ?? ('toAct' in state ? state.toAct : undefined)
+  if (typeof seat !== 'number') return false
+
+  const legal = getLegalActions(state, seat)
+  return Boolean(
+    legal.canFold ||
+      legal.canCheck ||
+      legal.canCall ||
+      legal.minRaise !== undefined
+  )
+}
+
+function nextAutoAction(state) {
+  switch (state.tag) {
+    case 'INIT':
+      return startHand()
+    case 'DEAL':
+      return dealCards()
+    case 'SHOWDOWN':
+      return toShowdown()
+    default:
+      return null
+  }
+}
+
+function drive(state) {
+  let current = state
+  for (;;) {
+    if (needsInput(current) || current.tag === 'COMPLETE') {
+      return current
+    }
+    const action = nextAutoAction(current)
+    if (!action) return current
+    current = reduce(current, action)
+  }
+}
+
+function resetForNextHand(state) {
+  if (state.tag !== 'DEAL') return state
+  return {
+    ...state,
+    players: state.players.map(player => ({
+      ...player,
+      bet: 0,
+      contributed: 0,
+      folded: false,
+      allIn: false,
+      hole: undefined,
+    })),
+  }
+}
+
 // Determine BTN/SB/BB markers for the current hand
 function getPositionLabels(state, playerCount) {
   const labels = Array(playerCount).fill('')
@@ -48,29 +128,29 @@ function getPositionLabels(state, playerCount) {
   return labels
 }
 
-function renderState(state) {
+/**
+ * @typedef {Object} Presentation
+ * @property {string} header
+ * @property {string} [board]
+ * @property {number} [pot]
+ * @property {Array<{ marker: string, line: string }>} rows
+ * @property {string} [footer]
+ */
+
+/** @returns {Presentation} */
+function present(state) {
   const phase = getPhase(state)
   const board = getBoard(state)
   const pot = getPotSize(state)
   const players = getPlayers(state)
   const positions = getPositionLabels(state, players.length)
   const toAct =
-    state.tag === 'PREFLOP' ||
-    state.tag === 'FLOP' ||
-    state.tag === 'TURN' ||
-    state.tag === 'RIVER'
+    'toAct' in state &&
+    (phase === 'PREFLOP' || phase === 'FLOP' || phase === 'TURN' || phase === 'RIVER')
       ? state.toAct
       : null
 
-  console.log('\n=== Phase:', phase, '===')
-  if (board.length) {
-    console.log('Board:', board.join(' '))
-  }
-  if (pot > 0) {
-    console.log('Pot:', pot)
-  }
-
-  players.forEach((player, index) => {
+  const rows = players.map((player, index) => {
     const marker = toAct === index ? '->' : '  '
     const hole = player.hole ? player.hole.join(' ') : '--'
     const position = positions[index]
@@ -82,28 +162,41 @@ function renderState(state) {
       .filter(Boolean)
       .join(', ')
     const status = flags ? ` (${flags})` : ''
-    console.log(
-      `${marker} ${positionTag}${player.name} | stack: ${player.stack} | bet: ${player.bet} | hole: ${hole}${status}`
-    )
+
+    return {
+      marker,
+      line: `${positionTag}${player.name} | stack: ${player.stack} | bet: ${player.bet} | hole: ${hole}${status}`,
+    }
   })
+
+  const presentation = {
+    header: `=== Phase: ${phase} ===`,
+    rows,
+  }
+  if (board.length) {
+    presentation.board = board.join(' ')
+  }
+  if (pot > 0) {
+    presentation.pot = pot
+  }
+  return presentation
 }
 
-function autoAdvance(state) {
-  let next = state
-  while (true) {
-    if (next.tag === 'INIT') {
-      next = reduce(next, startHand())
-      continue
-    }
-    if (next.tag === 'DEAL') {
-      next = reduce(next, dealCards())
-      continue
-    }
-    if (next.tag === 'SHOWDOWN') {
-      next = reduce(next, toShowdown())
-      continue
-    }
-    return next
+function render(state) {
+  const view = present(state)
+  log('')
+  log(view.header)
+  if (view.board) {
+    log('Board:', view.board)
+  }
+  if (view.pot) {
+    log('Pot:', view.pot)
+  }
+  view.rows.forEach(row => {
+    log(`${row.marker} ${row.line}`)
+  })
+  if (view.footer) {
+    log(view.footer)
   }
 }
 
@@ -113,31 +206,33 @@ async function askNumber(rl, prompt, fallback, options = {}) {
     if (answer === '') return fallback
     const value = Number(answer)
     if (!Number.isFinite(value)) {
-      console.log('Please enter a number.')
+      log('Please enter a number.')
       continue
     }
     if (options.min !== undefined && value < options.min) {
-      console.log(`Minimum is ${options.min}.`)
+      log(`Minimum is ${options.min}.`)
       continue
     }
     if (options.max !== undefined && value > options.max) {
-      console.log(`Maximum is ${options.max}.`)
+      log(`Maximum is ${options.max}.`)
       continue
     }
     return value
   }
 }
 
-async function handleBetting(state, rl) {
-  const seat = state.toAct
-  const player = getCurrentPlayer(state)
-  if (!player) {
-    console.log('No active player, advancing...')
-    return autoAdvance(state)
+async function promptAction(state, rl) {
+  const currentPlayer = getCurrentPlayer(state)
+  const seat = currentPlayer?.id ?? ('toAct' in state ? state.toAct : undefined)
+  if (typeof seat !== 'number') {
+    log('No active player, advancing...')
+    return null
   }
 
   const legal = getLegalActions(state, seat)
   const toCallAmount = getToCall(state, seat)
+  const players = getPlayers(state)
+  const actorName = currentPlayer?.name ?? players[seat]?.name ?? `Seat ${seat}`
 
   const options = []
   if (legal.canFold) options.push('(f)old')
@@ -145,74 +240,90 @@ async function handleBetting(state, rl) {
   if (legal.canCall) options.push(`(c)all ${toCallAmount}`)
   if (legal.minRaise !== undefined) {
     const unopened = toCallAmount === 0
-    const labelBase = unopened ? 'bet' : 'raise to'
     const range =
       legal.maxRaise !== undefined
         ? `${legal.minRaise}-${legal.maxRaise}`
         : `${legal.minRaise}+`
-    options.push(`(${unopened ? 'b' : 'r'}) ${labelBase} ${range}`)
+    options.push(`(r) ${unopened ? 'bet' : 'raise to'} ${range}`)
   }
   options.push('(q)uit')
 
-  console.log(`\n${player.name}'s turn. Available: ${options.join(', ')}`)
+  log(`\n${actorName}'s turn. Available: ${options.join(', ')}`)
+  if (legal.minRaise !== undefined) {
+    const maxHint =
+      legal.maxRaise !== undefined
+        ? `max ${legal.maxRaise}`
+        : 'no max (to stack)'
+    log(`Hint: enter "r <amount>", min ${legal.minRaise}, ${maxHint}.`)
+  }
 
   while (true) {
-    const input = (await rl.question('Action: ')).trim().toLowerCase()
-    if (input === 'q' || input === 'quit') {
+    const raw = (await rl.question('Action: ')).trim().toLowerCase()
+    if (!raw) {
+      log('Enter an action.')
+      continue
+    }
+
+    const [key, amountText] = raw.split(/\s+/, 2)
+    const intent =
+      KEYMAP[key] ||
+      (Object.values(KEYMAP).includes(raw) ? raw : undefined)
+
+    if (!intent) {
+      log('Invalid action, try again.')
+      continue
+    }
+
+    if (intent === 'quit') {
       return null
     }
-    if ((input === 'f' || input === 'fold') && legal.canFold) {
-      return reduce(state, fold(seat))
+
+    if (intent === 'fold') {
+      if (!legal.canFold) {
+        log('Fold is not available.')
+        continue
+      }
+      return fold(seat)
     }
-    if ((input === 'k' || input === 'check') && legal.canCheck) {
-      return reduce(state, check(seat))
+
+    if (intent === 'check') {
+      if (!legal.canCheck) {
+        log('Check is not available.')
+        continue
+      }
+      return check(seat)
     }
-    if ((input === 'c' || input === 'call') && legal.canCall) {
-      return reduce(state, call(seat))
+
+    if (intent === 'call') {
+      if (!legal.canCall) {
+        log('Call is not available.')
+        continue
+      }
+      return call(seat)
     }
-    if (
-      input.startsWith('r') &&
-      legal.minRaise !== undefined &&
-      toCallAmount > 0
-    ) {
-      const parts = input.split(/\s+/)
-      const amount = Number(parts[1])
+
+    if (intent === 'raise') {
+      if (legal.minRaise === undefined) {
+        log('Raise is not available.')
+        continue
+      }
+      if (!amountText) {
+        log('Enter raise size as "r <amount>" (raise-to amount).')
+        continue
+      }
+      const amount = Number(amountText)
       if (!Number.isFinite(amount)) {
-        console.log('Enter raise size, e.g. "r 150" (raise-to amount).')
+        log('Please enter a numeric raise size (raise-to amount).')
         continue
       }
       if (amount < legal.minRaise) {
-        console.log(`Raise must be at least ${legal.minRaise}.`)
-        continue
+        log(`Hint: minimum raise is ${legal.minRaise}. Sending anyway...`)
       }
       if (legal.maxRaise !== undefined && amount > legal.maxRaise) {
-        console.log(`Raise cannot exceed ${legal.maxRaise}.`)
-        continue
+        log(`Hint: maximum raise is ${legal.maxRaise}. Sending anyway...`)
       }
-      return reduce(state, raiseTo(seat, amount))
+      return raiseTo(seat, amount)
     }
-    if (
-      input.startsWith('b') &&
-      legal.minRaise !== undefined &&
-      toCallAmount === 0
-    ) {
-      const parts = input.split(/\s+/)
-      const amount = Number(parts[1])
-      if (!Number.isFinite(amount)) {
-        console.log('Enter bet size, e.g. "b 150" (bet-to amount).')
-        continue
-      }
-      if (amount < legal.minRaise) {
-        console.log(`Bet must be at least ${legal.minRaise}.`)
-        continue
-      }
-      if (legal.maxRaise !== undefined && amount > legal.maxRaise) {
-        console.log(`Bet cannot exceed ${legal.maxRaise}.`)
-        continue
-      }
-      return reduce(state, raiseTo(seat, amount))
-    }
-    console.log('Invalid action, try again.')
   }
 }
 
@@ -224,9 +335,7 @@ async function main() {
   })
 
   try {
-    console.log(
-      '🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine'
-    )
+    log('🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine')
 
     const seats = await askNumber(rl, 'Number of players', 2, {
       min: 2,
@@ -235,38 +344,32 @@ async function main() {
     const chips = await askNumber(rl, 'Starting stack', 1000, { min: 1 })
     const bigBlind = await askNumber(rl, 'Big blind size', 50, { min: 1 })
 
-    let state = autoAdvance(createTable(seats, chips, bigBlind))
+    let state = drive(createTable(seats, chips, bigBlind))
 
     while (true) {
-      state = autoAdvance(state)
-      renderState(state)
+      state = drive(state)
+      render(state)
 
-      if (
-        state.tag === 'PREFLOP' ||
-        state.tag === 'FLOP' ||
-        state.tag === 'TURN' ||
-        state.tag === 'RIVER'
-      ) {
-        const nextState = await handleBetting(state, rl)
-        if (!nextState) break
-        state = nextState
+      if (needsInput(state)) {
+        const action = await promptAction(state, rl)
+        if (!action) break
+        state = reduce(state, action)
         continue
       }
 
-      if (state.tag === 'COMPLETE') {
-        const winners = state.winners
-          .map(w => `${state.players[w.seatId].name} +${w.amount}`)
+      const phase = getPhase(state)
+      if (phase === 'COMPLETE') {
+        const players = getPlayers(state)
+        const winners = (state.winners || [])
+          .map(w => `${players[w.seatId]?.name ?? `Seat ${w.seatId}`} +${w.amount}`)
           .join(', ')
-        console.log('\nHand complete. Winners:', winners || 'none')
+        log('\nHand complete. Winners:', winners || 'none')
 
         const again = (await rl.question('Play another hand? [Y/n]: ')).trim()
         if (again.toLowerCase() === 'n') break
-        state = reduce(state, nextHand())
+        state = resetForNextHand(reduce(state, nextHand()))
         continue
       }
-
-      console.log('Advancing game state...')
-      state = autoAdvance(state)
     }
   } finally {
     rl.close()
