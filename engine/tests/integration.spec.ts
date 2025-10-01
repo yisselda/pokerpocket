@@ -19,6 +19,7 @@ describe('public API integration', () => {
     if (s.tag !== 'PREFLOP') throw new Error('PREFLOP expected')
     const legal = getLegalActions(s, s.toAct)
     expect(typeof legal.canFold).toBe('boolean')
+    expect(typeof legal.callAmount).toBe('number')
 
     // Fast-forward to showdown
     s.players.forEach(p => {

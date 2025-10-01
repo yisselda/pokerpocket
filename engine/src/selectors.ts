@@ -50,6 +50,12 @@ export function getToCall(state: GameState, seat: number): number {
 }
 
 export function getLegalActions(state: GameState, seat: number): LegalActions {
+  const noActions: LegalActions = {
+    canFold: false,
+    canCheck: false,
+    canCall: false,
+    callAmount: 0,
+  }
   if (
     !(
       state.tag === 'PREFLOP' ||
@@ -58,11 +64,10 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
       state.tag === 'RIVER'
     )
   ) {
-    return { canFold: false, canCheck: false, canCall: false }
+    return noActions
   }
   const me = state.players[seat]
-  if (!me || me.folded || me.allIn)
-    return { canFold: false, canCheck: false, canCall: false }
+  if (!me || me.folded || me.allIn) return noActions
 
   const bets = state.players.map(p => p.bet).sort((a, b) => a - b)
   const maxBet = bets[bets.length - 1]
@@ -72,6 +77,7 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
 
   const canCheck = toCall === 0
   const canCall = toCall > 0 && me.stack >= toCall
+  const callAmount = canCall ? toCall : 0
 
   let minRaise: number | undefined
   if (toCall === 0) {
@@ -84,5 +90,5 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
 
   const maxRaise = me.stack + me.bet // all-in cap
 
-  return { canFold: true, canCheck, canCall, minRaise, maxRaise }
+  return { canFold: true, canCheck, canCall, callAmount, minRaise, maxRaise }
 }

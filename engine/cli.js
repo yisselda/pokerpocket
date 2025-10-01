@@ -146,7 +146,10 @@ function present(state) {
   const positions = getPositionLabels(state, players.length)
   const toAct =
     'toAct' in state &&
-    (phase === 'PREFLOP' || phase === 'FLOP' || phase === 'TURN' || phase === 'RIVER')
+    (phase === 'PREFLOP' ||
+      phase === 'FLOP' ||
+      phase === 'TURN' ||
+      phase === 'RIVER')
       ? state.toAct
       : null
 
@@ -266,8 +269,7 @@ async function promptAction(state, rl) {
 
     const [key, amountText] = raw.split(/\s+/, 2)
     const intent =
-      KEYMAP[key] ||
-      (Object.values(KEYMAP).includes(raw) ? raw : undefined)
+      KEYMAP[key] || (Object.values(KEYMAP).includes(raw) ? raw : undefined)
 
     if (!intent) {
       log('Invalid action, try again.')
@@ -361,7 +363,9 @@ async function main() {
       if (phase === 'COMPLETE') {
         const players = getPlayers(state)
         const winners = (state.winners || [])
-          .map(w => `${players[w.seatId]?.name ?? `Seat ${w.seatId}`} +${w.amount}`)
+          .map(
+            w => `${players[w.seatId]?.name ?? `Seat ${w.seatId}`} +${w.amount}`
+          )
           .join(', ')
         log('\nHand complete. Winners:', winners || 'none')
 

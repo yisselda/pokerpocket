@@ -87,6 +87,7 @@ export interface LegalActions {
   canFold: boolean
   canCheck: boolean
   canCall: boolean
+  callAmount: number
   minRaise?: number
   maxRaise?: number
 }
