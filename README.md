@@ -9,6 +9,7 @@ npm install @pokerpocket/engine
 npx pokerpocket           # uses the installed CLI
 # or run once without installing
 npx @pokerpocket/engine
+npm run demo:dev   # launch the interactive demo (Vite)
 ```
 
 ## Run A Hand
@@ -108,6 +109,7 @@ console.log(serializeRng(state))
 npm install
 npm test
 npm run build
+npm run demo:dev   # launch the Vite playground
 ```
 
 MIT License.

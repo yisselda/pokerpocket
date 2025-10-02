@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { createTable } from '../src/init'
-import { reduce } from '../src/reducer'
+import { createTable } from '../src/init.js'
+import { reduce } from '../src/reducer.js'
 import {
   startHand,
   dealCards,
@@ -8,8 +8,8 @@ import {
   raiseTo,
   fold,
   check,
-} from '../src/actions'
-import { expectState } from './helpers/state'
+} from '../src/actions.js'
+import { expectState } from '../src/testing.js'
 
 describe('betting flow minimal', () => {
   it('P1 raises, P2 calls', () => {

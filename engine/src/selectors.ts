@@ -1,12 +1,12 @@
 import type { Card, GameState, LegalActions } from './types.js'
 import { parseCards } from './cards.js'
+import { formatBoard } from './format.js'
 
 export function getPhase(state: GameState) {
   return state.tag
 }
 
 export function getPlayers(state: GameState) {
-  // All states except COMPLETE have players (COMPLETE has winners + players)
   return 'players' in state ? state.players : []
 }
 
@@ -18,6 +18,11 @@ export function getBoardCards(state: GameState): Card[] {
   const board = getBoard(state)
   if (board.length === 0) return []
   return parseCards(board)
+}
+
+export function getBoardAscii(state: GameState): string {
+  const board = getBoardCards(state)
+  return board.length ? formatBoard(board) : ''
 }
 
 export function getPots(state: GameState) {
@@ -39,6 +44,12 @@ export function getCurrentPlayer(state: GameState) {
     return state.players[state.toAct] ?? null
   }
   return null
+}
+
+export function getActingSeat(state: GameState): number | null {
+  return typeof (state as { toAct?: number }).toAct === 'number'
+    ? (state as { toAct: number }).toAct
+    : null
 }
 
 export function getToCall(state: GameState, seat: number): number {

@@ -118,13 +118,13 @@ function topNRanks(mask: number, n: number, exclude: number[] = []): number[] {
 }
 
 /** Build bitmasks and counts for 7 cards */
-function buildMasks(cards7: string[]) {
+function buildMasks(codes: string[]) {
   let rankMask = 0
   const suitMasks = [0, 0, 0, 0]
   const rankCounts = new Array(13).fill(0)
   const suitCounts = [0, 0, 0, 0]
 
-  for (const c of cards7) {
+  for (const c of codes) {
     const r = rankOf(c)
     const s = suitOf(c)
     rankMask |= bit(r)
@@ -142,10 +142,31 @@ function ranksWithCount(rankCounts: number[], count: number): number[] {
   return out
 }
 
-/** Evaluate best 5-card hand from 7 cards. */
-export function evaluateSevenCards(cards7: string[]): EvalResult {
-  if (cards7.length !== 7) throw new Error('evaluateSevenCards expects 7 cards')
-  const { rankMask, suitMasks, rankCounts, suitCounts } = buildMasks(cards7)
+/** Evaluate best 5-card hand from seven-card input. */
+export function evaluateSevenCards(cards: string[]): EvalResult {
+  if (cards.length !== 7) throw new Error('evaluateSevenCards expects 7 cards')
+  return evaluateCards(cards)
+}
+
+export function evaluateFiveCards(cards: string[]): EvalResult {
+  if (cards.length !== 5) throw new Error('evaluateFiveCards expects 5 cards')
+  return evaluateCards(cards)
+}
+
+export function compareHands(a: EvalResult, b: EvalResult): number {
+  if (a.score === b.score) return 0
+  return a.score > b.score ? 1 : -1
+}
+
+export function evaluateCards(cards: string[]): EvalResult {
+  if (cards.length < 5 || cards.length > 7) {
+    throw new Error('evaluateCards expects between 5 and 7 cards')
+  }
+  return evaluateCardsInternal(cards)
+}
+
+function evaluateCardsInternal(cards: string[]): EvalResult {
+  const { rankMask, suitMasks, rankCounts, suitCounts } = buildMasks(cards)
 
   // 1) Straight Flush
   for (let s = 0; s < 4; s++) {
@@ -156,7 +177,6 @@ export function evaluateSevenCards(cards7: string[]): EvalResult {
         const ranks = [hi, hi - 1, hi - 2, hi - 3, hi - 4].map(x =>
           x >= 0 ? x : x === -1 ? 12 : x
         )
-        // wheel correction: if hi==3 and A present in this suit, the sequence is 5,4,3,2,A -> represent ranks as [3,2,1,0,12]
         if (hi === 3 && m & bit(12)) {
           const wheel = [3, 2, 1, 0, 12]
           return {
@@ -206,29 +226,37 @@ export function evaluateSevenCards(cards7: string[]): EvalResult {
   for (let s = 0; s < 4; s++) {
     if (suitCounts[s] >= 5) {
       const m = suitMasks[s]
-      const five = topNRanks(m, 5)
-      return { category: 'FLUSH', score: makeScore('FLUSH', five), ranks: five }
+      const ranks = topNRanks(m, 5)
+      return {
+        category: 'FLUSH',
+        score: makeScore('FLUSH', ranks),
+        ranks,
+      }
     }
   }
 
   // 5) Straight
-  {
-    const hi = findStraightHigh(rankMask)
-    if (hi >= 0) {
-      if (hi === 3 && rankMask & bit(12)) {
-        const wheel = [3, 2, 1, 0, 12]
-        return {
-          category: 'STRAIGHT',
-          score: makeScore('STRAIGHT', wheel),
-          ranks: wheel,
-        }
-      }
-      const ranks = [hi, hi - 1, hi - 2, hi - 3, hi - 4]
+  const straightHigh = findStraightHigh(rankMask)
+  if (straightHigh >= 0) {
+    const ranks = [
+      straightHigh,
+      straightHigh - 1,
+      straightHigh - 2,
+      straightHigh - 3,
+      straightHigh - 4,
+    ].map(x => (x >= 0 ? x : x === -1 ? 12 : x))
+    if (straightHigh === 3 && rankMask & bit(12)) {
+      const wheel = [3, 2, 1, 0, 12]
       return {
         category: 'STRAIGHT',
-        score: makeScore('STRAIGHT', ranks),
-        ranks,
+        score: makeScore('STRAIGHT', wheel),
+        ranks: wheel,
       }
+    }
+    return {
+      category: 'STRAIGHT',
+      score: makeScore('STRAIGHT', ranks),
+      ranks,
     }
   }
 
@@ -245,10 +273,8 @@ export function evaluateSevenCards(cards7: string[]): EvalResult {
   }
 
   // 7) Two pair
-  if (pairs.length > 1) {
-    const [p1, p2] = pairs.slice(0, 2)
-    const hi = Math.max(p1, p2),
-      lo = Math.min(p1, p2)
+  if (pairs.length >= 2) {
+    const [hi, lo] = pairs
     const kicker = topNRanks(rankMask, 1, [hi, lo])[0]
     const ranks = [hi, hi, lo, lo, kicker]
     return {
@@ -259,30 +285,26 @@ export function evaluateSevenCards(cards7: string[]): EvalResult {
   }
 
   // 8) One pair
-  if (pairs.length > 0) {
-    const p = pairs[0]
-    const kickers = topNRanks(rankMask, 3, [p])
-    const ranks = [p, p, ...kickers]
+  if (pairs.length === 1) {
+    const pair = pairs[0]
+    const kickers = topNRanks(rankMask, 3, [pair])
+    const ranks = [pair, pair, ...kickers]
     return {
       category: 'ONE_PAIR',
-      score: makeScore('ONE_PAIR', [p, ...kickers]),
+      score: makeScore('ONE_PAIR', [pair, ...kickers]),
       ranks,
     }
   }
 
   // 9) High card
-  const highs = topNRanks(rankMask, 5)
+  const ranks = topNRanks(rankMask, 5)
   return {
     category: 'HIGH_CARD',
-    score: makeScore('HIGH_CARD', highs),
-    ranks: highs,
+    score: makeScore('HIGH_CARD', ranks),
+    ranks,
   }
 }
 
-/** Convenience helpers for engine usage */
-export function evaluateSeven(
-  board: string[],
-  hole: [string, string]
-): EvalResult {
+export function evaluateSeven(board: string[], hole: [string, string]): EvalResult {
   return evaluateSevenCards([...board, hole[0], hole[1]])
 }

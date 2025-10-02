@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { LcgRng } from '../src/rng'
+import { LcgRng } from '../src/rng.js'
 
 describe('LcgRng', () => {
   it('generates identical sequences for the same seed', () => {

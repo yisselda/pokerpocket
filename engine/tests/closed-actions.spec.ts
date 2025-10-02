@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createTable } from '../src/init'
 import { reduce } from '../src/reducer'
-import { expectState } from './helpers/state'
+import { expectState } from '../src/testing'
 import { startHand, dealCards, raiseTo, call, check } from '../src/actions'
 
 describe('closed action auto-advance', () => {

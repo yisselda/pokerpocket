@@ -29,3 +29,19 @@ export function parseCard(code: string): Card {
 export function parseCards(codes: string[]): Card[] {
   return codes.map(parseCard)
 }
+
+export const SUIT_SYMBOLS: Record<Suit, string> = {
+  s: '♠',
+  h: '♥',
+  d: '♦',
+  c: '♣',
+}
+
+export function toAsciiCard(card: Card): string {
+  return `${card.rank}${SUIT_SYMBOLS[card.suit]}`
+}
+
+export function toAsciiCards(cards: readonly Card[]): string[] {
+  return cards.map(toAsciiCard)
+}
+

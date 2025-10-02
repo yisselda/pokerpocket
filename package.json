@@ -53,7 +53,10 @@
     "lint:fix": "eslint engine/src engine/tests engine/cli.js --fix",
     "prepublishOnly": "npm run format:check && npm run lint && npm run build && npm test && npm run typecheck",
     "publish:beta": "npm publish --tag beta",
-    "publish:latest": "npm publish"
+    "publish:latest": "npm publish",
+    "demo:dev": "npm --prefix demo run dev",
+    "demo:build": "npm --prefix demo run build",
+    "demo:lint": "npm --prefix demo run lint"
   },
   "files": [
     "dist"

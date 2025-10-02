@@ -31,6 +31,22 @@
     "./rng": {
       "types": "./dist/rng.d.ts",
       "import": "./dist/rng.js"
+    },
+    "./cards": {
+      "types": "./dist/cards.public.d.ts",
+      "import": "./dist/cards.public.js"
+    },
+    "./eval": {
+      "types": "./dist/eval.public.d.ts",
+      "import": "./dist/eval.public.js"
+    },
+    "./format": {
+      "types": "./dist/format.public.d.ts",
+      "import": "./dist/format.public.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.public.d.ts",
+      "import": "./dist/testing.public.js"
     }
   }
 }

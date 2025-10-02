@@ -8,7 +8,7 @@ import {
   serializeRng,
   getBoard,
 } from '../src/index'
-import { expectState } from './helpers/state'
+import { expectState } from '../src/testing'
 
 type Snapshot = {
   board: string[]

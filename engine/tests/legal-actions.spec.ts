@@ -3,7 +3,7 @@ import { createTable } from '../src/init'
 import { reduce } from '../src/reducer'
 import { startHand, dealCards, call } from '../src/actions'
 import { getLegalActions } from '../src/selectors'
-import { expectState } from './helpers/state'
+import { expectState } from '../src/testing'
 
 describe('getLegalActions callAmount', () => {
   it('reports chips required to call', () => {

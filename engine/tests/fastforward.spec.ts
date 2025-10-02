@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createTable } from '../src/init'
 import { reduce } from '../src/reducer'
 import { startHand, dealCards, raiseTo, call } from '../src/actions'
-import { expectState } from './helpers/state'
+import { expectState } from '../src/testing'
 
 function allInAmount(stack: number, currentBet: number) {
   return currentBet + stack // "raise to" final bet = existing bet + remaining stack

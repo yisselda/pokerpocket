@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createTable } from '../src/init'
 import { reduce } from '../src/reducer'
 import { startHand, dealCards, endRound, toShowdown } from '../src/actions'
-import { expectState } from './helpers/state'
+import { expectState } from '../src/testing'
 
 describe('showdown', () => {
   it('returns payouts structure', () => {
