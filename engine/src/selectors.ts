@@ -1,4 +1,5 @@
-import type { GameState, LegalActions } from './types.js'
+import type { Card, GameState, LegalActions } from './types.js'
+import { parseCards } from './cards.js'
 
 export function getPhase(state: GameState) {
   return state.tag
@@ -11,6 +12,12 @@ export function getPlayers(state: GameState) {
 
 export function getBoard(state: GameState) {
   return 'board' in state && Array.isArray(state.board) ? state.board : []
+}
+
+export function getBoardCards(state: GameState): Card[] {
+  const board = getBoard(state)
+  if (board.length === 0) return []
+  return parseCards(board)
 }
 
 export function getPots(state: GameState) {

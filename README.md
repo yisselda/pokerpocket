@@ -1,117 +1,74 @@
 # Poker Pocket
 
-Zero-dependency Texas Hold'em engine for JavaScript/TypeScript. Node.js >= 16.
+Texas Hold'em as a deterministic state machine. Create a table, feed in player moves, and render whatever UI you want.
 
-## Installation
-
-```bash
-npm install pokerpocket           # Library
-npm install -g pokerpocket        # CLI
-```
-
-## Quick Start
-
-```typescript
-import { newGame, evaluate7, drawRandom } from 'pokerpocket'
-
-// Run a complete game
-const game = newGame({ players: 6, seed: 12345 })
-game.deal()
-game.flop()
-game.turn()
-game.river()
-const { winners } = game.showdown()
-
-// Evaluate hands directly
-const cards = [
-  { rank: 'A', suit: 's' },
-  { rank: 'K', suit: 's' },
-  // ... 5 more cards
-]
-const result = evaluate7(cards)
-console.log(result.rank) // 'STRAIGHT_FLUSH'
-
-// Generate random hands
-const hand = drawRandom(7)
-```
-
-## CLI
+## Install
 
 ```bash
-pokerpocket                       # Interactive game
-npx pokerpocket                   # Without installing
+npm install @pokerpocket/engine
+npx pokerpocket           # uses the installed CLI
+# or run once without installing
+npx @pokerpocket/engine
 ```
 
-The CLI provides a full Texas Hold'em experience with betting, blinds, and chip management.
-
-### Key Commands
-
-**Game Flow:** `deal`, `flop`, `turn`, `river`, `showdown`
-**Betting:** `bet <amount>`, `call`, `check`, `fold`, `allin`
-**Setup:** `players <n>`, `blinds <sb> <bb>`, `stacks <amount>`
-**Utility:** `help`, `status`, `hole <player>`
-
-Quick test session:
-
-```
-> deal
-> skipbet  # Auto-complete betting
-> flop
-> skipbet
-> turn
-> skipbet
-> river
-> skipbet
-> showdown
-```
-
-## API Reference
-
-### Game Engine
+## Run A Hand
 
 ```typescript
-import { newGame, PokerEngine } from 'pokerpocket'
+import {
+  createTable,
+  reduce,
+  startHand,
+  dealCards,
+  toShowdown,
+  nextHand,
+  check,
+  call,
+  fold,
+  raiseTo,
+  getCurrentPlayer,
+  getLegalActions,
+} from '@pokerpocket/engine'
 
-// Helper function
-const game = newGame({ players: 4, seed: 42 })
+const step = (state, action) => {
+  let next = reduce(state, action)
+  while (next.tag === 'INIT' || next.tag === 'DEAL' || next.tag === 'SHOWDOWN') {
+    const auto = next.tag === 'INIT'
+      ? startHand()
+      : next.tag === 'DEAL'
+        ? dealCards()
+        : toShowdown()
+    next = reduce(next, auto)
+  }
+  return next
+}
 
-// Or direct engine usage
-const engine = new PokerEngine()
-engine.setPlayers(4)
-engine.setSeed(42)
-engine.deal()
+let state = step(createTable(6, 20000, 100), startHand())
+
+while (state.tag !== 'COMPLETE') {
+  const actor = getCurrentPlayer(state)
+  if (!actor) break
+  const legal = getLegalActions(state, actor.id)
+  const action = legal.canCheck
+    ? check(actor.id)
+    : legal.canCall
+      ? call(actor.id)
+      : typeof legal.minRaise === 'number'
+        ? raiseTo(actor.id, legal.minRaise)
+        : fold(actor.id)
+  state = step(state, action)
+}
+
+if (state.tag === 'COMPLETE') {
+  console.log(state.winners)
+  state = step(state, nextHand())
+}
 ```
 
-### Hand Evaluation
-
-```typescript
-import { evaluate7, evaluate5 } from 'pokerpocket'
-
-// Best 5 from 7 cards
-const result7 = evaluate7(sevenCards)
-
-// Evaluate exactly 5 cards
-const result5 = evaluate5(fiveCards)
-
-// Result contains:
-// - rank: 'STRAIGHT_FLUSH' | 'FOUR_OF_A_KIND' | etc
-// - score: BigInt for comparison
-// - best5: Array of 5 cards used
-```
-
-### Utilities
-
-```typescript
-import { drawRandom, createDeck, shuffle } from 'pokerpocket'
-
-// Random cards
-const hand = drawRandom(2) // 2 hole cards
-const board = drawRandom(5) // 5 community cards
-
-// Deck operations
-let deck = createDeck()
-deck = shuffle(deck, seed)
-```
+## Why Devs Like It
+- Pure reducer; no timers, sockets, or RNG side effects
+- Strong TypeScript types for every phase, pot, and action
+- Side pots, heads-up blinds, and all-in fast-forward built in
+- Easy to slot into React, Vue, bots, or your own loop
 
 ## Development
 
@@ -121,14 +78,4 @@ npm test
 npm run build
 ```
 
-## Demo
-
-Try the [live demo](https://yisselda.github.io/pokerpocket/) with interactive hand evaluation and benchmarking.
-
-## License
-
-MIT
-
-## Contributing
-
-Issues and PRs welcome on [GitHub](https://github.com/yisselda/pokerpocket).
+MIT License.
