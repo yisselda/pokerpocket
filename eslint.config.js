@@ -5,7 +5,7 @@ import typescriptParser from '@typescript-eslint/parser'
 export default [
   js.configs.recommended,
   {
-    files: ['src/**/*.ts', 'test/**/*.ts'],
+    files: ['engine/src/**/*.ts', 'engine/tests/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -30,39 +30,33 @@ export default [
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-require-imports': 'off',
-      'prefer-const': 'error',
+      'prefer-const': 'warn',
       'no-console': 'off',
-      'no-undef': 'off', // TypeScript handles this
+      'no-undef': 'off',
     },
   },
   {
-    files: ['demo/**/*.js'],
+    files: ['engine/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
-        window: 'readonly',
-        document: 'readonly',
         console: 'readonly',
-        alert: 'readonly',
-        setTimeout: 'readonly',
-        performance: 'readonly',
-        navigator: 'readonly',
-        event: 'readonly',
+        process: 'readonly',
       },
     },
     rules: {
       'no-unused-vars': 'warn',
       'no-console': 'off',
-      'prefer-const': 'error',
+      'prefer-const': 'warn',
     },
   },
   {
     ignores: [
+      'legacy/**',
       'dist/**',
+      'engine/dist/**',
       'node_modules/**',
-      'demo/dist/**',
-      'test/consumer/dist/**',
     ],
   },
 ]

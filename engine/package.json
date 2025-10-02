@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
-    "play": "node ./cli.js"
+    "play": "node ./cli.js",
+    "bench": "vitest bench tests/engine.bench.ts"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
@@ -25,11 +26,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
     },
     "./rng": {
       "types": "./dist/rng.d.ts",
-      "default": "./dist/rng.js"
+      "import": "./dist/rng.js"
     }
   }
 }

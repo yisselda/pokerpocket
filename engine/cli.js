@@ -20,6 +20,7 @@ import {
   check,
   call,
   raiseTo,
+  serializeRng,
 } from '@pokerpocket/engine'
 
 const KEYMAP = Object.freeze({
@@ -32,6 +33,46 @@ const KEYMAP = Object.freeze({
 
 const log = (...args) => {
   console.log(...args)
+}
+
+function parseArgs(argv) {
+  const options = { seed: undefined }
+
+  for (let i = 0; i < argv.length; i++) {
+    const token = argv[i]
+    if (token === '--seed') {
+      const value = argv[++i]
+      if (!value) {
+        console.error('Missing value for --seed')
+        process.exit(1)
+      }
+      const parsed = Number(value)
+      if (!Number.isFinite(parsed)) {
+        console.error('Seed must be a finite number')
+        process.exit(1)
+      }
+      options.seed = parsed >>> 0
+      continue
+    }
+    if (token.startsWith('--seed=')) {
+      const value = token.slice('--seed='.length)
+      const parsed = Number(value)
+      if (!Number.isFinite(parsed)) {
+        console.error('Seed must be a finite number')
+        process.exit(1)
+      }
+      options.seed = parsed >>> 0
+      continue
+    }
+    if (token === '--help' || token === '-h') {
+      console.log('Usage: pokerpocket [--seed <uint32>]')
+      process.exit(0)
+    }
+    console.error(`Unknown option: ${token}`)
+    process.exit(1)
+  }
+
+  return options
 }
 
 function needsInput(state) {
@@ -182,6 +223,10 @@ function present(state) {
   if (pot > 0) {
     presentation.pot = pot
   }
+  const rngState = serializeRng(state)
+  if (rngState !== undefined) {
+    presentation.footer = `RNG: ${rngState}`
+  }
   return presentation
 }
 
@@ -330,6 +375,7 @@ async function promptAction(state, rl) {
 }
 
 async function main() {
+  const cliOptions = parseArgs(process.argv.slice(2))
   const rl = createInterface({ input, output })
   rl.on('SIGINT', () => {
     rl.close()
@@ -346,7 +392,13 @@ async function main() {
     const chips = await askNumber(rl, 'Starting stack', 1000, { min: 1 })
     const bigBlind = await askNumber(rl, 'Big blind size', 50, { min: 1 })
 
-    let state = drive(createTable(seats, chips, bigBlind))
+    let state = drive(
+      createTable(seats, chips, bigBlind, { seed: cliOptions.seed })
+    )
+
+    if (cliOptions.seed !== undefined) {
+      log(`Using RNG seed ${cliOptions.seed}`)
+    }
 
     while (true) {
       state = drive(state)

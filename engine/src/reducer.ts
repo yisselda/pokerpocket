@@ -120,7 +120,6 @@ export function reduce(state: GameState, action: Action): GameState {
           action.move === 'RAISE' &&
           typeof action.amount === 'number'
         ) {
-          const toCall = Math.max(0, targetBet - me.bet)
           // action.amount is a "raise to" amount (final bet), not "raise by".
           const raiseTo = Math.max(action.amount, targetBet)
           const need = Math.max(0, raiseTo - me.bet)
@@ -160,8 +159,7 @@ export function reduce(state: GameState, action: Action): GameState {
         if (noFurtherActionsPossible(players)) {
           // 1) settle this street
           const settled = settleStreetBets(players, state.pots)
-          let ffPlayers = settled.players
-          let ffPots = settled.pots
+          const { players: ffPlayers, pots: ffPots } = settled
           let ffBoard = [...state.board]
           let ffDeck = [...state.deck]
           let phase: BettingPhase = state.tag
@@ -191,7 +189,7 @@ export function reduce(state: GameState, action: Action): GameState {
         // Advance turn
         const toAct = nextActorIndex(players, state.toAct)
 
-        let provisional = {
+        const provisional = {
           ...state,
           players,
           toAct,

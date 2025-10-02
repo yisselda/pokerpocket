@@ -31,12 +31,17 @@ import {
 
 const step = (state, action) => {
   let next = reduce(state, action)
-  while (next.tag === 'INIT' || next.tag === 'DEAL' || next.tag === 'SHOWDOWN') {
-    const auto = next.tag === 'INIT'
-      ? startHand()
-      : next.tag === 'DEAL'
-        ? dealCards()
-        : toShowdown()
+  while (
+    next.tag === 'INIT' ||
+    next.tag === 'DEAL' ||
+    next.tag === 'SHOWDOWN'
+  ) {
+    const auto =
+      next.tag === 'INIT'
+        ? startHand()
+        : next.tag === 'DEAL'
+          ? dealCards()
+          : toShowdown()
     next = reduce(next, auto)
   }
   return next
@@ -64,7 +69,34 @@ if (state.tag === 'COMPLETE') {
 }
 ```
 
+## Core Features
+
+### Deterministic RNG (seed-in/seed-out)
+
+- LCG RNG is included for speed and deterministic testing.
+- For crypto-grade randomness, supply your own RNG wrapping a CSPRNG.
+- For auditability/fairness, layer a commit–reveal scheme on top of the RNG contract.
+
+```typescript
+import {
+  createTable,
+  reduce,
+  startHand,
+  dealCards,
+  getBoard,
+  serializeRng,
+} from '@pokerpocket/engine'
+
+let state = createTable(6, 20000, 100, { seed: 42 })
+state = reduce(state, startHand())
+state = reduce(state, dealCards())
+
+console.log(getBoard(state))
+console.log(serializeRng(state))
+```
+
 ## Why Devs Like It
+
 - Pure reducer; no timers, sockets, or RNG side effects
 - Strong TypeScript types for every phase, pot, and action
 - Side pots, heads-up blinds, and all-in fast-forward built in
@@ -79,3 +111,19 @@ npm run build
 ```
 
 MIT License.
+
+## Benchmarks
+
+Run the Vitest benchmark suite to sample hot paths in the engine:
+
+```bash
+npm run bench -- --outputJson bench-results.json
+```
+
+CI compares every run with `benchmarks/baseline.json` and fails if a benchmark slows by more than 5%. The current baseline (Node.js 20, macOS) records roughly:
+
+- `shuffleDeck with LCG`: ~1.37M ops/sec (≈0.73µs per shuffle)
+- `evaluateSevenCards canonical hand`: ~6.46M ops/sec (≈0.15µs per eval)
+- `play deterministic hand (6 players)`: ~70K ops/sec (≈14µs per full hand)
+
+Use `bench-results.json` emitted by the command above to inspect the full distribution when tuning the engine.
