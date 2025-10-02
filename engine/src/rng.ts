@@ -64,3 +64,7 @@ export function ensureRng(rng: RNG | undefined, seed: number | undefined): RNG {
 export function serializeRng(state: { rng?: RNG }): number | undefined {
   return state.rng?.getState()
 }
+
+export function getSeed(state: { rng?: RNG }): number | undefined {
+  return serializeRng(state)
+}

@@ -1,6 +1,9 @@
 import type { Card, GameState, LegalActions } from './types.js'
 import { parseCards } from './cards.js'
 import { formatBoard } from './format.js'
+import { assignPositions } from './positions.js'
+import { reduce } from './reducer.js'
+import { dealCards, startHand, toShowdown } from './actions.js'
 
 export function getPhase(state: GameState) {
   return state.tag
@@ -50,6 +53,20 @@ export function getActingSeat(state: GameState): number | null {
   return typeof (state as { toAct?: number }).toAct === 'number'
     ? (state as { toAct: number }).toAct
     : null
+}
+
+const BETTING_PHASES = new Set(['PREFLOP', 'FLOP', 'TURN', 'RIVER'])
+
+export function isBettingPhase(state: GameState): state is Extract<
+  GameState,
+  { tag: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' }
+> {
+  return BETTING_PHASES.has(state.tag)
+}
+
+export function currentActorSeat(state: GameState): number | null {
+  if (!isBettingPhase(state)) return null
+  return typeof state.toAct === 'number' ? state.toAct : null
 }
 
 export function getToCall(state: GameState, seat: number): number {
@@ -109,4 +126,107 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
   const maxRaise = me.stack + me.bet // all-in cap
 
   return { canFold: true, canCheck, canCall, callAmount, minRaise, maxRaise }
+}
+
+export function isBettingDecision(state: GameState): boolean {
+  const seat = currentActorSeat(state)
+  if (seat === null) return false
+  const legal = getLegalActions(state, seat)
+  return (
+    legal.canFold ||
+    legal.canCheck ||
+    legal.canCall ||
+    legal.minRaise !== undefined
+  )
+}
+
+export function isComplete(state: GameState): boolean {
+  return state.tag === 'COMPLETE'
+}
+
+export function isHandDone(state: GameState): boolean {
+  return isComplete(state)
+}
+
+function nextAutoAction(state: GameState) {
+  switch (state.tag) {
+    case 'INIT':
+      return startHand()
+    case 'DEAL':
+      return dealCards()
+    case 'SHOWDOWN':
+      return toShowdown()
+    default:
+      return null
+  }
+}
+
+export function advanceUntilDecision(state: GameState): GameState {
+  let current = state
+  while (true) {
+    if (isBettingDecision(current) || isComplete(current)) {
+      return current
+    }
+    const action = nextAutoAction(current)
+    if (!action) {
+      return current
+    }
+    const next = reduce(current, action)
+    if (next === current) {
+      return current
+    }
+    current = next
+  }
+}
+
+export type PositionLabel = 'BTN' | 'SB' | 'BB' | ''
+
+export function getPositions(state: GameState): PositionLabel[] {
+  const players = getPlayers(state)
+  const n = players.length
+  if (n === 0) return []
+  const dealer =
+    typeof (state as { dealer?: number }).dealer === 'number'
+      ? ((state as { dealer: number }).dealer % n + n) % n
+      : 0
+  const assigned = assignPositions(n, dealer)
+  return assigned.map(pos => (pos === 'BTN' || pos === 'SB' || pos === 'BB' ? pos : ''))
+}
+
+export interface ActionOptions {
+  seat: number
+  canFold: boolean
+  canCheck: boolean
+  canCall: boolean
+  toCall: number
+  raise?: {
+    min: number
+    max?: number
+    unopened: boolean
+  }
+}
+
+export function getActionOptions(state: GameState): ActionOptions | null {
+  const seat = currentActorSeat(state)
+  if (seat === null) return null
+  const legal = getLegalActions(state, seat)
+  const toCall = getToCall(state, seat)
+
+  const options: ActionOptions = {
+    seat,
+    canFold: legal.canFold,
+    canCheck: legal.canCheck,
+    canCall: legal.canCall,
+    toCall,
+  }
+
+  if (legal.minRaise !== undefined) {
+    options.raise = {
+      min: legal.minRaise,
+      max: legal.maxRaise,
+      unopened: toCall === 0,
+    }
+  }
+
+  return options
 }

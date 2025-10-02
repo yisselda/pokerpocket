@@ -1,29 +1,23 @@
 import {
   LcgRng,
-  check,
+  advanceUntilDecision,
   call,
-  fold,
-  raiseTo,
-  startHand,
-  dealCards,
-  toShowdown,
+  check,
   createTable,
-  reduce,
+  fold,
+  getActionOptions,
   getPhase,
-  getPlayers,
-  getBoardCards,
-  getBoardAscii,
-  getLegalActions,
-  getToCall,
-  getActingSeat,
-  serializeRng,
+  getSeed,
+  isBettingDecision,
+  isHandDone,
+  raiseTo,
+  reduce,
+  toPresentation,
 } from '@pokerpocket/engine'
 import type {
   Action,
-  Card,
+  ActionOptions,
   GameState,
-  LegalActions,
-  Player,
 } from '@pokerpocket/engine'
 import { fromString, toAscii, createDeck, shuffle } from '@pokerpocket/engine/cards'
 import { evaluateCards } from '@pokerpocket/engine/eval'
@@ -53,95 +47,116 @@ declare global {
   }
 }
 
-function autoAdvance(initial: GameState): GameState {
-  let state = initial
-  while (true) {
-    if (state.tag === 'INIT') {
-      state = reduce(state, startHand())
-      continue
+function pickAction(options: ActionOptions, step: number, seed: number): Action {
+  const prng = Math.abs(seed + options.seat * 17 + step * 31)
+  const eagerRaise = options.raise && prng % 4 === 0
+
+  if (options.toCall === 0) {
+    if (eagerRaise && options.raise) {
+      const min = options.raise.min
+      const max = options.raise.max ?? min
+      const span = Math.max(0, max - min)
+      const raiseToAmount = span > 0 ? min + Math.floor(span * 0.25) : min
+      return raiseTo(options.seat, raiseToAmount || min)
     }
-    if (state.tag === 'DEAL') {
-      state = reduce(state, dealCards())
-      continue
+    if (options.canCheck) {
+      return check(options.seat)
     }
-    if (state.tag === 'SHOWDOWN') {
-      state = reduce(state, toShowdown())
-      continue
-    }
-    return state
   }
+
+  if (options.canCall) {
+    return call(options.seat)
+  }
+
+  if (options.raise) {
+    const min = options.raise.min
+    const max = options.raise.max ?? min
+    const span = Math.max(0, max - min)
+    const raiseToAmount = span > 0 ? min + Math.floor(span * 0.25) : min
+    return raiseTo(options.seat, raiseToAmount || min)
+  }
+
+  if (options.canCheck) {
+    return check(options.seat)
+  }
+
+  return options.canFold ? fold(options.seat) : check(options.seat)
 }
 
-function pickAction(
-  seat: number,
-  legal: LegalActions,
-  step: number,
-  seed: number
-): Action {
-  const options: Array<'FOLD' | 'CHECK' | 'CALL' | 'RAISE'> = []
-  if (legal.canCheck) options.push('CHECK')
-  if (legal.canCall) options.push('CALL')
-  if (typeof legal.minRaise === 'number') options.push('RAISE')
-  if (legal.canFold) options.push('FOLD')
-
-  if (options.length === 0) {
-    return legal.canFold ? fold(seat) : check(seat)
-  }
-
-  const index = Math.abs(seed + seat * 13 + step * 17) % options.length
-  const choice = options[index]
-
-  switch (choice) {
-    case 'CHECK':
-      return check(seat)
-    case 'CALL':
-      return call(seat)
-    case 'RAISE': {
-      const min = legal.minRaise ?? 0
-      const max = legal.maxRaise ?? min
-      const span = Math.max(0, max - min)
-      const raiseToAmount = span > 0 ? min + Math.floor(span * 0.35) : min
-      return raiseTo(seat, raiseToAmount || min)
-    }
-    case 'FOLD':
-    default:
-      return fold(seat)
-  }
+interface SimulationSnapshot {
+  phase: string
+  board: string
+  pot?: number
 }
 
 interface SimulationResult {
   finalState: GameState
-  board: Card[]
-  boardAscii: string
   history: string[]
-  rngSnapshot?: number
+  snapshots: SimulationSnapshot[]
 }
 
 function simulateHand(playerCount: number, seed: number): SimulationResult {
-  let state = autoAdvance(createTable(playerCount, 20000, 100, { seed }))
+  let state = advanceUntilDecision(createTable(playerCount, 10000, 100, { seed }))
   const history: string[] = []
+  const snapshots: SimulationSnapshot[] = []
   let step = 0
 
-  while (state.tag !== 'COMPLETE' && step < 200) {
-    const actingSeat = getActingSeat(state)
-    if (actingSeat === null) break
-    const legal = getLegalActions(state, actingSeat)
-    const action = pickAction(actingSeat, legal, step, seed)
+  const recordSnapshot = (current: GameState) => {
+    const view = toPresentation(current)
+    const snapshot: SimulationSnapshot = {
+      phase: current.tag,
+      board: view.board ?? '[no board dealt yet]',
+      pot: view.pot ?? 0,
+    }
+    const last = snapshots[snapshots.length - 1]
+    if (!last) {
+      snapshots.push(snapshot)
+      return
+    }
+    if (
+      last.phase !== snapshot.phase ||
+      last.board !== snapshot.board ||
+      last.pot !== snapshot.pot
+    ) {
+      snapshots.push(snapshot)
+    }
+  }
+
+  recordSnapshot(state)
+
+  while (!isHandDone(state) && step < 200) {
+    if (!isBettingDecision(state)) {
+      const next = advanceUntilDecision(state)
+      if (next === state) break
+      state = next
+      recordSnapshot(state)
+      continue
+    }
+
+    const options = getActionOptions(state)
+    if (!options) {
+      const next = advanceUntilDecision(state)
+      if (next === state) break
+      state = next
+      recordSnapshot(state)
+      continue
+    }
+
+    const action = pickAction(options, step, seed)
     const phase = getPhase(state)
     history.push(
       `${phase}: ${formatReducerAction(action, { prefixSeat: true })}`
     )
 
-    state = autoAdvance(reduce(state, action))
+    state = advanceUntilDecision(reduce(state, action))
+    recordSnapshot(state)
     step += 1
   }
 
   return {
     finalState: state,
-    board: getBoardCards(state),
-    boardAscii: getBoardAscii(state),
     history,
-    rngSnapshot: serializeRng(state),
+    snapshots,
   }
 }
 
@@ -156,19 +171,6 @@ function formatCategory(category: string) {
     .join(' ')
 }
 
-function formatPlayers(players: Player[]) {
-  return players
-    .map(player => {
-      const cards = player.hole?.map(cardToAscii).join(' ') ?? '--'
-      const flags = [player.folded ? 'folded' : '', player.allIn ? 'all-in' : '']
-        .filter(Boolean)
-        .join(', ')
-      const status = flags ? ` (${flags})` : ''
-      return `P${(player.id ?? 0) + 1}  ${cards.padEnd(9)} stack ${formatChips(player.stack)}${status}`
-    })
-    .join('\n')
-}
-
 function formatWinners(state: GameState) {
   if (state.tag !== 'COMPLETE' || !state.winners?.length) {
     return 'Hand not complete'
@@ -176,12 +178,6 @@ function formatWinners(state: GameState) {
   return state.winners
     .map(w => `P${w.seatId + 1} +${formatChips(w.amount)}`)
     .join(', ')
-}
-
-function describeToCall(state: GameState, seat: number): string {
-  const amount = getToCall(state, seat)
-  if (amount === 0) return 'to call: 0'
-  return `to call: ${formatChips(amount)}`
 }
 
 function dealLiveHand() {
@@ -207,17 +203,44 @@ function dealLiveHand() {
   }
 
   const result = simulateHand(players, seed)
-  const { finalState, boardAscii, history, rngSnapshot } = result
-  const playerSummaries = formatPlayers(getPlayers(finalState))
-  const actingSeat = getActingSeat(finalState)
-  const toCallInfo =
-    actingSeat !== null ? describeToCall(finalState, actingSeat) : 'hand complete'
+  const { finalState, history, snapshots } = result
+  const view = toPresentation(finalState)
+  const playerSummaries = view.rows.map(row => `${row.marker} ${row.line}`).join('\n')
+  const options = getActionOptions(finalState)
+
+  const decisionHint = (() => {
+    if (isHandDone(finalState)) return 'hand complete'
+    if (!options) return 'auto action pending'
+    if (options.toCall > 0) {
+      return `to call: ${formatChips(options.toCall)}`
+    }
+    if (options.raise) {
+      const min = formatChips(options.raise.min)
+      const max = options.raise.max ? formatChips(options.raise.max) : 'stack'
+      const verb = options.raise.unopened ? 'bet' : 'raise to'
+      return `${verb} ≥ ${min}${options.raise.max ? ` (max ${max})` : ''}`
+    }
+    return 'check or fold available'
+  })()
+
+  const phaseLabel = view.header.replace(/^===\s*/, '').replace(/\s*===$/, '')
+  const boardLine = view.board ?? '[no board dealt yet]'
+  const potLine = view.pot !== undefined ? formatChips(view.pot) : '0'
+  const rngSnapshot = getSeed(finalState)
+  const boardTimeline = snapshots
+    .map(snapshot => {
+      const potLabel = snapshot.pot > 0 ? ` (pot ${formatChips(snapshot.pot)})` : ''
+      return `${snapshot.phase}: ${snapshot.board}${potLabel}`
+    })
+    .join('\n')
 
   const summary = `🎯 PokerPocket reducer demo\n` +
     `Seed ${seed} • ${players} players • Blinds 100/200\n\n` +
-    `Phase\n${getPhase(finalState)} (${toCallInfo})\n\n` +
-    `Board\n${boardAscii || '[no board dealt yet]'}\n\n` +
+    `Phase\n${phaseLabel} (${decisionHint})\n\n` +
+    `Board\n${boardLine}\n\n` +
+    `Pot\n${potLine}\n\n` +
     `Players\n${playerSummaries}\n\n` +
+    `Board progression\n${boardTimeline}\n\n` +
     `Winners\n${formatWinners(finalState)}\n\n` +
     `RNG snapshot\n${rngSnapshot ?? 'N/A'}\n\n` +
     `Action trace\n${history.join('\n')}`

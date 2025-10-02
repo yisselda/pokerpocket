@@ -301,12 +301,21 @@ export function reduce(state: GameState, action: Action): GameState {
 
     case 'COMPLETE':
       if (action.type === 'NEXT_HAND') {
+        const players = state.players.map(player => ({
+          ...player,
+          bet: 0,
+          contributed: 0,
+          folded: false,
+          allIn: false,
+          hole: undefined,
+        }))
+        const playerCount = players.length || 1
         return {
           tag: 'DEAL',
-          players: state.players,
+          players,
           deck: shuffleDeck(state.rng),
           bigBlind: state.bigBlind ?? 100,
-          dealer: (state.dealer + 1) % state.players.length,
+          dealer: (state.dealer + 1) % playerCount,
           rng: state.rng,
         }
       }

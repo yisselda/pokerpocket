@@ -16,57 +16,48 @@ npm run demo:dev   # launch the interactive demo (Vite)
 
 ```typescript
 import {
-  createTable,
-  reduce,
-  startHand,
-  dealCards,
-  toShowdown,
-  nextHand,
-  check,
+  advanceUntilDecision,
   call,
+  check,
+  createTable,
   fold,
+  getActionOptions,
+  isBettingDecision,
+  isHandDone,
+  nextHand,
   raiseTo,
-  getCurrentPlayer,
-  getLegalActions,
+  reduce,
+  toPresentation,
 } from '@pokerpocket/engine'
 
-const step = (state, action) => {
-  let next = reduce(state, action)
-  while (
-    next.tag === 'INIT' ||
-    next.tag === 'DEAL' ||
-    next.tag === 'SHOWDOWN'
-  ) {
-    const auto =
-      next.tag === 'INIT'
-        ? startHand()
-        : next.tag === 'DEAL'
-          ? dealCards()
-          : toShowdown()
-    next = reduce(next, auto)
+let state = advanceUntilDecision(createTable(6, 20000, 100))
+
+while (!isHandDone(state)) {
+  if (!isBettingDecision(state)) {
+    state = advanceUntilDecision(state)
+    continue
   }
-  return next
+
+  const options = getActionOptions(state)
+  if (!options) {
+    state = advanceUntilDecision(state)
+    continue
+  }
+
+  const action = options.canCheck
+    ? check(options.seat)
+    : options.canCall
+      ? call(options.seat)
+      : options.raise
+        ? raiseTo(options.seat, options.raise.min)
+        : fold(options.seat)
+
+  state = advanceUntilDecision(reduce(state, action))
 }
 
-let state = step(createTable(6, 20000, 100), startHand())
-
-while (state.tag !== 'COMPLETE') {
-  const actor = getCurrentPlayer(state)
-  if (!actor) break
-  const legal = getLegalActions(state, actor.id)
-  const action = legal.canCheck
-    ? check(actor.id)
-    : legal.canCall
-      ? call(actor.id)
-      : typeof legal.minRaise === 'number'
-        ? raiseTo(actor.id, legal.minRaise)
-        : fold(actor.id)
-  state = step(state, action)
-}
-
-if (state.tag === 'COMPLETE') {
-  console.log(state.winners)
-  state = step(state, nextHand())
+if (isHandDone(state)) {
+  console.log(toPresentation(state))
+  state = advanceUntilDecision(reduce(state, nextHand()))
 }
 ```
 
@@ -80,20 +71,16 @@ if (state.tag === 'COMPLETE') {
 
 ```typescript
 import {
+  advanceUntilDecision,
   createTable,
-  reduce,
-  startHand,
-  dealCards,
-  getBoard,
-  serializeRng,
+  getSeed,
+  toPresentation,
 } from '@pokerpocket/engine'
 
-let state = createTable(6, 20000, 100, { seed: 42 })
-state = reduce(state, startHand())
-state = reduce(state, dealCards())
+const state = advanceUntilDecision(createTable(6, 20000, 100, { seed: 42 }))
 
-console.log(getBoard(state))
-console.log(serializeRng(state))
+console.log(toPresentation(state))
+console.log(getSeed(state))
 ```
 
 ## Why Devs Like It
