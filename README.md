@@ -61,6 +61,43 @@ if (isHandDone(state)) {
 }
 ```
 
+## Core Concepts
+
+```text
+createTable -> advanceUntilDecision(state)
+        |                     |
+        |                     v
+        |           +--------------------+
+        |           | reduce(state, action)|
+        |           +--------------------+
+        |                     |
+        v                     v
+     +------+  START   +-----------+   DEAL_CARDS   +-----------+
+     | INIT | -------> |   DEAL    | ------------> |  PREFLOP  |
+     +------+          +-----------+               +-----------+
+        ^                    |                           |
+        |                    | shuffleDeck()             | player actions
+        |                    v                           v
+     NEXT_HAND         dealHole(), blinds        settle bets, advance actor
+        |                    |                           |
+        |                    v                           v
+        |              +-----------+   ROUND_COMPLETE   +-----------+
+        |              |   FLOP    | --------------->   |   TURN    |
+        |              +-----------+                   +-----------+
+        |                    | dealCommunity()              |
+        |                    v                              v
+        |              +-----------+   ROUND_COMPLETE   +-----------+
+        |              |   RIVER   | --------------->   | SHOWDOWN  |
+        |              +-----------+                   +-----------+
+        |                    | resolveShowdown()             |
+        |                    v                              v
+        +--------------> +-----------+ <---------------------+
+                          | COMPLETE |
+                          +-----------+
+```
+
+The reducer loops until it reaches a player decision or terminal state. `advanceUntilDecision` fast-forwards through deterministic phases (posting blinds, dealing cards, burning/turning the board) so the host can wait for real player input before calling `reduce` again. When a hand ends, dispatch `nextHand()` to rotate the dealer and restart.
+
 ## Core Features
 
 ### Deterministic RNG (seed-in/seed-out)
@@ -89,6 +126,125 @@ console.log(getSeed(state))
 - Strong TypeScript types for every phase, pot, and action
 - Side pots, heads-up blinds, and all-in fast-forward built in
 - Easy to slot into React, Vue, bots, or your own loop
+
+## API Reference
+
+Typed signatures are derived directly from the TypeScript sources; the callouts underneath translate what each primitive does in plain language.
+
+### Actions
+
+```ts
+startHand(): Action
+dealCards(): Action
+endRound(): Action
+toShowdown(): Action
+nextHand(): Action
+fold(seat: SeatId): Action
+check(seat: SeatId): Action
+call(seat: SeatId): Action
+raiseTo(seat: SeatId, amount: number): Action
+```
+
+- `startHand()` begins the hand by shuffling a fresh deck and moving from INIT to DEAL.
+- `dealCards()` posts blinds, deals hole cards, and moves into PREFLOP.
+- `endRound()` closes a betting street when everyone is settled.
+- `toShowdown()` flips straight to the showdown phase when betting is over.
+- `nextHand()` resets blinds and dealer positioning for the next hand.
+- `fold`, `check`, `call`, and `raiseTo` generate player actions that `reduce` can consume; `raiseTo` specifies the final bet level rather than the raise increment.
+
+### Selectors
+
+```ts
+getPhase(state: GameState): GameState['tag']
+getPlayers(state: GameState): Player[]
+getBoard(state: GameState): string[]
+getBoardCards(state: GameState): Card[]
+getBoardAscii(state: GameState): string
+getPots(state: GameState): Pot[]
+getPotSize(state: GameState): number
+getCurrentPlayer(state: GameState): Player | null
+getActingSeat(state: GameState): SeatId | null
+isBettingPhase(state: GameState): state is Extract<GameState, { tag: BettingPhase }>
+currentActorSeat(state: GameState): SeatId | null
+getToCall(state: GameState, seat: SeatId): number
+getLegalActions(state: GameState, seat: SeatId): LegalActions
+isBettingDecision(state: GameState): boolean
+isComplete(state: GameState): boolean
+isHandDone(state: GameState): boolean
+advanceUntilDecision(state: GameState): GameState
+getPositions(state: GameState): PositionLabel[]
+getActionOptions(state: GameState): ActionOptions | null
+
+type PositionLabel = 'BTN' | 'SB' | 'BB' | ''
+interface ActionOptions {
+  seat: SeatId
+  canFold: boolean
+  canCheck: boolean
+  canCall: boolean
+  toCall: number
+  raise?: { min: number; max?: number; unopened: boolean }
+}
+```
+
+- `getPhase`, `getPlayers`, `getBoard`, and `getPots` expose raw reducer state without poking at union variants directly.
+- `getBoardCards` and `getBoardAscii` hand back parsed or formatted community cards for display.
+- `getCurrentPlayer`, `getActingSeat`, and `currentActorSeat` reveal whose turn it is (or `null` if no one can act).
+- `isBettingPhase`, `isBettingDecision`, `isComplete`, and `isHandDone` express the game flow as readable predicates.
+- `getToCall`, `getLegalActions`, and `getActionOptions` compute exactly what a seat can do, including raise bounds.
+- `advanceUntilDecision` drives the deterministic state machine until a player must act or the hand ends.
+- `getPositions` returns BTN/SB/BB markers aligned with `getPlayers` output.
+
+### Utilities
+
+```ts
+interface CreateTableOptions { rng?: RNG; seed?: number }
+createTable(nbPlayers: number, chips: number, bigBlind: number, opts?: CreateTableOptions): GameState
+reduce(state: GameState, action: Action): GameState
+toPresentation(state: GameState): PresentationView
+
+interface PresentationRow { marker: string; line: string }
+interface PresentationView {
+  header: string
+  board?: string
+  pot?: number
+  rows: PresentationRow[]
+  footer?: string
+}
+```
+
+- `createTable` bootstraps a seeded table with identical stacks and an optional custom RNG.
+- `reduce` is the pure state machine that applies actions, whether automated or player-driven.
+- `toPresentation` converts the current state into a lightweight, printable view useful for CLIs or logs.
+
+### RNG
+
+```ts
+interface RNG {
+  next(): number
+  getState(): number
+  setState(state: number): void
+  randInt?(n: number): number
+}
+
+class LcgRng implements RNG {
+  constructor(seed?: number)
+  next(): number
+  getState(): number
+  setState(state: number): void
+  randInt(n: number): number
+  static fromState(state: number): LcgRng
+}
+
+withSeed(seed: number): RNG
+ensureRng(rng: RNG | undefined, seed: number | undefined): RNG
+serializeRng(state: { rng?: RNG }): number | undefined
+getSeed(state: { rng?: RNG }): number | undefined
+```
+
+- `RNG` specifies the interface the engine expects; any compliant generator can be plugged in.
+- `LcgRng` is the built-in fast linear congruential generator, offering deterministic sequences and state serialization.
+- `withSeed` and `ensureRng` help wire a seed or external RNG into `createTable` without branching logic.
+- `serializeRng` and `getSeed` snapshot the internal RNG state for logging, replay, or fairness audits.
 
 ## Development
 
