@@ -1,3 +1,5 @@
+import type { RNG } from './rng.js'
+
 const ranks = [
   '2',
   '3',
@@ -20,12 +22,11 @@ export function freshDeck(): string[] {
   for (const r of ranks) for (const s of suits) out.push(`${r}${s}`)
   return out
 }
-
 // In-place Fisher-Yates shuffle
-export function shuffleDeck(rng = Math.random): string[] {
+export function shuffleDeck(rng: RNG): string[] {
   const d = freshDeck()
   for (let i = d.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
+    const j = Math.floor(rng.next() * (i + 1))
     ;[d[i], d[j]] = [d[j], d[i]]
   }
   return d

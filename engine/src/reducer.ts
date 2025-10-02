@@ -22,13 +22,14 @@ export function reduce(state: GameState, action: Action): GameState {
   switch (state.tag) {
     case 'INIT':
       if (action.type === 'START') {
-        const deck = shuffleDeck()
+        const deck = shuffleDeck(state.rng)
         return {
           tag: 'DEAL',
           players: state.players,
           deck,
           bigBlind: state.bigBlind,
           dealer: state.dealer,
+          rng: state.rng,
         }
       }
       return state
@@ -78,6 +79,7 @@ export function reduce(state: GameState, action: Action): GameState {
           roundStart: toAct,
           lastAggressor: undefined,
           targetBet,
+          rng: state.rng,
         }
       }
       return state
@@ -150,6 +152,7 @@ export function reduce(state: GameState, action: Action): GameState {
             players: settledPlayers,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
+            rng: state.rng,
           }
         }
 
@@ -181,6 +184,7 @@ export function reduce(state: GameState, action: Action): GameState {
             players: ffPlayers,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
+            rng: state.rng,
           }
         }
 
@@ -215,6 +219,7 @@ export function reduce(state: GameState, action: Action): GameState {
               pots: pots2,
               bigBlind: state.bigBlind ?? 100,
               dealer: state.dealer,
+              rng: state.rng,
             }
           }
 
@@ -233,6 +238,7 @@ export function reduce(state: GameState, action: Action): GameState {
             deck: dealt.deck,
             lastAggressor: undefined,
             targetBet: 0,
+            rng: state.rng,
           }
         }
 
@@ -253,6 +259,7 @@ export function reduce(state: GameState, action: Action): GameState {
             pots,
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
+            rng: state.rng,
           }
         }
 
@@ -273,6 +280,7 @@ export function reduce(state: GameState, action: Action): GameState {
           targetBet: 0,
           roundStart: toActNext,
           lastAggressor: undefined,
+          rng: state.rng,
         }
       }
 
@@ -288,6 +296,7 @@ export function reduce(state: GameState, action: Action): GameState {
           players: state.players,
           bigBlind: state.bigBlind ?? 100,
           dealer: state.dealer,
+          rng: state.rng,
         }
       }
       return state
@@ -297,9 +306,10 @@ export function reduce(state: GameState, action: Action): GameState {
         return {
           tag: 'DEAL',
           players: state.players,
-          deck: shuffleDeck(),
+          deck: shuffleDeck(state.rng),
           bigBlind: state.bigBlind ?? 100,
           dealer: (state.dealer + 1) % state.players.length,
+          rng: state.rng,
         }
       }
       return state

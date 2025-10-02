@@ -1,4 +1,11 @@
 import type { GameState, Player } from './types.js'
+import type { RNG } from './rng.js'
+import { ensureRng } from './rng.js'
+
+export interface CreateTableOptions {
+  rng?: RNG
+  seed?: number
+}
 
 export function createPlayers(n: number, chips: number): Player[] {
   return Array.from({ length: n }, (_, i) => ({
@@ -15,12 +22,15 @@ export function createPlayers(n: number, chips: number): Player[] {
 export function createTable(
   nbPlayers: number,
   chips: number,
-  bigBlind: number
+  bigBlind: number,
+  opts: CreateTableOptions = {}
 ): GameState {
+  const rng = ensureRng(opts.rng, opts.seed)
   return {
     tag: 'INIT',
     players: createPlayers(nbPlayers, chips),
     bigBlind,
     dealer: 0,
+    rng,
   }
 }

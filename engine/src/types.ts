@@ -1,3 +1,5 @@
+import type { RNG } from './rng.js'
+
 export type SeatId = number // Position at the table (0..nbPlayers-1)
 
 export type Suit = 's' | 'h' | 'd' | 'c'
@@ -53,16 +55,25 @@ export type BettingPhase = 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER'
 // is a distinct variant with only the data valid in that phase.
 // This prevents invalid states (e.g. board cards in INIT) and makes
 // the reducer + selectors type-safe and easy to test.
+export interface BaseState {
+  rng: RNG
+}
+
 export type GameState =
-  | { tag: 'INIT'; players: Player[]; bigBlind: number; dealer: SeatId }
-  | {
+  | (BaseState & {
+      tag: 'INIT'
+      players: Player[]
+      bigBlind: number
+      dealer: SeatId
+    })
+  | (BaseState & {
       tag: 'DEAL'
       players: Player[]
       deck: string[]
       bigBlind: number
       dealer: SeatId
-    }
-  | {
+    })
+  | (BaseState & {
       tag: BettingPhase
       players: Player[]
       board: string[]
@@ -74,22 +85,22 @@ export type GameState =
       roundStart: SeatId
       lastAggressor?: SeatId
       targetBet: number
-    }
-  | {
+    })
+  | (BaseState & {
       tag: 'SHOWDOWN'
       players: Player[]
       board: string[]
       pots: Pot[]
       bigBlind: number
       dealer: SeatId
-    }
-  | {
+    })
+  | (BaseState & {
       tag: 'COMPLETE'
       winners: { seatId: SeatId; amount: number }[]
       players: Player[]
       bigBlind: number
       dealer: SeatId
-    }
+    })
 
 export type Action =
   | { type: 'START' }
