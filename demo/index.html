@@ -73,20 +73,18 @@
             <div class="hero-code-content" id="hero-api-content">
               <div class="hero-api-code">
                 <pre><code>import {
+  advanceUntilDecision,
   createTable,
-  reduce,
-  startHand,
-  dealCards,
   getBoardAscii,
-  serializeRng,
+  getSeed,
 } from '@pokerpocket/engine'
 
-let state = createTable(6, 20000, 100, { seed: 42 })
-state = reduce(state, startHand())
-state = reduce(state, dealCards())
+const state = advanceUntilDecision(
+  createTable(6, 20000, 100, { seed: 42 })
+)
 
 console.log(getBoardAscii(state))
-console.log(serializeRng(state))</code></pre>
+console.log(getSeed(state))</code></pre>
               </div>
               <div class="hero-features">
                 ✓ Typed selectors & actions<br />
@@ -260,26 +258,23 @@ console.log(serializeRng(state))</code></pre>
                 <div class="terminal-body">
                   <div class="terminal-line">
                     <span class="terminal-prompt">$</span>
-                    <span class="terminal-command">npx @pokerpocket/engine</span>
+                    <span class="terminal-command">npx @pokerpocket/engine --seed 42</span>
                   </div>
                   <div class="terminal-output">
-                    🃏 PokerPocket Reducer CLI
-                    Seeded RNG • Pure state transitions • Stack 20000 • Blinds
-                    100/200
+                    🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine
+                    Number of players [2]: 3
+                    Starting stack [1000]: 20000
+                    Big blind size [50]: 100
+                    Using RNG seed 42
 
-                    <span class="terminal-prompt">&gt;</span> players 4
-                    Players set to 4
+                    === Phase: PREFLOP ===
+                    -&gt; [BTN] P1 | stack: 20000 | bet: 0 | hole: 5h 4d
+                       [SB] P2 | stack: 19950 | bet: 50 | hole: 3s 6d
+                       [BB] P3 | stack: 19900 | bet: 100 | hole: 9s 2h
+                    RNG: 926721163
 
-                    <span class="terminal-prompt">&gt;</span> deal
-                    Cards dealt and blinds posted. Phase PREFLOP. Pot 300.
-
-                    <span class="terminal-prompt">&gt;</span> auto
-                    Fast-forwarding remaining streets...
-
-                    <span class="terminal-prompt">&gt;</span> showdown
-                    P1: Ah Kh ⇒ TWO PAIR (A,A,K,K,Q)
-                    P2: Td Th ⇒ FOUR OF A KIND (T,T,T,T,K)
-                    Winners: P2 wins 1200 chips
+                    P1's turn. Available: (f)old, (c)all 100, (r) raise to 200-20000, (q)uit
+                    Action: c
                   </div>
                 </div>
               </div>
@@ -376,36 +371,25 @@ console.log(serializeRng(state))</code></pre>
                     </button>
                   </div>
                   <pre class="code-content"><code>import {
-  createTable,
-  reduce,
-  startHand,
-  dealCards,
-  getActingSeat,
-  getLegalActions,
-  check,
+  advanceUntilDecision,
   call,
-  raiseTo,
-  fold,
+  check,
+  createTable,
+  getActionOptions,
+  isHandDone,
+  reduce,
 } from '@pokerpocket/engine'
 
-let state = createTable(6, 20000, 100, { seed: 1337 })
-state = reduce(state, startHand())
-state = reduce(state, dealCards())
+let state = advanceUntilDecision(createTable(3, 20000, 100))
 
-while (state.tag !== 'COMPLETE') {
-  const seat = getActingSeat(state)
-  if (seat === null) break
-  const legal = getLegalActions(state, seat)
-  const action = legal.canCheck
-    ? check(seat)
-    : legal.canCall
-      ? call(seat)
-      : typeof legal.minRaise === 'number'
-        ? raiseTo(seat, legal.minRaise)
-        : fold(seat)
-  state = reduce(state, action)
+while (!isHandDone(state)) {
+  const options = getActionOptions(state)
+  if (!options) break
+  const action = options.canCheck ? check(options.seat) : call(options.seat)
+  state = advanceUntilDecision(reduce(state, action))
 }
-console.log(state.winners)</code></pre>
+
+console.log(state.tag) // "COMPLETE"</code></pre>
                 </div>
               </div>
 
@@ -421,13 +405,19 @@ console.log(state.winners)</code></pre>
                       Copy
                     </button>
                   </div>
-                  <pre class="code-content"><code>const usePoker = (players = 6) => {
+                  <pre class="code-content"><code>import {
+  advanceUntilDecision,
+  createTable,
+  reduce,
+} from '@pokerpocket/engine'
+
+const usePoker = (players = 6) => {
   const [state, setState] = useState(() =>
-    createTable(players, 20000, 100)
+    advanceUntilDecision(createTable(players, 20000, 100))
   )
 
   const dispatch = useCallback(action => {
-    setState(prev => autoAdvance(reduce(prev, action)))
+    setState(prev => advanceUntilDecision(reduce(prev, action)))
   }, [])
 
   return { state, dispatch }
@@ -447,12 +437,21 @@ console.log(state.winners)</code></pre>
                       Copy
                     </button>
                   </div>
-                  <pre class="code-content"><code>import { createTable, reduce, startHand } from '@pokerpocket/engine'
+                  <pre class="code-content"><code>import {
+  advanceUntilDecision,
+  check,
+  createTable,
+  getActionOptions,
+  reduce,
+} from '@pokerpocket/engine'
 
-const table = createTable(3, 5000, 50, { seed: 9 })
-let state = reduce(table, startHand())
-// plug into sockets or a bot brain here
-</code></pre>
+let state = advanceUntilDecision(createTable(3, 5000, 50, { seed: 9 }))
+const options = getActionOptions(state)
+if (options?.canCheck) {
+  state = advanceUntilDecision(reduce(state, check(options.seat)))
+}
+
+console.log(state.tag)</code></pre>
                 </div>
               </div>
 
@@ -468,7 +467,8 @@ let state = reduce(table, startHand())
                       Copy
                     </button>
                   </div>
-                  <pre class="code-content"><code>import type { GameState, Action } from '@pokerpocket/engine'
+                  <pre class="code-content"><code>import { reduce } from '@pokerpocket/engine'
+import type { Action, GameState } from '@pokerpocket/engine'
 
 function apply(state: GameState, action: Action) {
   return reduce(state, action)
