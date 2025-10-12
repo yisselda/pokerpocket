@@ -23,6 +23,7 @@ const KEYMAP = Object.freeze({
   k: 'check',
   c: 'call',
   r: 'raise',
+  a: 'allin',
   q: 'quit',
 })
 
@@ -127,6 +128,7 @@ async function promptAction(state, rl) {
     const label = unopened ? 'bet' : 'raise to'
     const range = max !== undefined ? `${min}-${max}` : `${min}+`
     menu.push(`(r) ${label} ${range}`)
+    menu.push('(a)ll in')
   }
   menu.push('(q)uit')
 
@@ -180,16 +182,17 @@ async function promptAction(state, rl) {
       return call(options.seat)
     }
 
-    if (normalized === 'raise') {
+    const isAllIn = normalized == 'allin';
+    if (normalized === 'raise' || isAllIn) {
       if (!options.raise) {
         log('Raise is not available.')
         continue
       }
-      if (!amountText) {
+      if (!isAllIn && !amountText) {
         log('Enter raise size as "r <amount>" (raise-to amount).')
         continue
       }
-      const amount = Number(amountText)
+      const amount = isAllIn ? options.raise.max : Number(amountText)
       if (!Number.isFinite(amount)) {
         log('Please enter a numeric raise size (raise-to amount).')
         continue
