@@ -238,9 +238,13 @@ async function main() {
           .join(', ')
         log('\nHand complete. Winners:', summary || 'none')
 
-        const again = (await rl.question('Play another hand? [Y/n]: ')).trim()
+        const playersLeft = players.filter(p => p.stack).length >= 2;
+        var questionToPlayer = playersLeft ? 'Play another hand? [Y/n]: ' : 'Play a new game? [Y/n]: ';
+        const again = (await rl.question(questionToPlayer)).trim()
         if (again.toLowerCase() === 'n') break
-        state = advanceUntilDecision(reduce(state, nextHand()))
+        state = playersLeft ?
+          advanceUntilDecision(reduce(state, nextHand())) :
+          createTable(seats, chips, bigBlind, { seed: cliOptions.seed })
         continue
       }
 

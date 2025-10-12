@@ -117,13 +117,13 @@ export function getLegalActions(state: GameState, seat: number): LegalActions {
   let minRaise: number | undefined
   if (toCall === 0) {
     // opening bet must be at least big blind
-    minRaise = Math.min(me.stack, me.bet + state.bigBlind)
+    minRaise = Math.min(me.stack, state.bigBlind)
   } else {
     // raise must be at least last raise size
-    minRaise = Math.min(me.stack + me.bet, maxBet + lastRaise)
+    minRaise = Math.min(me.stack, maxBet + lastRaise)
   }
 
-  const maxRaise = me.stack + me.bet // all-in cap
+  const maxRaise = me.stack // all-in cap
 
   return { canFold: true, canCheck, canCall, callAmount, minRaise, maxRaise }
 }
