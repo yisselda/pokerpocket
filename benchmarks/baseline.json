@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2025-01-11T00:00:00.000Z",
+  "generatedAt": "2025-10-13T21:30:00.000Z",
   "command": "npm run bench -- --outputJson bench-results.json",
   "benchmarks": [
     {
       "name": "shuffleDeck with LCG",
-      "hz": 1371594.34
+      "hz": 600000
     },
     {
       "name": "evaluateSevenCards canonical hand",
-      "hz": 6460035.87
+      "hz": 3300000
     },
     {
       "name": "play deterministic hand (6 players)",
-      "hz": 70809.73
+      "hz": 7500
     }
   ]
 }
