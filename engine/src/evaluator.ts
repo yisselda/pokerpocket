@@ -2,15 +2,25 @@
 const RANK_CHARS = '23456789TJQKA'
 const SUIT_CHARS = 'shdc' // s h d c
 
+const RANK_LOOKUP = new Int8Array(128)
+RANK_LOOKUP.fill(-1)
+for (let i = 0; i < RANK_CHARS.length; i++) {
+  RANK_LOOKUP[RANK_CHARS.charCodeAt(i)] = i
+}
+
+const SUIT_LOOKUP = new Int8Array(128)
+SUIT_LOOKUP.fill(-1)
+for (let i = 0; i < SUIT_CHARS.length; i++) {
+  SUIT_LOOKUP[SUIT_CHARS.charCodeAt(i)] = i
+}
+
 function rankOf(card: string): number {
-  const r = card[0]
-  const idx = RANK_CHARS.indexOf(r)
+  const idx = RANK_LOOKUP[card.charCodeAt(0)]
   if (idx < 0) throw new Error(`Bad rank: ${card}`)
   return idx
 }
 function suitOf(card: string): number {
-  const s = card[1]
-  const idx = SUIT_CHARS.indexOf(s)
+  const idx = SUIT_LOOKUP[card.charCodeAt(1)]
   if (idx < 0) throw new Error(`Bad suit: ${card}`)
   return idx
 }
@@ -107,38 +117,19 @@ function findStraightHigh(mask: number): number {
 }
 
 /** From a rank mask, pick top N ranks (desc). */
-function topNRanks(mask: number, n: number, exclude: number[] = []): number[] {
-  const ex = new Set(exclude)
+function topNRanks(mask: number, n: number, exclude?: number[]): number[] {
+  let filteredMask = mask
+  if (exclude && exclude.length > 0) {
+    let excludeMask = 0
+    for (let i = 0; i < exclude.length; i++) {
+      excludeMask |= bit(exclude[i])
+    }
+    filteredMask &= ~excludeMask
+  }
   const out: number[] = []
   for (let r = 12; r >= 0 && out.length < n; r--) {
-    if (ex.has(r)) continue
-    if (mask & bit(r)) out.push(r)
+    if (filteredMask & bit(r)) out.push(r)
   }
-  return out
-}
-
-/** Build bitmasks and counts for 7 cards */
-function buildMasks(codes: string[]) {
-  let rankMask = 0
-  const suitMasks = [0, 0, 0, 0]
-  const rankCounts = new Array(13).fill(0)
-  const suitCounts = [0, 0, 0, 0]
-
-  for (const c of codes) {
-    const r = rankOf(c)
-    const s = suitOf(c)
-    rankMask |= bit(r)
-    suitMasks[s] |= bit(r)
-    rankCounts[r]++
-    suitCounts[s]++
-  }
-  return { rankMask, suitMasks, rankCounts, suitCounts }
-}
-
-/** Return all ranks with a specific count, desc (e.g., count=2 gives all pair ranks) */
-function ranksWithCount(rankCounts: number[], count: number): number[] {
-  const out: number[] = []
-  for (let r = 12; r >= 0; r--) if (rankCounts[r] === count) out.push(r)
   return out
 }
 
@@ -166,7 +157,34 @@ export function evaluateCards(cards: string[]): EvalResult {
 }
 
 function evaluateCardsInternal(cards: string[]): EvalResult {
-  const { rankMask, suitMasks, rankCounts, suitCounts } = buildMasks(cards)
+  let rankMask = 0
+  const suitMasks = [0, 0, 0, 0]
+  const suitCounts = [0, 0, 0, 0]
+  const rankCounts = new Uint8Array(13)
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i]
+    const r = rankOf(card)
+    const s = suitOf(card)
+    rankMask |= bit(r)
+    suitMasks[s] |= bit(r)
+    suitCounts[s]++
+    rankCounts[r]++
+  }
+
+  const quads: number[] = []
+  const trips: number[] = []
+  const pairs: number[] = []
+  for (let r = 12; r >= 0; r--) {
+    const count = rankCounts[r]
+    if (count === 4) {
+      quads.push(r)
+    } else if (count === 3) {
+      trips.push(r)
+    } else if (count === 2) {
+      pairs.push(r)
+    }
+  }
 
   // 1) Straight Flush
   for (let s = 0; s < 4; s++) {
@@ -195,7 +213,6 @@ function evaluateCardsInternal(cards: string[]): EvalResult {
   }
 
   // 2) Four of a kind
-  const quads = ranksWithCount(rankCounts, 4)
   if (quads.length > 0) {
     const q = quads[0]
     const kicker = topNRanks(rankMask, 1, [q])[0]
@@ -208,8 +225,6 @@ function evaluateCardsInternal(cards: string[]): EvalResult {
   }
 
   // 3) Full house
-  const trips = ranksWithCount(rankCounts, 3)
-  const pairs = ranksWithCount(rankCounts, 2)
   if (trips.length > 0 && (pairs.length > 0 || trips.length > 1)) {
     const t = trips[0]
     const secondTripAsPair = trips.length > 1 ? trips[1] : -1

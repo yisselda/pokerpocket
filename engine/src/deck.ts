@@ -22,18 +22,24 @@ export function freshDeck(): string[] {
   for (const r of ranks) for (const s of suits) out.push(`${r}${s}`)
   return out
 }
-// Fisher–Yates shuffle; returns a new array
-export function shuffle<T>(deck: T[], rng: RNG): T[] {
-  const out = [...deck]
+// Fisher–Yates shuffle; mutates provided array
+function shuffleInPlace<T>(out: T[], rng: RNG): T[] {
+  const hasRandInt = typeof rng.randInt === 'function'
   for (let i = out.length - 1; i > 0; i--) {
-    const j = rng.randInt
-      ? rng.randInt(i + 1)
+    const j = hasRandInt
+      ? rng.randInt!(i + 1)
       : Math.floor(rng.next() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
+    const tmp = out[i]
+    out[i] = out[j]
+    out[j] = tmp
   }
   return out
 }
 
+export function shuffle<T>(deck: readonly T[], rng: RNG): T[] {
+  return shuffleInPlace([...deck], rng)
+}
+
 export function shuffleDeck(rng: RNG): string[] {
-  return shuffle(freshDeck(), rng)
+  return shuffleInPlace(freshDeck(), rng)
 }
