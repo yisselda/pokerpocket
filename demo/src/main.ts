@@ -6,6 +6,8 @@ import {
   createTable,
   fold,
   getActionOptions,
+  getBoard,
+  computeWinningOdds,
   getPhase,
   getSeed,
   isBettingDecision,
@@ -18,6 +20,7 @@ import type {
   Action,
   ActionOptions,
   GameState,
+  PlayerOdds,
 } from '@pokerpocket/engine'
 import { fromString, toAscii, createDeck, shuffle } from '@pokerpocket/engine/cards'
 import { evaluateCards } from '@pokerpocket/engine/eval'
@@ -85,14 +88,16 @@ function pickAction(options: ActionOptions, step: number, seed: number): Action 
 
 interface SimulationSnapshot {
   phase: string
-  board: string
+  board: string[]
   pot?: number
+  odds?: PlayerOdds[]
 }
 
 interface SimulationResult {
   finalState: GameState
   history: string[]
   snapshots: SimulationSnapshot[]
+  finalBoard: string[]
 }
 
 function simulateHand(playerCount: number, seed: number): SimulationResult {
@@ -100,26 +105,33 @@ function simulateHand(playerCount: number, seed: number): SimulationResult {
   const history: string[] = []
   const snapshots: SimulationSnapshot[] = []
   let step = 0
+  let latestBoard: string[] = []
+
+  const boardsEqual = (a: string[], b: string[]) =>
+    a.length === b.length && a.every((card, index) => card === b[index])
 
   const recordSnapshot = (current: GameState) => {
     const view = toPresentation(current)
+    const boardCards = getBoard(current)
+    if (boardCards.length) {
+      latestBoard = [...boardCards]
+    }
     const snapshot: SimulationSnapshot = {
       phase: current.tag,
-      board: view.board ?? '[no board dealt yet]',
+      board: [...boardCards],
       pot: view.pot ?? 0,
     }
     const last = snapshots[snapshots.length - 1]
-    if (!last) {
-      snapshots.push(snapshot)
-      return
-    }
-    if (
+    const shouldRecord =
+      !last ||
       last.phase !== snapshot.phase ||
-      last.board !== snapshot.board ||
+      !boardsEqual(last.board, snapshot.board) ||
       last.pot !== snapshot.pot
-    ) {
-      snapshots.push(snapshot)
-    }
+
+    if (!shouldRecord) return
+
+    snapshot.odds = computeWinningOdds(current)
+    snapshots.push(snapshot)
   }
 
   recordSnapshot(state)
@@ -157,6 +169,7 @@ function simulateHand(playerCount: number, seed: number): SimulationResult {
     finalState: state,
     history,
     snapshots,
+    finalBoard: [...latestBoard],
   }
 }
 
@@ -203,10 +216,27 @@ function dealLiveHand() {
   }
 
   const result = simulateHand(players, seed)
-  const { finalState, history, snapshots } = result
+  const { finalState, history, snapshots, finalBoard } = result
   const view = toPresentation(finalState)
-  const playerSummaries = view.rows.map(row => `${row.marker} ${row.line}`).join('\n')
   const options = getActionOptions(finalState)
+
+  const formatOddsTag = (
+    odds: { equity: number; method: PlayerOdds['method']; considered: boolean } | undefined
+  ) => {
+    if (!odds || !odds.considered) return ''
+    const base = `${(odds.equity * 100).toFixed(1)}%`
+    if (odds.method === 'monteCarlo') return `${base} (MC)`
+    if (odds.method === 'exact') return `${base} (exact)`
+    return base
+  }
+
+  const playerSummaries = view.rows
+    .map(row => {
+      const odds = row.odds
+      const oddsLabel = odds ? ` | odds: ${formatOddsTag(odds)}` : ''
+      return `${row.marker} ${row.line}${oddsLabel}`
+    })
+    .join('\n')
 
   const decisionHint = (() => {
     if (isHandDone(finalState)) return 'hand complete'
@@ -224,15 +254,41 @@ function dealLiveHand() {
   })()
 
   const phaseLabel = view.header.replace(/^===\s*/, '').replace(/\s*===$/, '')
-  const boardLine = view.board ?? '[no board dealt yet]'
+  const boardLine =
+    finalBoard.length > 0
+      ? finalBoard.join(' ')
+      : view.board ?? '[no board dealt yet]'
   const potLine = view.pot !== undefined ? formatChips(view.pot) : '0'
   const rngSnapshot = getSeed(finalState)
   const boardTimeline = snapshots
     .map(snapshot => {
-      const potLabel = snapshot.pot > 0 ? ` (pot ${formatChips(snapshot.pot)})` : ''
-      return `${snapshot.phase}: ${snapshot.board}${potLabel}`
+      const boardCards = snapshot.board.length
+        ? snapshot.board.join(' ')
+        : '[no board dealt yet]'
+      const potLabel =
+        typeof snapshot.pot === 'number' && snapshot.pot > 0
+          ? ` (pot ${formatChips(snapshot.pot)})`
+          : ''
+      const consideredOdds = snapshot.odds?.filter(o => o.considered) ?? []
+      const oddsLabel = consideredOdds.length
+        ? (() => {
+            const parts = consideredOdds.map(o => {
+              const playerName =
+                finalState.players[o.seatIndex]?.name ?? `P${o.seatIndex + 1}`
+              return `${playerName} ${formatOddsTag(o)}`
+            })
+            return ` • odds ${parts.join(' | ')}`
+          })()
+        : ''
+      return `${snapshot.phase}: ${boardCards}${potLabel}${oddsLabel}`
     })
     .join('\n')
+  const usedMonteCarlo = snapshots.some(snapshot =>
+    snapshot.odds?.some(o => o.considered && o.method === 'monteCarlo')
+  )
+  const oddsNote = usedMonteCarlo
+    ? 'Odds note: MC = Monte Carlo equity (20k samples)'
+    : ''
 
   const summary = `🎯 PokerPocket reducer demo\n` +
     `Seed ${seed} • ${players} players • Blinds 100/200\n\n` +
@@ -241,6 +297,7 @@ function dealLiveHand() {
     `Pot\n${potLine}\n\n` +
     `Players\n${playerSummaries}\n\n` +
     `Board progression\n${boardTimeline}\n\n` +
+    (oddsNote ? `${oddsNote}\n\n` : '') +
     `Winners\n${formatWinners(finalState)}\n\n` +
     `RNG snapshot\n${rngSnapshot ?? 'N/A'}\n\n` +
     `Action trace\n${history.join('\n')}`

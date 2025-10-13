@@ -202,7 +202,20 @@ createTable(nbPlayers: number, chips: number, bigBlind: number, opts?: CreateTab
 reduce(state: GameState, action: Action): GameState
 toPresentation(state: GameState): PresentationView
 
-interface PresentationRow { marker: string; line: string }
+interface PresentationRowOdds {
+  method: 'settled' | 'exact' | 'monteCarlo'
+  equity: number
+  winProbability: number
+  tieProbability: number
+  trials: number
+  considered: boolean
+}
+
+interface PresentationRow {
+  marker: string
+  line: string
+  odds?: PresentationRowOdds
+}
 interface PresentationView {
   header: string
   board?: string

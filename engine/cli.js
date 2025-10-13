@@ -73,6 +73,7 @@ function parseArgs(argv) {
 
 function render(state) {
   const view = toPresentation(state)
+
   log('')
   log(view.header)
   if (view.board) {
@@ -82,8 +83,26 @@ function render(state) {
     log('Pot:', view.pot)
   }
   view.rows.forEach(row => {
-    log(`${row.marker} ${row.line}`)
+    const playerOdds = row.odds && row.odds.considered ? row.odds : null
+    let oddsLabel = ''
+    if (playerOdds) {
+      const equityPercent = (playerOdds.equity * 100).toFixed(1)
+      const methodTag =
+        playerOdds.method === 'monteCarlo'
+          ? ' (MC)'
+          : playerOdds.method === 'exact'
+          ? ' (exact)'
+          : ''
+      oddsLabel = ` | odds: ${equityPercent}%${methodTag}`
+    }
+    log(`${row.marker} ${row.line}${oddsLabel}`)
   })
+  const usedMonteCarlo = view.rows.some(
+    row => row.odds?.considered && row.odds.method === 'monteCarlo'
+  )
+  if (usedMonteCarlo) {
+    log('Odds note: MC = Monte Carlo equity (20k samples)')
+  }
   if (view.footer) {
     log(view.footer)
   }
