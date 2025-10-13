@@ -305,6 +305,9 @@ function evaluateCardsInternal(cards: string[]): EvalResult {
   }
 }
 
-export function evaluateSeven(board: string[], hole: [string, string]): EvalResult {
+export function evaluateSeven(
+  board: string[],
+  hole: [string, string]
+): EvalResult {
   return evaluateSevenCards([...board, hole[0], hole[1]])
 }

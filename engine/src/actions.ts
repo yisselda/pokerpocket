@@ -31,5 +31,5 @@ export const allins = (player: Player): Action => ({
   type: 'PLAYER_ACTION',
   seat: player.id,
   move: 'RAISE',
-  amount: player.stack
+  amount: player.stack,
 })

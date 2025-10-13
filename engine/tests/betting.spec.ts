@@ -8,7 +8,7 @@ import {
   raiseTo,
   fold,
   check,
-  allins
+  allins,
 } from '../src/actions.js'
 import { expectState } from '../src/testing.js'
 

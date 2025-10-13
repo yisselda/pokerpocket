@@ -147,7 +147,8 @@ async function promptAction(state, rl) {
     }
 
     const [key, amountText] = raw.split(/\s+/, 2)
-    const normalized = KEYMAP[key] || (Object.values(KEYMAP).includes(raw) ? raw : undefined)
+    const normalized =
+      KEYMAP[key] || (Object.values(KEYMAP).includes(raw) ? raw : undefined)
 
     if (!normalized) {
       log('Invalid action, try again.')
@@ -182,7 +183,7 @@ async function promptAction(state, rl) {
       return call(options.seat)
     }
 
-    const isAllIn = normalized == 'allin';
+    const isAllIn = normalized == 'allin'
     if (normalized === 'raise' || isAllIn) {
       if (!options.raise) {
         log('Raise is not available.')
@@ -219,7 +220,10 @@ async function main() {
   try {
     log('🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine')
 
-    const seats = await askNumber(rl, 'Number of players', 2, { min: 2, max: 9 })
+    const seats = await askNumber(rl, 'Number of players', 2, {
+      min: 2,
+      max: 9,
+    })
     const chips = await askNumber(rl, 'Starting stack', 1000, { min: 1 })
     const bigBlind = await askNumber(rl, 'Big blind size', 50, { min: 1 })
 
@@ -237,17 +241,21 @@ async function main() {
         const players = getPlayers(state)
         const winners = 'winners' in state ? state.winners : []
         const summary = winners
-          .map(w => `${players[w.seatId]?.name ?? `Seat ${w.seatId}`} +${w.amount}`)
+          .map(
+            w => `${players[w.seatId]?.name ?? `Seat ${w.seatId}`} +${w.amount}`
+          )
           .join(', ')
         log('\nHand complete. Winners:', summary || 'none')
 
-        const playersLeft = players.filter(p => p.stack).length >= 2;
-        var questionToPlayer = playersLeft ? 'Play another hand? [Y/n]: ' : 'Play a new game? [Y/n]: ';
+        const playersLeft = players.filter(p => p.stack).length >= 2
+        var questionToPlayer = playersLeft
+          ? 'Play another hand? [Y/n]: '
+          : 'Play a new game? [Y/n]: '
         const again = (await rl.question(questionToPlayer)).trim()
         if (again.toLowerCase() === 'n') break
-        state = playersLeft ?
-          advanceUntilDecision(reduce(state, nextHand())) :
-          createTable(seats, chips, bigBlind, { seed: cliOptions.seed })
+        state = playersLeft
+          ? advanceUntilDecision(reduce(state, nextHand()))
+          : createTable(seats, chips, bigBlind, { seed: cliOptions.seed })
         continue
       }
 

@@ -26,7 +26,9 @@ export function freshDeck(): string[] {
 export function shuffle<T>(deck: T[], rng: RNG): T[] {
   const out = [...deck]
   for (let i = out.length - 1; i > 0; i--) {
-    const j = rng.randInt ? rng.randInt(i + 1) : Math.floor(rng.next() * (i + 1))
+    const j = rng.randInt
+      ? rng.randInt(i + 1)
+      : Math.floor(rng.next() * (i + 1))
     ;[out[i], out[j]] = [out[j], out[i]]
   }
   return out

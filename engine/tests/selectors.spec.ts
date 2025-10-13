@@ -56,7 +56,11 @@ describe('selectors', () => {
       canCall: true,
       toCall: 50,
     })
-    expect(options?.raise).toMatchObject({ min: 200, max: 950, unopened: false })
+    expect(options?.raise).toMatchObject({
+      min: 200,
+      max: 950,
+      unopened: false,
+    })
 
     const positions = getPositions(state)
     expect(positions).toEqual(['BTN', 'BB'])
