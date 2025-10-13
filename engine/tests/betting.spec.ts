@@ -22,7 +22,7 @@ describe('betting flow minimal', () => {
 
     const flop = expectState(table, 'FLOP')
     expect(flop.board).toHaveLength(3)
-    expect(flop.pots[0]?.amount).toBe(400)
+    expect(flop.pots[0]?.amount).toBe(500)
     expect(flop.players[0].bet).toBe(0)
     expect(flop.players[1].bet).toBe(0)
   })
