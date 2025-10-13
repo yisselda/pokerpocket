@@ -13,8 +13,7 @@
       "@pokerpocket/engine": ["../engine/src/index.ts"],
       "@pokerpocket/engine/cards": ["../engine/src/cards.public.ts"],
       "@pokerpocket/engine/eval": ["../engine/src/eval.public.ts"],
-      "@pokerpocket/engine/format": ["../engine/src/format.public.ts"],
-      "@pokerpocket/engine/testing": ["../engine/src/testing.public.ts"]
+      "@pokerpocket/engine/format": ["../engine/src/format.public.ts"]
     }
   },
   "include": ["src"]

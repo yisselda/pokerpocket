@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import path from 'node:path'
 
 export default defineConfig({
+  base: '/pokerpocket/',
   root: '.',
   resolve: {
     alias: [
@@ -16,10 +17,6 @@ export default defineConfig({
       {
         find: '@pokerpocket/engine/format',
         replacement: path.resolve(__dirname, '../engine/src/format.public.ts'),
-      },
-      {
-        find: '@pokerpocket/engine/testing',
-        replacement: path.resolve(__dirname, '../engine/src/testing.public.ts'),
       },
       {
         find: '@pokerpocket/engine',
