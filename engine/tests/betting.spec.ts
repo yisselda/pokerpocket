@@ -8,6 +8,7 @@ import {
   raiseTo,
   fold,
   check,
+  allins,
 } from '../src/actions.js'
 import { expectState } from '../src/testing.js'
 
@@ -22,9 +23,20 @@ describe('betting flow minimal', () => {
 
     const flop = expectState(table, 'FLOP')
     expect(flop.board).toHaveLength(3)
-    expect(flop.pots[0]?.amount).toBe(400)
+    expect(flop.pots[0]?.amount).toBe(500)
     expect(flop.players[0].bet).toBe(0)
     expect(flop.players[1].bet).toBe(0)
+  })
+
+  it('P1 all ins, P2 calls', () => {
+    let table = createTable(2, 1000, 100)
+    table = reduce(table, startHand())
+    table = reduce(table, dealCards()) // PREFLOP, toAct=0
+
+    table = reduce(table, allins(table.players[0])) // P1 is all in
+    table = reduce(table, call(1)) // P2 calls
+
+    expectState(table, 'COMPLETE')
   })
 
   it('advances after heads-up flop checks', () => {

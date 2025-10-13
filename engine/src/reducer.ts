@@ -122,7 +122,7 @@ export function reduce(state: GameState, action: Action): GameState {
         ) {
           // action.amount is a "raise to" amount (final bet), not "raise by".
           const raiseTo = Math.max(action.amount, targetBet)
-          const need = Math.max(0, raiseTo - me.bet)
+          const need = Math.max(0, raiseTo)
           const pay = Math.min(me.stack, need)
           me.stack -= pay
           me.bet += pay

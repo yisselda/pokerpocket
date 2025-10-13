@@ -58,7 +58,7 @@ describe('selectors', () => {
     })
     expect(options?.raise).toMatchObject({
       min: 200,
-      max: 1000,
+      max: 950,
       unopened: false,
     })
 
