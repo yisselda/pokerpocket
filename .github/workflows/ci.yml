@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  verify:
+  test:
+    name: Test & Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +52,9 @@ jobs:
           path: bench-results.json
 
   deploy:
+    name: Deploy Demo to GitHub Pages
     runs-on: ubuntu-latest
-    needs: verify
+    needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:
