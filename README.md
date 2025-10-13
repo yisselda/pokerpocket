@@ -1,117 +1,250 @@
 # Poker Pocket
 
-Zero-dependency Texas Hold'em engine for JavaScript/TypeScript. Node.js >= 16.
+Texas Hold'em as a deterministic state machine. Create a table, feed in player moves, and render whatever UI you want.
 
-## Installation
+## Install
 
 ```bash
-npm install pokerpocket           # Library
-npm install -g pokerpocket        # CLI
+npm install @pokerpocket/engine
+npx pokerpocket           # uses the installed CLI
+# or run once without installing
+npx @pokerpocket/engine
+npm run demo:dev   # launch the interactive demo (Vite)
 ```
 
-## Quick Start
+## Run A Hand
 
 ```typescript
-import { newGame, evaluate7, drawRandom } from 'pokerpocket'
+import {
+  advanceUntilDecision,
+  call,
+  check,
+  createTable,
+  fold,
+  getActionOptions,
+  isBettingDecision,
+  isHandDone,
+  nextHand,
+  raiseTo,
+  reduce,
+  toPresentation,
+} from '@pokerpocket/engine'
 
-// Run a complete game
-const game = newGame({ players: 6, seed: 12345 })
-game.deal()
-game.flop()
-game.turn()
-game.river()
-const { winners } = game.showdown()
+let state = advanceUntilDecision(createTable(6, 20000, 100))
 
-// Evaluate hands directly
-const cards = [
-  { rank: 'A', suit: 's' },
-  { rank: 'K', suit: 's' },
-  // ... 5 more cards
-]
-const result = evaluate7(cards)
-console.log(result.rank) // 'STRAIGHT_FLUSH'
+while (!isHandDone(state)) {
+  if (!isBettingDecision(state)) {
+    state = advanceUntilDecision(state)
+    continue
+  }
 
-// Generate random hands
-const hand = drawRandom(7)
+  const options = getActionOptions(state)
+  if (!options) {
+    state = advanceUntilDecision(state)
+    continue
+  }
+
+  const action = options.canCheck
+    ? check(options.seat)
+    : options.canCall
+      ? call(options.seat)
+      : options.raise
+        ? raiseTo(options.seat, options.raise.min)
+        : fold(options.seat)
+
+  state = advanceUntilDecision(reduce(state, action))
+}
+
+if (isHandDone(state)) {
+  console.log(toPresentation(state))
+  state = advanceUntilDecision(reduce(state, nextHand()))
+}
 ```
 
-## CLI
+## Core Concepts
 
-```bash
-pokerpocket                       # Interactive game
-npx pokerpocket                   # Without installing
+```text
+createTable -> advanceUntilDecision(state)
+        |                     |
+        |                     v
+        |           +--------------------+
+        |           | reduce(state, action)|
+        |           +--------------------+
+        |                     |
+        v                     v
+     +------+  START   +-----------+   DEAL_CARDS   +-----------+
+     | INIT | -------> |   DEAL    | ------------> |  PREFLOP  |
+     +------+          +-----------+               +-----------+
+        ^                    |                           |
+        |                    | shuffleDeck()             | player actions
+        |                    v                           v
+     NEXT_HAND         dealHole(), blinds        settle bets, advance actor
+        |                    |                           |
+        |                    v                           v
+        |              +-----------+   ROUND_COMPLETE   +-----------+
+        |              |   FLOP    | --------------->   |   TURN    |
+        |              +-----------+                   +-----------+
+        |                    | dealCommunity()              |
+        |                    v                              v
+        |              +-----------+   ROUND_COMPLETE   +-----------+
+        |              |   RIVER   | --------------->   | SHOWDOWN  |
+        |              +-----------+                   +-----------+
+        |                    | resolveShowdown()             |
+        |                    v                              v
+        +--------------> +-----------+ <---------------------+
+                          | COMPLETE |
+                          +-----------+
 ```
 
-The CLI provides a full Texas Hold'em experience with betting, blinds, and chip management.
+The reducer loops until it reaches a player decision or terminal state. `advanceUntilDecision` fast-forwards through deterministic phases (posting blinds, dealing cards, burning/turning the board) so the host can wait for real player input before calling `reduce` again. When a hand ends, dispatch `nextHand()` to rotate the dealer and restart.
 
-### Key Commands
+## Core Features
 
-**Game Flow:** `deal`, `flop`, `turn`, `river`, `showdown`
-**Betting:** `bet <amount>`, `call`, `check`, `fold`, `allin`
-**Setup:** `players <n>`, `blinds <sb> <bb>`, `stacks <amount>`
-**Utility:** `help`, `status`, `hole <player>`
+### Deterministic RNG (seed-in/seed-out)
 
-Quick test session:
+- LCG RNG is included for speed and deterministic testing.
+- For crypto-grade randomness, supply your own RNG wrapping a CSPRNG.
+- For auditability/fairness, layer a commit–reveal scheme on top of the RNG contract.
 
+```typescript
+import {
+  advanceUntilDecision,
+  createTable,
+  getSeed,
+  toPresentation,
+} from '@pokerpocket/engine'
+
+const state = advanceUntilDecision(createTable(6, 20000, 100, { seed: 42 }))
+
+console.log(toPresentation(state))
+console.log(getSeed(state))
 ```
-> deal
-> skipbet  # Auto-complete betting
-> flop
-> skipbet
-> turn
-> skipbet
-> river
-> skipbet
-> showdown
-```
+
+## Why Devs Like It
+
+- Pure reducer; no timers, sockets, or RNG side effects
+- Strong TypeScript types for every phase, pot, and action
+- Side pots, heads-up blinds, and all-in fast-forward built in
+- Easy to slot into React, Vue, bots, or your own loop
 
 ## API Reference
 
-### Game Engine
+Typed signatures are derived directly from the TypeScript sources; the callouts underneath translate what each primitive does in plain language.
 
-```typescript
-import { newGame, PokerEngine } from 'pokerpocket'
+### Actions
 
-// Helper function
-const game = newGame({ players: 4, seed: 42 })
-
-// Or direct engine usage
-const engine = new PokerEngine()
-engine.setPlayers(4)
-engine.setSeed(42)
-engine.deal()
+```ts
+startHand(): Action
+dealCards(): Action
+endRound(): Action
+toShowdown(): Action
+nextHand(): Action
+fold(seat: SeatId): Action
+check(seat: SeatId): Action
+call(seat: SeatId): Action
+raiseTo(seat: SeatId, amount: number): Action
 ```
 
-### Hand Evaluation
+- `startHand()` begins the hand by shuffling a fresh deck and moving from INIT to DEAL.
+- `dealCards()` posts blinds, deals hole cards, and moves into PREFLOP.
+- `endRound()` closes a betting street when everyone is settled.
+- `toShowdown()` flips straight to the showdown phase when betting is over.
+- `nextHand()` resets blinds and dealer positioning for the next hand.
+- `fold`, `check`, `call`, and `raiseTo` generate player actions that `reduce` can consume; `raiseTo` specifies the final bet level rather than the raise increment.
 
-```typescript
-import { evaluate7, evaluate5 } from 'pokerpocket'
+### Selectors
 
-// Best 5 from 7 cards
-const result7 = evaluate7(sevenCards)
+```ts
+getPhase(state: GameState): GameState['tag']
+getPlayers(state: GameState): Player[]
+getBoard(state: GameState): string[]
+getBoardCards(state: GameState): Card[]
+getBoardAscii(state: GameState): string
+getPots(state: GameState): Pot[]
+getPotSize(state: GameState): number
+getCurrentPlayer(state: GameState): Player | null
+getActingSeat(state: GameState): SeatId | null
+isBettingPhase(state: GameState): state is Extract<GameState, { tag: BettingPhase }>
+currentActorSeat(state: GameState): SeatId | null
+getToCall(state: GameState, seat: SeatId): number
+getLegalActions(state: GameState, seat: SeatId): LegalActions
+isBettingDecision(state: GameState): boolean
+isComplete(state: GameState): boolean
+isHandDone(state: GameState): boolean
+advanceUntilDecision(state: GameState): GameState
+getPositions(state: GameState): PositionLabel[]
+getActionOptions(state: GameState): ActionOptions | null
 
-// Evaluate exactly 5 cards
-const result5 = evaluate5(fiveCards)
-
-// Result contains:
-// - rank: 'STRAIGHT_FLUSH' | 'FOUR_OF_A_KIND' | etc
-// - score: BigInt for comparison
-// - best5: Array of 5 cards used
+type PositionLabel = 'BTN' | 'SB' | 'BB' | ''
+interface ActionOptions {
+  seat: SeatId
+  canFold: boolean
+  canCheck: boolean
+  canCall: boolean
+  toCall: number
+  raise?: { min: number; max?: number; unopened: boolean }
+}
 ```
+
+- `getPhase`, `getPlayers`, `getBoard`, and `getPots` expose raw reducer state without poking at union variants directly.
+- `getBoardCards` and `getBoardAscii` hand back parsed or formatted community cards for display.
+- `getCurrentPlayer`, `getActingSeat`, and `currentActorSeat` reveal whose turn it is (or `null` if no one can act).
+- `isBettingPhase`, `isBettingDecision`, `isComplete`, and `isHandDone` express the game flow as readable predicates.
+- `getToCall`, `getLegalActions`, and `getActionOptions` compute exactly what a seat can do, including raise bounds.
+- `advanceUntilDecision` drives the deterministic state machine until a player must act or the hand ends.
+- `getPositions` returns BTN/SB/BB markers aligned with `getPlayers` output.
 
 ### Utilities
 
-```typescript
-import { drawRandom, createDeck, shuffle } from 'pokerpocket'
+```ts
+interface CreateTableOptions { rng?: RNG; seed?: number }
+createTable(nbPlayers: number, chips: number, bigBlind: number, opts?: CreateTableOptions): GameState
+reduce(state: GameState, action: Action): GameState
+toPresentation(state: GameState): PresentationView
 
-// Random cards
-const hand = drawRandom(2) // 2 hole cards
-const board = drawRandom(5) // 5 community cards
-
-// Deck operations
-let deck = createDeck()
-deck = shuffle(deck, seed)
+interface PresentationRow { marker: string; line: string }
+interface PresentationView {
+  header: string
+  board?: string
+  pot?: number
+  rows: PresentationRow[]
+  footer?: string
+}
 ```
+
+- `createTable` bootstraps a seeded table with identical stacks and an optional custom RNG.
+- `reduce` is the pure state machine that applies actions, whether automated or player-driven.
+- `toPresentation` converts the current state into a lightweight, printable view useful for CLIs or logs.
+
+### RNG
+
+```ts
+interface RNG {
+  next(): number
+  getState(): number
+  setState(state: number): void
+  randInt?(n: number): number
+}
+
+class LcgRng implements RNG {
+  constructor(seed?: number)
+  next(): number
+  getState(): number
+  setState(state: number): void
+  randInt(n: number): number
+  static fromState(state: number): LcgRng
+}
+
+withSeed(seed: number): RNG
+ensureRng(rng: RNG | undefined, seed: number | undefined): RNG
+serializeRng(state: { rng?: RNG }): number | undefined
+getSeed(state: { rng?: RNG }): number | undefined
+```
+
+- `RNG` specifies the interface the engine expects; any compliant generator can be plugged in.
+- `LcgRng` is the built-in fast linear congruential generator, offering deterministic sequences and state serialization.
+- `withSeed` and `ensureRng` help wire a seed or external RNG into `createTable` without branching logic.
+- `serializeRng` and `getSeed` snapshot the internal RNG state for logging, replay, or fairness audits.
 
 ## Development
 
@@ -119,16 +252,23 @@ deck = shuffle(deck, seed)
 npm install
 npm test
 npm run build
+npm run demo:dev   # launch the Vite playground
 ```
 
-## Demo
+MIT License.
 
-Try the [live demo](https://yisselda.github.io/pokerpocket/) with interactive hand evaluation and benchmarking.
+## Benchmarks
 
-## License
+Run the Vitest benchmark suite to sample hot paths in the engine:
 
-MIT
+```bash
+npm run bench -- --outputJson bench-results.json
+```
 
-## Contributing
+CI compares every run with `benchmarks/baseline.json` and fails if a benchmark slows by more than 5%. The current baseline (Node.js 20, macOS) records roughly:
 
-Issues and PRs welcome on [GitHub](https://github.com/yisselda/pokerpocket).
+- `shuffleDeck with LCG`: ~1.37M ops/sec (≈0.73µs per shuffle)
+- `evaluateSevenCards canonical hand`: ~6.46M ops/sec (≈0.15µs per eval)
+- `play deterministic hand (6 players)`: ~70K ops/sec (≈14µs per full hand)
+
+Use `bench-results.json` emitted by the command above to inspect the full distribution when tuning the engine.

@@ -1,26 +1,35 @@
 import js from '@eslint/js'
+import typescript from '@typescript-eslint/eslint-plugin'
+import typescriptParser from '@typescript-eslint/parser'
 
 export default [
   js.configs.recommended,
   {
+    files: ['src/**/*.ts'],
     languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
       globals: {
         window: 'readonly',
         document: 'readonly',
-        console: 'readonly',
-        alert: 'readonly',
-        setTimeout: 'readonly',
-        performance: 'readonly',
         navigator: 'readonly',
-        event: 'readonly'
-      }
+        alert: 'readonly',
+        performance: 'readonly',
+        setTimeout: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescript,
     },
     rules: {
-      'no-unused-vars': 'warn',
-      'no-console': 'off',
-      'prefer-const': 'error'
-    }
-  }
+      ...typescript.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': 'warn',
+    },
+  },
 ]

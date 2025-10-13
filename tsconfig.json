@@ -1,20 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": false,
-    "outDir": "./dist",
-    "stripInternal": true,
-    "skipLibCheck": true,
-    "rootDir": "./src",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "test"]
+  "extends": "./engine/tsconfig.json",
+  "include": ["engine/src", "engine/tests"],
+  "exclude": ["node_modules", "engine/dist", "legacy"]
 }

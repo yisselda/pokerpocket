@@ -1,0 +1,52 @@
+{
+  "name": "@pokerpocket/engine",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "pokerpocket": "./cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "play": "node ./cli.js",
+    "bench": "vitest bench tests/engine.bench.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.5",
+    "@types/node": "^20.12.12",
+    "eslint": "^9.11.0",
+    "@typescript-eslint/parser": "^8.8.1",
+    "@typescript-eslint/eslint-plugin": "^8.8.1"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./rng": {
+      "types": "./dist/rng.d.ts",
+      "import": "./dist/rng.js"
+    },
+    "./cards": {
+      "types": "./dist/cards.public.d.ts",
+      "import": "./dist/cards.public.js"
+    },
+    "./eval": {
+      "types": "./dist/eval.public.d.ts",
+      "import": "./dist/eval.public.js"
+    },
+    "./format": {
+      "types": "./dist/format.public.d.ts",
+      "import": "./dist/format.public.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.public.d.ts",
+      "import": "./dist/testing.public.js"
+    }
+  }
+}
