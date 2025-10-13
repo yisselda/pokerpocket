@@ -1,4 +1,4 @@
-import type { Action, SeatId } from './types.js'
+import type { Action, Player, SeatId } from './types.js'
 
 export const startHand = (): Action => ({ type: 'START' })
 export const dealCards = (): Action => ({ type: 'DEAL_CARDS' })
@@ -26,4 +26,10 @@ export const raiseTo = (seat: SeatId, amount: number): Action => ({
   seat,
   move: 'RAISE',
   amount,
+})
+export const allins = (player: Player): Action => ({
+  type: 'PLAYER_ACTION',
+  seat: player.id,
+  move: 'RAISE',
+  amount: player.stack
 })

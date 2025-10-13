@@ -61,56 +61,56 @@ export interface BaseState {
 
 export type GameState =
   | (BaseState & {
-      tag: 'INIT'
-      players: Player[]
-      bigBlind: number
-      dealer: SeatId
-    })
+    tag: 'INIT'
+    players: Player[]
+    bigBlind: number
+    dealer: SeatId
+  })
   | (BaseState & {
-      tag: 'DEAL'
-      players: Player[]
-      deck: string[]
-      bigBlind: number
-      dealer: SeatId
-    })
+    tag: 'DEAL'
+    players: Player[]
+    deck: string[]
+    bigBlind: number
+    dealer: SeatId
+  })
   | (BaseState & {
-      tag: BettingPhase
-      players: Player[]
-      board: string[]
-      pots: Pot[]
-      toAct: SeatId
-      bigBlind: number
-      deck: string[]
-      dealer: SeatId
-      roundStart: SeatId
-      lastAggressor?: SeatId
-      targetBet: number
-    })
+    tag: BettingPhase
+    players: Player[]
+    board: string[]
+    pots: Pot[]
+    toAct: SeatId
+    bigBlind: number
+    deck: string[]
+    dealer: SeatId
+    roundStart: SeatId
+    lastAggressor?: SeatId
+    targetBet: number
+  })
   | (BaseState & {
-      tag: 'SHOWDOWN'
-      players: Player[]
-      board: string[]
-      pots: Pot[]
-      bigBlind: number
-      dealer: SeatId
-    })
+    tag: 'SHOWDOWN'
+    players: Player[]
+    board: string[]
+    pots: Pot[]
+    bigBlind: number
+    dealer: SeatId
+  })
   | (BaseState & {
-      tag: 'COMPLETE'
-      winners: { seatId: SeatId; amount: number }[]
-      players: Player[]
-      bigBlind: number
-      dealer: SeatId
-    })
+    tag: 'COMPLETE'
+    winners: { seatId: SeatId; amount: number }[]
+    players: Player[]
+    bigBlind: number
+    dealer: SeatId
+  })
 
 export type Action =
   | { type: 'START' }
   | { type: 'DEAL_CARDS' }
   | {
-      type: 'PLAYER_ACTION'
-      seat: SeatId
-      move: 'FOLD' | 'CHECK' | 'CALL' | 'RAISE'
-      amount?: number
-    }
+    type: 'PLAYER_ACTION'
+    seat: SeatId
+    move: 'FOLD' | 'CHECK' | 'CALL' | 'RAISE'
+    amount?: number
+  }
   | { type: 'ROUND_COMPLETE' }
   | { type: 'SHOWDOWN' }
   | { type: 'NEXT_HAND' }
