@@ -44,4 +44,3 @@ export function toAsciiCard(card: Card): string {
 export function toAsciiCards(cards: readonly Card[]): string[] {
   return cards.map(toAsciiCard)
 }
-

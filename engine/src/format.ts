@@ -11,9 +11,7 @@ function normalizeCard(card: Card | string): Card {
 
 export function formatBoard(board: readonly (Card | string)[]): string {
   if (board.length === 0) return ''
-  return board
-    .map(card => toAsciiCard(normalizeCard(card)))
-    .join(' ')
+  return board.map(card => toAsciiCard(normalizeCard(card))).join(' ')
 }
 
 const chipFormatter = new Intl.NumberFormat('en-US', {
@@ -28,9 +26,10 @@ export function formatAction(
   action: Action,
   options: FormatActionOptions = {}
 ): string {
-  const prefix = options.prefixSeat && action.type === 'PLAYER_ACTION'
-    ? `P${action.seat + 1} `
-    : ''
+  const prefix =
+    options.prefixSeat && action.type === 'PLAYER_ACTION'
+      ? `P${action.seat + 1} `
+      : ''
 
   switch (action.type) {
     case 'PLAYER_ACTION': {

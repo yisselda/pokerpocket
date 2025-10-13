@@ -57,10 +57,9 @@ export function getActingSeat(state: GameState): number | null {
 
 const BETTING_PHASES = new Set(['PREFLOP', 'FLOP', 'TURN', 'RIVER'])
 
-export function isBettingPhase(state: GameState): state is Extract<
-  GameState,
-  { tag: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' }
-> {
+export function isBettingPhase(
+  state: GameState
+): state is Extract<GameState, { tag: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' }> {
   return BETTING_PHASES.has(state.tag)
 }
 
@@ -187,10 +186,12 @@ export function getPositions(state: GameState): PositionLabel[] {
   if (n === 0) return []
   const dealer =
     typeof (state as { dealer?: number }).dealer === 'number'
-      ? ((state as { dealer: number }).dealer % n + n) % n
+      ? (((state as { dealer: number }).dealer % n) + n) % n
       : 0
   const assigned = assignPositions(n, dealer)
-  return assigned.map(pos => (pos === 'BTN' || pos === 'SB' || pos === 'BB' ? pos : ''))
+  return assigned.map(pos =>
+    pos === 'BTN' || pos === 'SB' || pos === 'BB' ? pos : ''
+  )
 }
 
 export interface ActionOptions {

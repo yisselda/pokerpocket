@@ -2,12 +2,10 @@ import { startHand, dealCards, toShowdown } from './actions.js'
 import { reduce } from './reducer.js'
 import type { Action, GameState, BettingPhase } from './types.js'
 
-export type StateByTag<Tag extends GameState['tag']> = Extract<
-  GameState,
-  { tag: Tag }
-> extends never
-  ? Extract<GameState, { tag: BettingPhase }> & { tag: Tag }
-  : Extract<GameState, { tag: Tag }>
+export type StateByTag<Tag extends GameState['tag']> =
+  Extract<GameState, { tag: Tag }> extends never
+    ? Extract<GameState, { tag: BettingPhase }> & { tag: Tag }
+    : Extract<GameState, { tag: Tag }>
 
 export function expectState<Tag extends GameState['tag']>(
   state: GameState,
@@ -98,7 +96,8 @@ export interface Snapshot {
 export function snapshot(state: GameState): Snapshot {
   return {
     tag: state.tag,
-    board: 'board' in state && Array.isArray(state.board) ? [...state.board] : [],
+    board:
+      'board' in state && Array.isArray(state.board) ? [...state.board] : [],
     players:
       'players' in state
         ? state.players.map(player => ({

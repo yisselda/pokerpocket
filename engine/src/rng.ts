@@ -18,7 +18,7 @@ export class LcgRng implements RNG {
   private state: number
 
   constructor(seed?: number) {
-    const initial = seed ?? (Date.now() >>> 0)
+    const initial = seed ?? Date.now() >>> 0
     this.state = initial >>> 0
   }
 

@@ -3,22 +3,9 @@ import { describe, it, expect } from 'vitest'
 import { LcgRng } from '../src/rng'
 import { createTable } from '../src/init'
 
-import {
-  fromString,
-  toAscii,
-  createDeck,
-  shuffle,
-} from '../src/cards.public'
-import {
-  evaluate5,
-  evaluate7,
-  compareHands,
-} from '../src/eval.public'
-import {
-  formatBoard,
-  formatChips,
-  formatAction,
-} from '../src/format.public'
+import { fromString, toAscii, createDeck, shuffle } from '../src/cards.public'
+import { evaluate5, evaluate7, compareHands } from '../src/eval.public'
+import { formatBoard, formatChips, formatAction } from '../src/format.public'
 import {
   expectState,
   fastForward,
