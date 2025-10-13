@@ -217,6 +217,34 @@ body {
   flex-wrap: wrap;
 }
 
+.hero-quick-links {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  flex-wrap: wrap;
+}
+
+.hero-quick-links .quick-links-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-light);
+}
+
+.hero-quick-links .quick-link {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-normal);
+}
+
+.hero-quick-links .quick-link:hover,
+.hero-quick-links .quick-link:focus {
+  color: var(--color-primary);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;

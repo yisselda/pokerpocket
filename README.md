@@ -131,6 +131,8 @@ console.log(getSeed(state))
 
 Typed signatures are derived directly from the TypeScript sources; the callouts underneath translate what each primitive does in plain language.
 
+Quick links: [Actions](#actions) · [Selectors](#selectors) · [Utilities](#utilities) · [RNG](#rng)
+
 ### Actions
 
 ```ts
