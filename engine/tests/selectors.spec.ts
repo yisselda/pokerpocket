@@ -58,7 +58,7 @@ describe('selectors', () => {
     })
     expect(options?.raise).toMatchObject({
       min: 200,
-      max: 950,
+      max: 1000,
       unopened: false,
     })
 
@@ -83,4 +83,5 @@ describe('selectors', () => {
     expect(positions.slice(0, 3)).toEqual(['BTN', 'SB', 'BB'])
     expect(positions.slice(3)).toEqual(['', ''])
   })
+
 })

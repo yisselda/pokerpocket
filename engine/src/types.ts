@@ -100,6 +100,8 @@ export type GameState =
       players: Player[]
       bigBlind: number
       dealer: SeatId
+      board: string[]
+      pots: Pot[]
     })
 
 export type Action =

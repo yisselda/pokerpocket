@@ -122,7 +122,7 @@ export function reduce(state: GameState, action: Action): GameState {
         ) {
           // action.amount is a "raise to" amount (final bet), not "raise by".
           const raiseTo = Math.max(action.amount, targetBet)
-          const need = Math.max(0, raiseTo)
+          const need = Math.max(0, raiseTo - me.bet)
           const pay = Math.min(me.stack, need)
           me.stack -= pay
           me.bet += pay
@@ -152,6 +152,8 @@ export function reduce(state: GameState, action: Action): GameState {
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
             rng: state.rng,
+            board: state.board,
+            pots,
           }
         }
 
@@ -174,7 +176,6 @@ export function reduce(state: GameState, action: Action): GameState {
             phase = next
           }
 
-          // 3) showdown now
           const payouts = resolveShowdown(ffPlayers, ffBoard, ffPots)
           return {
             tag: 'COMPLETE',
@@ -183,6 +184,8 @@ export function reduce(state: GameState, action: Action): GameState {
             bigBlind: state.bigBlind ?? 100,
             dealer: state.dealer,
             rng: state.rng,
+            board: ffBoard,
+            pots: ffPots,
           }
         }
 
@@ -295,6 +298,8 @@ export function reduce(state: GameState, action: Action): GameState {
           bigBlind: state.bigBlind ?? 100,
           dealer: state.dealer,
           rng: state.rng,
+          board: state.board,
+          pots: state.pots,
         }
       }
       return state
