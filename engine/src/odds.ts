@@ -138,9 +138,7 @@ export function computeWinningOdds(
     .map((player, index) => ({ player, index }))
     .filter(
       ({ player }) =>
-        !player.folded &&
-        Array.isArray(player.hole) &&
-        player.hole.length === 2
+        !player.folded && Array.isArray(player.hole) && player.hole.length === 2
     )
 
   eligibleSeats.forEach(({ index }) => {
@@ -164,11 +162,7 @@ export function computeWinningOdds(
     const fullBoard = board.concat(extraBoard)
     const evaluations = eligibleSeats.map(({ player, index }) => ({
       seatIndex: index,
-      result: evaluateCards([
-        ...fullBoard,
-        player.hole![0],
-        player.hole![1],
-      ]),
+      result: evaluateCards([...fullBoard, player.hole![0], player.hole![1]]),
     }))
 
     let bestScore = -Infinity

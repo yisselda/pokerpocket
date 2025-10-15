@@ -65,15 +65,15 @@ export function toPresentation(state: GameState): PresentationView {
             considered: true,
           }
         : oddsEntry
-        ? {
-            method: oddsEntry.method,
-            equity: oddsEntry.equity,
-            winProbability: oddsEntry.winProbability,
-            tieProbability: oddsEntry.tieProbability,
-            trials: oddsEntry.trials,
-            considered: false,
-          }
-        : undefined
+          ? {
+              method: oddsEntry.method,
+              equity: oddsEntry.equity,
+              winProbability: oddsEntry.winProbability,
+              tieProbability: oddsEntry.tieProbability,
+              trials: oddsEntry.trials,
+              considered: false,
+            }
+          : undefined
 
     return {
       marker,

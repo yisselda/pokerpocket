@@ -83,5 +83,4 @@ describe('selectors', () => {
     expect(positions.slice(0, 3)).toEqual(['BTN', 'SB', 'BB'])
     expect(positions.slice(3)).toEqual(['', ''])
   })
-
 })
