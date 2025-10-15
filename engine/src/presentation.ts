@@ -8,10 +8,13 @@ import {
   getPotSize,
 } from './selectors.js'
 import { getSeed } from './rng.js'
+import { computeWinningOdds } from './odds.js'
+import type { OddsMethod } from './odds.js'
 
 export interface PresentationRow {
   marker: string
   line: string
+  odds?: PresentationRowOdds
 }
 
 export interface PresentationView {
@@ -22,6 +25,15 @@ export interface PresentationView {
   footer?: string
 }
 
+export interface PresentationRowOdds {
+  method: OddsMethod
+  equity: number
+  winProbability: number
+  tieProbability: number
+  trials: number
+  considered: boolean
+}
+
 export function toPresentation(state: GameState): PresentationView {
   const phase = getPhase(state)
   const board = getBoard(state)
@@ -29,6 +41,8 @@ export function toPresentation(state: GameState): PresentationView {
   const players = getPlayers(state)
   const positions = getPositions(state)
   const actor = currentActorSeat(state)
+  const odds = computeWinningOdds(state)
+  const oddsBySeat = new Map(odds.map(entry => [entry.seatIndex, entry]))
 
   const rows: PresentationRow[] = players.map((player, index) => {
     const marker = actor === index ? '->' : '  '
@@ -39,10 +53,32 @@ export function toPresentation(state: GameState): PresentationView {
       .filter(Boolean)
       .join(', ')
     const status = flags ? ` (${flags})` : ''
+    const oddsEntry = oddsBySeat.get(index)
+    const rowOdds =
+      oddsEntry && oddsEntry.considered
+        ? {
+            method: oddsEntry.method,
+            equity: oddsEntry.equity,
+            winProbability: oddsEntry.winProbability,
+            tieProbability: oddsEntry.tieProbability,
+            trials: oddsEntry.trials,
+            considered: true,
+          }
+        : oddsEntry
+          ? {
+              method: oddsEntry.method,
+              equity: oddsEntry.equity,
+              winProbability: oddsEntry.winProbability,
+              tieProbability: oddsEntry.tieProbability,
+              trials: oddsEntry.trials,
+              considered: false,
+            }
+          : undefined
 
     return {
       marker,
       line: `${positionTag}${player.name} | stack: ${player.stack} | bet: ${player.bet} | hole: ${hole}${status}`,
+      odds: rowOdds,
     }
   })
 
