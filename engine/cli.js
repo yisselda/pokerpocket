@@ -20,8 +20,7 @@ import {
 
 const KEYMAP = Object.freeze({
   f: 'fold',
-  k: 'check',
-  c: 'call',
+  c: 'callOrCheck',
   r: 'raise',
   a: 'allin',
   q: 'quit',
@@ -82,8 +81,26 @@ function render(state) {
     log('Pot:', view.pot)
   }
   view.rows.forEach(row => {
-    log(`${row.marker} ${row.line}`)
+    const odds = row.odds && row.odds.considered ? row.odds : null
+    let suffix = ''
+    if (odds) {
+      const equity = (odds.equity * 100).toFixed(1)
+      const method =
+        odds.method === 'monteCarlo'
+          ? ' (MC)'
+          : odds.method === 'exact'
+            ? ' (exact)'
+            : ''
+      suffix = ` | odds: ${equity}%${method}`
+    }
+    log(`${row.marker} ${row.line}${suffix}`)
   })
+  const usedMonteCarlo = view.rows.some(
+    row => row.odds?.considered && row.odds.method === 'monteCarlo'
+  )
+  if (usedMonteCarlo) {
+    log('Odds note: MC = Monte Carlo equity (20k samples)')
+  }
   if (view.footer) {
     log(view.footer)
   }
@@ -121,8 +138,8 @@ async function promptAction(state, rl) {
   const actorName = players[options.seat]?.name ?? `Seat ${options.seat}`
   const menu = []
   if (options.canFold) menu.push('(f)old')
-  if (options.canCheck) menu.push('(k)check')
-  if (options.canCall) menu.push(`(c)all ${options.toCall}`)
+  if (options.canCheck) menu.push('(c)heck')
+  else if (options.canCall) menu.push(`(c)all ${options.toCall}`)
   if (options.raise) {
     const { min, max, unopened } = options.raise
     const label = unopened ? 'bet' : 'raise to'
@@ -167,20 +184,13 @@ async function promptAction(state, rl) {
       return fold(options.seat)
     }
 
-    if (normalized === 'check') {
-      if (!options.canCheck) {
-        log('Check is not available.')
+    if (normalized === 'callOrCheck') {
+      if (!options.canCheck && !options.canCall) {
+        log('Check or Call is not available.')
         continue
       }
-      return check(options.seat)
-    }
-
-    if (normalized === 'call') {
-      if (!options.canCall) {
-        log('Call is not available.')
-        continue
-      }
-      return call(options.seat)
+      if (options.canCheck) return check(options.seat)
+      if (options.canCall) return call(options.seat)
     }
 
     const isAllIn = normalized == 'allin'
