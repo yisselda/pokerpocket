@@ -10,7 +10,7 @@
     "lint": "eslint src --ext .ts --max-warnings 0"
   },
   "dependencies": {
-    "@pokerpocket/engine": "file:../engine"
+    "pokerpocket": "file:../engine"
   },
   "devDependencies": {
     "@types/node": "20.17.9",

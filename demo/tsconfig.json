@@ -10,10 +10,10 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@pokerpocket/engine": ["../engine/src/index.ts"],
-      "@pokerpocket/engine/cards": ["../engine/src/cards.public.ts"],
-      "@pokerpocket/engine/eval": ["../engine/src/eval.public.ts"],
-      "@pokerpocket/engine/format": ["../engine/src/format.public.ts"]
+      "pokerpocket": ["../engine/src/index.ts"],
+      "pokerpocket/cards": ["../engine/src/cards.public.ts"],
+      "pokerpocket/eval": ["../engine/src/eval.public.ts"],
+      "pokerpocket/format": ["../engine/src/format.public.ts"]
     }
   },
   "include": ["src"]

@@ -25,7 +25,7 @@
               </a>
               <div class="badge npm-badge">
                 <span class="badge-icon">📦</span>
-                <span class="badge-text">@pokerpocket/engine</span>
+                <span class="badge-text">pokerpocket</span>
               </div>
               <div class="badge performance-badge">
                 <span class="badge-icon">🧠</span>
@@ -61,7 +61,7 @@
             <div class="hero-code-content active" id="hero-cli-content">
               <div class="hero-terminal">
                 <div class="terminal-prompt">$</div>
-                <div class="terminal-command">npm install @pokerpocket/engine</div>
+                <div class="terminal-command">npm install pokerpocket</div>
               </div>
               <div class="hero-features">
                 ✓ Deterministic RNG snapshots<br />
@@ -77,7 +77,7 @@
   createTable,
   getBoardAscii,
   getSeed,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 
 const state = advanceUntilDecision(
   createTable(6, 20000, 100, { seed: 42 })
@@ -285,10 +285,10 @@ console.log(getSeed(state))</code></pre>
                 <div class="terminal-body">
                   <div class="terminal-line">
                     <span class="terminal-prompt">$</span>
-                    <span class="terminal-command">npx @pokerpocket/engine --seed 42</span>
+                    <span class="terminal-command">npx pokerpocket --seed 42</span>
                   </div>
                   <div class="terminal-output">
-                    🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine
+                    🃏 PokerPocket CLI — quick demo client for pokerpocket
                     Number of players [2]: 3
                     Starting stack [1000]: 20000
                     Big blind size [50]: 100
@@ -339,7 +339,7 @@ console.log(getSeed(state))</code></pre>
                         <span id="cli-copy-text">Copy</span>
                       </button>
                     </div>
-                    <pre class="code-content"><code>npx @pokerpocket/engine --seed 42</code></pre>
+                    <pre class="code-content"><code>npx pokerpocket --seed 42</code></pre>
                   </div>
                 </div>
               </div>
@@ -405,7 +405,7 @@ console.log(getSeed(state))</code></pre>
   getActionOptions,
   isHandDone,
   reduce,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 
 let state = advanceUntilDecision(createTable(3, 20000, 100))
 
@@ -436,7 +436,7 @@ console.log(state.tag) // "COMPLETE"</code></pre>
   advanceUntilDecision,
   createTable,
   reduce,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 
 const usePoker = (players = 6) => {
   const [state, setState] = useState(() =>
@@ -470,7 +470,7 @@ const usePoker = (players = 6) => {
   createTable,
   getActionOptions,
   reduce,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 
 let state = advanceUntilDecision(createTable(3, 5000, 50, { seed: 9 }))
 const options = getActionOptions(state)
@@ -494,8 +494,8 @@ console.log(state.tag)</code></pre>
                       Copy
                     </button>
                   </div>
-                  <pre class="code-content"><code>import { reduce } from '@pokerpocket/engine'
-import type { Action, GameState } from '@pokerpocket/engine'
+                  <pre class="code-content"><code>import { reduce } from 'pokerpocket'
+import type { Action, GameState } from 'pokerpocket'
 
 function apply(state: GameState, action: Action) {
   return reduce(state, action)
@@ -520,8 +520,8 @@ function apply(state: GameState, action: Action) {
                 Copy
               </button>
             </div>
-            <pre class="code-content"><code>npm install @pokerpocket/engine
-npx @pokerpocket/engine --seed 42</code></pre>
+            <pre class="code-content"><code>npm install pokerpocket
+npx pokerpocket --seed 42</code></pre>
           </div>
         </div>
       </section>

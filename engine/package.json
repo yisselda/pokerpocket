@@ -1,12 +1,16 @@
 {
-  "name": "@pokerpocket/engine",
-  "version": "0.1.0",
+  "name": "pokerpocket",
+  "version": "0.2.3",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
     "pokerpocket": "./cli.js"
   },
+  "files": [
+    "dist",
+    "cli.js"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",

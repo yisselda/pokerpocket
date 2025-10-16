@@ -7,19 +7,19 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@pokerpocket/engine/cards',
+        find: 'pokerpocket/cards',
         replacement: path.resolve(__dirname, '../engine/src/cards.public.ts'),
       },
       {
-        find: '@pokerpocket/engine/eval',
+        find: 'pokerpocket/eval',
         replacement: path.resolve(__dirname, '../engine/src/eval.public.ts'),
       },
       {
-        find: '@pokerpocket/engine/format',
+        find: 'pokerpocket/format',
         replacement: path.resolve(__dirname, '../engine/src/format.public.ts'),
       },
       {
-        find: '@pokerpocket/engine',
+        find: 'pokerpocket',
         replacement: path.resolve(__dirname, '../engine/src/index.ts'),
       },
     ],

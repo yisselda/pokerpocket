@@ -60,7 +60,7 @@ function showCliInstall() {
 }
 
 async function copyCliCommand() {
-  const command = 'npx @pokerpocket/engine --seed 42'
+  const command = 'npx pokerpocket --seed 42'
   const copyBtn = document.getElementById('cli-copy-text')
   if (!copyBtn) return
   try {
@@ -84,7 +84,7 @@ async function copyCliCommand() {
 }
 
 async function copyCliQuickStart() {
-  const command = 'npm install @pokerpocket/engine\nnpx @pokerpocket/engine --seed 42'
+  const command = 'npm install pokerpocket\nnpx pokerpocket --seed 42'
   const copyBtn = document.getElementById('copy-cli-quick')
   if (!copyBtn) return
   try {

@@ -16,7 +16,7 @@ import {
   raiseTo,
   reduce,
   toPresentation,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 
 const KEYMAP = Object.freeze({
   f: 'fold',
@@ -228,7 +228,7 @@ async function main() {
   })
 
   try {
-    log('🃏 PokerPocket CLI — quick demo client for @pokerpocket/engine')
+    log('🃏 PokerPocket CLI — quick demo client for pokerpocket')
 
     const seats = await askNumber(rl, 'Number of players', 2, {
       min: 2,

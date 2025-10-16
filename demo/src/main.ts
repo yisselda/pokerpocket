@@ -13,18 +13,18 @@ import {
   raiseTo,
   reduce,
   toPresentation,
-} from '@pokerpocket/engine'
+} from 'pokerpocket'
 import type {
   Action,
   ActionOptions,
   GameState,
-} from '@pokerpocket/engine'
-import { fromString, toAscii, createDeck, shuffle } from '@pokerpocket/engine/cards'
-import { evaluateCards } from '@pokerpocket/engine/eval'
+} from 'pokerpocket'
+import { fromString, toAscii, createDeck, shuffle } from 'pokerpocket/cards'
+import { evaluateCards } from 'pokerpocket/eval'
 import {
   formatAction as formatReducerAction,
   formatChips,
-} from '@pokerpocket/engine/format'
+} from 'pokerpocket/format'
 
 const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 type SuitCode = 's' | 'h' | 'd' | 'c'
@@ -401,7 +401,7 @@ function runBenchmark() {
 }
 
 async function copyQuickStart() {
-  const command = 'npm install @pokerpocket/engine\nnpx @pokerpocket/engine --seed 42'
+  const command = 'npm install pokerpocket\nnpx pokerpocket --seed 42'
   const copyBtn = document.getElementById('copy-cli-quick') as HTMLButtonElement
   try {
     await navigator.clipboard.writeText(command)
